@@ -6,9 +6,13 @@ import lombok.Data;
 public class Product {
     private Integer id;
     private Integer categoryId;
+    private String brand;
     private String name;
     private String description;
     private String image;
     private Integer price;
+    private String unitPrice;
     private Integer expirationDate;
 }
+
+
