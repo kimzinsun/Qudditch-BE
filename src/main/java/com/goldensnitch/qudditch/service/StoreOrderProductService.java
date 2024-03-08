@@ -14,7 +14,7 @@ public class StoreOrderProductService {
         this.mapper = mapper;
     }
 
-    public StoreOrderProduct findByProductId(Integer productId) {
-        return mapper.findByProductId(productId);
-        }
+    public StoreOrderProduct findByStoreProductId(Integer productId) {
+        return mapper.findByStoreProductId(productId);
+    }
 }

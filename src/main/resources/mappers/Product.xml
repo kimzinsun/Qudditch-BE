@@ -6,4 +6,13 @@
         VALUES (#{categoryId}, #{brand}, #{name}, #{description}, #{image}, #{price}, #{unitPrice}, #{expirationDate})
     </insert>
 
+<!-- 규원 작성(아래) -->
+    <!--
+        조회: QR코드(프론트)를 인식해서 product_id를 조회하고 해당 제품을 장바구니에 임시로 담은 후 결제하는 기능
+    -->
+    <select id="findByProductId" resultType="com.goldensnitch.qudditch.dto.Product">
+        SELECT *
+        FROM product
+        WHERE id = #{id}
+    </select>
 </mapper>

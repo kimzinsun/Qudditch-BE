@@ -15,14 +15,14 @@ public class StoreOrderProductController {
         this.service = service;
     }
 
+    // QR 코드로 인식된 productId 사용하여 제품 조회
     @GetMapping("/product/{productId}")
     public StoreOrderProduct getProductById(@PathVariable Integer productId){
-        // QR 코드로 인식된 productId 사용하여 제품 조회
-        return service.findByProductId(productId);
+        return service.findByStoreProductId(productId);
     }
-    
+
     // 장바구니에 추가 및 결제 로직 관련 API
-    
+
     // 해당 부분은 프로젝트의 요구사항에 맞게 구현
 
 }
