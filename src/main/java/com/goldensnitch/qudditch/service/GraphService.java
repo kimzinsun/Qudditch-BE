@@ -19,6 +19,10 @@ public class GraphService {
 
     public SalesGraphDto getSalesGraph(Integer userStoreId, String yearMonth){
         SalesGraphDto dto = new SalesGraphDto();
+
+        // mysql date 포맷을 맞춰주기 위함
+        yearMonth += "-01";
+
         List<DailySalesDto> list = mapper.selectSalesList(userStoreId, yearMonth);
 
         if (!list.isEmpty()){
