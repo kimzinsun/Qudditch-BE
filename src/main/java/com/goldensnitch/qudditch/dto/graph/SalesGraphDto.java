@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class SalesGraphDto {
-    private List<MonthlySalesDto> list;
+    private List<DailySalesDto> list;
     private String start;
     private String end;
 }

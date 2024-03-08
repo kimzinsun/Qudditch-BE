@@ -1,6 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.graph.MonthlySalesDto;
+import com.goldensnitch.qudditch.dto.graph.DailySalesDto;
 import com.goldensnitch.qudditch.dto.graph.SalesGraphDto;
 import com.goldensnitch.qudditch.mapper.GraphMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,17 +17,13 @@ public class GraphService {
         this.mapper = mapper;
     }
 
-    public int test(){
-        return mapper.selectTest();
-    }
-
-    public SalesGraphDto getSalesGraph(Integer userStoreId){
+    public SalesGraphDto getSalesGraph(Integer userStoreId, String yearMonth){
         SalesGraphDto dto = new SalesGraphDto();
-        List<MonthlySalesDto> list = mapper.selectSalesList(userStoreId);
+        List<DailySalesDto> list = mapper.selectSalesList(userStoreId, yearMonth);
 
         if (!list.isEmpty()){
-            dto.setStart(list.get(0).getYearMonth());
-            dto.setEnd(list.get(list.size() - 1).getYearMonth());
+            dto.setStart(list.get(0).getDate());
+            dto.setEnd(list.get(list.size() - 1).getDate());
             dto.setList(list);
         }
 

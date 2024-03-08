@@ -1,12 +1,11 @@
 package com.goldensnitch.qudditch.mapper;
 
-import com.goldensnitch.qudditch.dto.graph.MonthlySalesDto;
+import com.goldensnitch.qudditch.dto.graph.DailySalesDto;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
 @Mapper
 public interface GraphMapper {
-    int selectTest();
-    List<MonthlySalesDto> selectSalesList(Integer userStoreId);
+    List<DailySalesDto> selectSalesList(Integer userStoreId, String yearMonth);
 }

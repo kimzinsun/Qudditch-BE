@@ -3,7 +3,7 @@ package com.goldensnitch.qudditch.dto.graph;
 import lombok.Data;
 
 @Data
-public class MonthlySalesDto {
+public class DailySalesDto {
     private Integer sales;
-    private String yearMonth;
+    private String date;
 }

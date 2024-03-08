@@ -3,14 +3,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.goldensnitch.qudditch.mapper.GraphMapper">
-    <select id="selectSalesList" parameterType="Integer" resultType="com.goldensnitch.qudditch.dto.graph.MonthlySalesDto">
-        select str.ym as yearMonth, sum(p.price * str.out_qty) as "sales"
+    <select id="selectSalesList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailySalesDto">
+        select str.ymd as date, sum(p.price * str.out_qty) as sales
         from store_stock_report str
         join product p on str.product_id = p.id
         where str.user_store_id = #{userStoreId}
-        group by ym
-        having ym <![CDATA[>=]]>  DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-01')
-        and ym <![CDATA[<=]]>  CURDATE()
-        order by ym;
+        group by ymd
+        having ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
+        and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
+        order by ymd;
     </select>
 </mapper>
