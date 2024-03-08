@@ -4,8 +4,10 @@
     <select id="cntAllProductByUserStoreId" parameterType="int" resultType="int">
         SELECT COUNT(*) FROM store_stock WHERE user_store_id = #{userStoreId}
     </select>
-    <select id="selectAllProductByUserStoreId" parameterType="int" resultType="StoreStock">
-        SELECT * FROM store_stock WHERE user_store_id = #{userStoreId}
+    <select id="selectAllProductByUserStoreId" parameterType="int" resultType="StoreStockRes">
+        SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
+        FROM store_stock s , product p, category c
+        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id
     </select>
 
 
