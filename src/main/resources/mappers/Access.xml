@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goldensnitch.qudditch.mapper.AccessMapper">
+    <insert id="insertVisitLog" parameterType="StoreVisitorLog">
+        INSERT INTO store_visitor_log (store_id, customer_id)
+        VALUES (#{storeId}, #{customerId})
+    </insert>
+
+</mapper>
