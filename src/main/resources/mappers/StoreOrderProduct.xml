@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goldensnitch.qudditch.mapper.StoreOrderProductMapper">
+
+
+    <!--
+        조회: QR코드(프론트)를 인식해서 product_id를 조회하고 해당 제품을 장바구니에 임시로 담은 후 결제하는 기능
+    -->
+    <select id="findByProductId" resultType="com.goldensnitch.qudditch.dto.StoreOrderProduct">
+        SELECT *
+        FROM store_stock
+        WHERE product_id = #{productId}
+    </select>
+
+</mapper>
