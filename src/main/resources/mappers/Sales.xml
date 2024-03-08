@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goldensnitch.qudditch.mapper.SalesMapper">
+    <select id="DailySales" resultType="CustomerOrder" parameterType="Date">
+        SELECT total_pay, ordered_at AS orderedAt
+        FROM customer_order
+        WHERE DATE(ordered_at) = #{date}
+    </select>
+
+        <select id="MonthlySales" resultType="MonthSales" parameterType="CustomerOrder">
+        SELECT DATE_FORMAT(ordered_at, '%Y-%m') AS Month, SUM(total_pay) AS Price
+        FROM customer_order
+        GROUP BY
+            Month
+        ORDER BY
+            Month DESC
+    </select>
+</mapper>
