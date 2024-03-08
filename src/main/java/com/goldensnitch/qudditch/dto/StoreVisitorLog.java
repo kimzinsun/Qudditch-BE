@@ -7,7 +7,7 @@ import java.sql.Date;
 @Data
 public class StoreVisitorLog {
     private Integer id;
-    private Integer storeId;
-    private Integer customerId;
+    private Integer userStoreId;
+    private Integer userCustomerId;
     private Date enteredAt;
 }

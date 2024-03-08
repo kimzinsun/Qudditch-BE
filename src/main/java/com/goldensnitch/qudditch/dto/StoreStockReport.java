@@ -5,12 +5,12 @@ import lombok.Data;
 import java.sql.Date;
 
 @Data
-public class StoreStock {
+public class StoreStockReport {
     private Integer id;
     private Integer userStoreId;
     private Integer productId;
-    private Integer positionId;
-    private Date receiptAt;
-    private Date expiredAt;
-    private Integer qty;
+    private Date ym;
+    private Integer inQty;
+    private Integer outQty;
+    private Integer dspQty;
 }

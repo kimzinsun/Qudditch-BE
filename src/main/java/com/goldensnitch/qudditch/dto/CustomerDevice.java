@@ -7,7 +7,7 @@ import java.sql.Date;
 @Data
 public class CustomerDevice {
     private Integer id;
-    private Integer customerId;
+    private Integer userCustomerId;
     private String token;
     private Date refreshedAt;
 }
