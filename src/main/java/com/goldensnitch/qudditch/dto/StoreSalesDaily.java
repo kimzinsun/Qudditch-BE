@@ -5,9 +5,9 @@ import lombok.Data;
 import java.sql.Date;
 
 @Data
-public class StoreVisitorDaily {
+public class StoreSalesDaily {
     private Integer id;
     private Integer userStoreId;
-    private Date ymd;
-    private Integer cnt;
+    private Date day;
+    private Integer sales;
 }
