@@ -9,7 +9,7 @@ import java.util.List;
 @Mapper
 public interface SalesMapper {
 
-    List<CustomerOrder> DailySales(Date date);
+    List<CustomerOrder> DailySales(Date date , Integer userStoreId);
 
-    List<CustomerOrder> MonthlySales(CustomerOrder dto);
+    List<CustomerOrder> MonthlySales(Integer userStoreId);
 }

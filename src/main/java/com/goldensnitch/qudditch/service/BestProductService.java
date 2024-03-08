@@ -2,7 +2,6 @@ package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.StoreStockReport;
 import com.goldensnitch.qudditch.mapper.BestProductMapper;
-import com.goldensnitch.qudditch.mapper.SalesMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -19,14 +19,14 @@ public class SalesService {
     }
 
 
-    public List<CustomerOrder> DailySales(Date date) {
+    public List<CustomerOrder> DailySales(Date date, Integer userStoreId) {
 
-        return salesMapper.DailySales(date);
+        return salesMapper.DailySales(date,userStoreId);
     }
 
-    public List<CustomerOrder> MonthlySales(CustomerOrder dto) {
+    public List<CustomerOrder> MonthlySales(Integer userStoreId) {
 
-        return salesMapper.MonthlySales(dto);
+        return salesMapper.MonthlySales(userStoreId);
     }
 
 }

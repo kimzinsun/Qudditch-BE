@@ -1,9 +1,8 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.CustomerOrder;
+
 import com.goldensnitch.qudditch.dto.StoreStockReport;
 import com.goldensnitch.qudditch.service.BestProductService;
-import com.goldensnitch.qudditch.service.SalesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

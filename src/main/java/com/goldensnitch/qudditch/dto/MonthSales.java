@@ -7,5 +7,6 @@ import java.io.Serializable;
 public class MonthSales implements Serializable{
     private String Month;
     private Integer Price;
+    private String name;
 
 }

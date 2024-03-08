@@ -10,6 +10,7 @@ import java.sql.Date;
 import java.util.List;
 
 
+
 @Slf4j
 @RestController
 @RequestMapping("/api/sales")
@@ -23,20 +24,24 @@ public class SalesController {
     }
 
     @GetMapping("/DailySales")
-    public List<CustomerOrder> DailySales(@RequestParam String orderedAt) {
+    public List<CustomerOrder> DailySales(@RequestParam(value = "orderedAt") String orderedAt,
+                                          @RequestParam(value = "userStoreId")Integer userStoreId) {
 
         // String으로 받은 날짜데이터를 date타입으로 변환.
         Date date = Date.valueOf(orderedAt);
 
-        List<CustomerOrder> list = salesService.DailySales(date);
+        List<CustomerOrder> list = salesService.DailySales(date,userStoreId);
+
         log.info("list: {}", list);
+
         return list;
     }
 
-    @GetMapping("/MonthlySales")
-    public List<CustomerOrder> MonthlySales(CustomerOrder dto) {
 
-        List<CustomerOrder> list = salesService.MonthlySales(dto);
+    @GetMapping("/MonthlySales")
+    public List<CustomerOrder> MonthlySales(Integer userStoreId) {
+
+        List<CustomerOrder> list = salesService.MonthlySales(userStoreId);
         log.info("list: {}", list);
         return list;
     }

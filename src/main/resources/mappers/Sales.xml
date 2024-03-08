@@ -3,15 +3,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.goldensnitch.qudditch.mapper.SalesMapper">
-    <select id="DailySales" resultType="CustomerOrder" parameterType="Date">
-        SELECT total_pay, ordered_at AS orderedAt
-        FROM customer_order
-        WHERE DATE(ordered_at) = #{date}
+    <select id="DailySales" resultType="StoreDailySales" parameterType="map">
+        SELECT SUM(c.total_amount)AS totalAmount, c.ordered_at AS orderedAt, s.name
+        FROM customer_order c
+                 JOIN store s ON c.user_store_id = s.id
+        WHERE DATE(c.ordered_at) = #{date} and c.user_store_id = #{userStoreId}
+        GROUP BY
+            c.ordered_at
     </select>
 
         <select id="MonthlySales" resultType="MonthSales" parameterType="CustomerOrder">
-        SELECT DATE_FORMAT(ordered_at, '%Y-%m') AS Month, SUM(total_pay) AS Price
-        FROM customer_order
+        SELECT DATE_FORMAT(ordered_at, '%Y-%m') AS Month, SUM(total_pay) AS Price, s.name
+        FROM customer_order c
+                 JOIN store s ON c.user_store_id = s.id
+        WHERE c.user_store_id = #{userStoreId}
         GROUP BY
             Month
         ORDER BY
