@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goldensnitch.qudditch.mapper.StoreStockMapper">
+    <select id="cntAllProductByUserStoreId" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM store_stock WHERE user_store_id = #{userStoreId}
+    </select>
+    <select id="selectAllProductByUserStoreId" parameterType="int" resultType="StoreStock">
+        SELECT * FROM store_stock WHERE user_store_id = #{userStoreId}
+    </select>
+
+
+
+</mapper>
