@@ -33,7 +33,7 @@ public class QrcodeAccessService {
             return false;
         } else {
             int userId = Integer.parseInt(redisService.getValues(uuid));
-            storeVisitorLog.setCustomerId(userId);
+            storeVisitorLog.setUserCustomerId(userId);
             System.out.println(storeVisitorLog);
             accessMapper.insertVisitLog(storeVisitorLog);
             redisService.deleteValues(uuid);
