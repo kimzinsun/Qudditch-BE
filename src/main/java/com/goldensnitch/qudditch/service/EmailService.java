@@ -8,13 +8,15 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
-@Slf4j
+/* @Slf4j
 @Service
 public class EmailService {
     private final SendGrid sendGrid;
@@ -56,6 +58,56 @@ public class EmailService {
         } catch (IOException e) {
             log.error("Error sending email", e);
             throw new RuntimeException(e.getMessage());
+        }
+    }
+} */
+@Slf4j
+@Service
+public class EmailService {
+    // Spring Boot에 의해 자동 생성된 SendGrid 빈을 주입받습니다.
+    private final SendGrid sendGrid;
+    
+    // application.properties에서 발신자 이메일을 읽어옵니다.
+    private final String fromEmail;
+
+    @Autowired
+    public EmailService(SendGrid sendGrid,
+                        @Value("${twilio.sendgrid.from-email}") String fromEmail) {
+        this.sendGrid = sendGrid;
+        this.fromEmail = fromEmail;
+    }
+
+    // 단일 이메일을 전송하는 메소드입니다.
+    public void sendSingleEmail(String toEmail) {
+        Email from = new Email(this.fromEmail);
+        String subject = "Hello, World!";
+        Email to = new Email(toEmail);
+        Content content = new Content("text/plain", "SendGrid를 이용한 이메일 전송 예제입니다.");
+
+        Mail mail = new Mail(from, subject, to, content);
+
+        sendEmail(mail);
+    }
+
+    // 이메일 전송 실패 시 사용자 친화적인 메시지 반환 메소드
+    /**
+     * @param mail
+     */
+    private void sendEmail(Mail mail) {
+        try {
+            Request request = new Request();
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+    
+            Response response = sendGrid.api(request);
+            if (response.getStatusCode() != HttpStatus.OK.value()) {
+                log.error("Email sending failed: {}", response.getBody());
+                throw new EmailSendingException("Failed to send email.");
+            }
+        } catch (IOException e) {
+            log.error("Error sending email", e);
+            throw new EmailSendingException("An error occurred while sending the email.");
         }
     }
 }
