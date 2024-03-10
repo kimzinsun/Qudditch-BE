@@ -11,7 +11,7 @@
         group by ymd
         having ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
             and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
-        order by ymd;
+        order by ymd
     </select>
 
     <select id="selectCategoryList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.CategorySalesDto">
@@ -21,6 +21,26 @@
         where user_store_id = #{userStoreId}
             and ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
             and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
-        group by p.category_id;
+        group by p.category_id
+        order by sales desc
+    </select>
+
+    <select id="selectDailyVisitorList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailyVisitorDto">
+        select ymd as date, sum(cnt) as count
+        from store_visitor_daily_hour
+        where user_store_id = #{userStoreId}
+            and YEAR(ymd) = YEAR(#{yearMonth})
+            and MONTH(ymd) = MONTH(#{yearMonth})
+        group by ymd
+        order by ymd
+    </select>
+
+    <select id="selectDailyHourVisitorList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailyHourVisitorDto">
+        select HOUR(hour) as hour, sum(cnt) as count
+        from store_visitor_daily_hour
+        where user_store_id = #{userStoreId}
+            and ymd = #{date}
+        group by HOUR(hour)
+        order by HOUR(hour)
     </select>
 </mapper>

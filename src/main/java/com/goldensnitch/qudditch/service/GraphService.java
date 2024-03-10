@@ -1,9 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.graph.CategoryGraphDto;
-import com.goldensnitch.qudditch.dto.graph.CategorySalesDto;
-import com.goldensnitch.qudditch.dto.graph.DailySalesDto;
-import com.goldensnitch.qudditch.dto.graph.SalesGraphDto;
+import com.goldensnitch.qudditch.dto.graph.*;
 import com.goldensnitch.qudditch.mapper.GraphMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,10 +24,11 @@ public class GraphService {
 
         List<DailySalesDto> list = mapper.selectSalesList(userStoreId, yearMonth);
 
+        dto.setList(list);
+
         if (!list.isEmpty()){
             dto.setStart(list.get(0).getDate());
             dto.setEnd(list.get(list.size() - 1).getDate());
-            dto.setList(list);
         }
 
         return dto;
@@ -48,6 +46,28 @@ public class GraphService {
 
         dto.setCurrentList(currentMonthList);
         dto.setLastList(lastMonthList);
+
+        return dto;
+    }
+
+    public VisitorGraphDto getVisitorGraph(int userStoreId, String yearMonth){
+        VisitorGraphDto dto = new VisitorGraphDto();
+
+        yearMonth = getMySqlDate(yearMonth);
+
+        List<DailyVisitorDto> dayList = mapper.selectDailyVisitorList(userStoreId, yearMonth);
+
+        dto.setList(dayList);
+
+        if(!dayList.isEmpty()){
+            for (DailyVisitorDto dayDto: dayList){
+                String date = dayDto.getDate();
+
+                List<DailyHourVisitorDto> hourList =  mapper.selectDailyHourVisitorList(userStoreId, date);
+
+                dayDto.setList(hourList);
+            }
+        }
 
         return dto;
     }

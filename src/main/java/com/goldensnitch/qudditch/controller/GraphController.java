@@ -2,6 +2,7 @@ package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.graph.CategoryGraphDto;
 import com.goldensnitch.qudditch.dto.graph.SalesGraphDto;
+import com.goldensnitch.qudditch.dto.graph.VisitorGraphDto;
 import com.goldensnitch.qudditch.service.GraphService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,13 @@ public class GraphController {
         log.info("GraphController.getSalesGraph: userStoreId: {}, yearMonth: {}", userStoreId, yearMonth);
 
         return service.getCategoryGraph(userStoreId, yearMonth);
+    }
+
+    @GetMapping("/visitor")
+    public VisitorGraphDto getVisitorGraph(int userStoreId, String yearMonth){
+        log.info("GraphController.getVisitorGraph: userStoreId: {}, yearMonth: {}", userStoreId, yearMonth);
+
+        return service.getVisitorGraph(userStoreId, yearMonth);
     }
 
 }
