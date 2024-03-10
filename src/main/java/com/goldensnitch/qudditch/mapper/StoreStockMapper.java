@@ -10,4 +10,7 @@ import java.util.List;
 public interface StoreStockMapper {
     int cntAllProductByUserStoreId(int userStoreId);
     List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId);
+    StoreStock selectProductByUserStoreIdAndProductId(int userStoreId, int productId);
+
+    void updateStock(StoreStock storeStock);
 }

@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.StoreStock;
 import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.stereotype.Service;
@@ -18,4 +19,11 @@ public class StoreStockService {
         return storeStockMapper.selectAllProductByUserStoreId(userStoreId);
     }
 
+    public void updateStock(StoreStock storeStock) {
+        storeStockMapper.updateStock(storeStock);
+    }
+
+    public StoreStock selectProductByUserStoreIdAndProductId(int userStoreId, int productId) {
+        return storeStockMapper.selectProductByUserStoreIdAndProductId(userStoreId, productId);
+    }
 }

@@ -9,6 +9,14 @@
         FROM store_stock s , product p, category c
         WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id
     </select>
+    <select id="selectProductByUserStoreIdAndProductId" parameterType="StoreStock" resultType="StoreStock">
+        SELECT * FROM store_stock WHERE user_store_id = #{userStoreId} and product_id = #{productId}
+    </select>
+    <update id="updateStock" parameterType="StoreStock">
+        UPDATE store_stock
+        SET qty = #{qty}, position_id = #{positionId}
+        WHERE user_store_id = #{userStoreId} and product_id = #{productId}
+    </update>
 
 
 
