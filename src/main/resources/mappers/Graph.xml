@@ -6,11 +6,21 @@
     <select id="selectSalesList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailySalesDto">
         select str.ymd as date, sum(p.price * str.out_qty) as sales
         from store_stock_report str
-        join product p on str.product_id = p.id
+            join product p on str.product_id = p.id
         where str.user_store_id = #{userStoreId}
         group by ymd
         having ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
-        and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
+            and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
         order by ymd;
+    </select>
+
+    <select id="selectCategoryList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.CategorySalesDto">
+        select (select name category_id from category where id = p.category_id) as categoryName, sum(p.price * str.out_qty) as sales
+        from store_stock_report str
+            join product p on str.product_id = p.id
+        where user_store_id = #{userStoreId}
+            and ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
+            and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
+        group by p.category_id;
     </select>
 </mapper>

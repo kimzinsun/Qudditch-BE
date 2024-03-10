@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.goldensnitch.qudditch.dto.graph.CategoryGraphDto;
 import com.goldensnitch.qudditch.dto.graph.SalesGraphDto;
 import com.goldensnitch.qudditch.service.GraphService;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +21,17 @@ public class GraphController {
 
     @GetMapping("/sales")
     // @RequestParam
-    public SalesGraphDto getSalesGraph(Integer userStoreId, String yearMonth){
-        log.info("GraphController.getSalesGraph: {} {}", userStoreId, yearMonth);
+    public SalesGraphDto getSalesGraph(int userStoreId, String yearMonth){
+        log.info("GraphController.getSalesGraph: userStoreId: {}, yearMonth: {}", userStoreId, yearMonth);
 
         return service.getSalesGraph(userStoreId, yearMonth);
     }
+
+    @GetMapping("/category")
+    public CategoryGraphDto getCategoryGraph(int userStoreId, String yearMonth){
+        log.info("GraphController.getSalesGraph: userStoreId: {}, yearMonth: {}", userStoreId, yearMonth);
+
+        return service.getCategoryGraph(userStoreId, yearMonth);
+    }
+
 }
