@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goldensnitch.qudditch.mapper.StoreLocationMapper">
+
+    <select id="getLocation" parameterType="map" resultType="Store">
+        SELECT *
+        FROM store
+        ORDER BY (6371
+            *ACOS(COS(RADIANS(#{currentWgs84X}))
+                      *COS(RADIANS(store.wgs84_x))
+                      *COS(radians(store.wgs84_y)-RADIANS(#{currentWgs84Y}))
+                +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(wgs84_x))))
+        LIMIT 5
+    </select>
+
+</mapper>
