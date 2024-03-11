@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +19,7 @@ public class JwtTokenProvider {
     @Value("${app.jwtExpirationInMs}")
     private int jwtExpirationInMs;
 
-    @SuppressWarnings("deprecation")
+
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
         Date now = new Date();
@@ -28,15 +29,18 @@ public class JwtTokenProvider {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
     }
 
     // 토큰에서 사용자 이름 가져오기
+    /**
+     * @param token
+     * @return
+     */
     public String getUsernameFromJWT(String token) {
-        @SuppressWarnings("deprecation")
-        Claims claims = Jwts.parser()
-        .setSigningKey(jwtSecret)
+        final Claims claims = ((JwtParser) Jwts.parserBuilder()
+        .setSigningKey(jwtSecret))
                 .parseClaimsJws(token)
                 .getBody();
 

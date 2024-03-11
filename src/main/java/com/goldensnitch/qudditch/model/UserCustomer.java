@@ -22,4 +22,8 @@ public class UserCustomer {
     private Date createdAt; // 계정 생성 시간
     @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedAt; // 계정 수정 시간
+
+    public void setVerificationCode(String verificationCode) {
+        this.verficationCode = verificationCode;
+    }
 }

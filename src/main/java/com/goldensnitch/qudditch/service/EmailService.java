@@ -10,7 +10,6 @@ import com.sendgrid.helpers.mail.objects.Email;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -70,7 +69,7 @@ public class EmailService {
     // application.properties에서 발신자 이메일을 읽어옵니다.
     private final String fromEmail;
 
-    @Autowired
+    // 생성자 주입을 위해 @Autowired 주석을 제거
     public EmailService(SendGrid sendGrid,
                         @Value("${twilio.sendgrid.from-email}") String fromEmail) {
         this.sendGrid = sendGrid;
@@ -90,9 +89,7 @@ public class EmailService {
     }
 
     // 이메일 전송 실패 시 사용자 친화적인 메시지 반환 메소드
-    /**
-     * @param mail
-     */
+    
     private void sendEmail(Mail mail) {
         try {
             Request request = new Request();
@@ -109,5 +106,10 @@ public class EmailService {
             log.error("Error sending email", e);
             throw new EmailSendingException("An error occurred while sending the email.");
         }
+    }
+
+    public void sendVerificationEmail(String email) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sendVerificationEmail'");
     }
 }

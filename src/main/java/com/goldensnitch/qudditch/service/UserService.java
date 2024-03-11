@@ -1,9 +1,12 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.UserStore;
 import com.goldensnitch.qudditch.model.UserCustomer;
+import com.goldensnitch.qudditch.model.UserStore;
 import com.goldensnitch.qudditch.repository.UserCustomerRepository;
 import com.goldensnitch.qudditch.repository.UserStoreRepository;
+
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,7 @@ public class UserService {
     @Autowired
     private UserCustomerRepository userCustomerRepository;
 
+    @SuppressWarnings("unused")
     @Autowired
     private UserStoreRepository userStoreRepository;
 
