@@ -1,60 +1,60 @@
 package com.goldensnitch.qudditch.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
+import com.goldensnitch.qudditch.config.ApplicationProperties;
+
+import org.springframework.security.core.Authentication;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import javax.crypto.SecretKey;
 
 @Component
 public class JwtTokenProvider {
 
-    @Value("${app.jwtSecret}")
-    private String jwtSecret;
+    private final SecretKey secretKey;
+    private final long jwtExpirationInMs;
 
-    @Value("${app.jwtExpirationInMs}")
-    private int jwtExpirationInMs;
-
+    public JwtTokenProvider(ApplicationProperties properties) {
+        this.secretKey = Keys.hmacShaKeyFor(properties.getJwtSecret().getBytes(StandardCharsets.UTF_8));
+        this.jwtExpirationInMs = properties.getJwtExpirationInMs();
+    }
 
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS256, jwtSecret)
+        return Jwts.parserBuilder()
+                .subject(username)
+                .issuedAt(now)
+                .expiration(expiryDate) // Deprecated 메서드 대신 사용
+                .signWith(secretKey, SignatureAlgorithm.HS256) // 알고리즘 지정을 생략하고, 키 자체에서 알고리즘 유추
                 .compact();
     }
 
-    // 토큰에서 사용자 이름 가져오기
-    /**
-     * @param token
-     * @return
-     */
     public String getUsernameFromJWT(String token) {
-        final Claims claims = ((JwtParser) Jwts.parserBuilder()
-        .setSigningKey(jwtSecret))
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
 
         return claims.getSubject();
     }
 
-    // 토큰의 유효성 검사
-    @SuppressWarnings("deprecation")
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(authToken);
             return true;
-        } catch (Exception e) {
-            // 로그를 남기거나, 필요한 예외 처리를 수행
+        } catch (JwtException e) {
+            // 로그 남기기나, 다른 예외 처리를 수행
         }
         return false;
     }

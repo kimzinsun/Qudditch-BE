@@ -1,7 +1,6 @@
 package com.goldensnitch.qudditch.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import com.goldensnitch.qudditch.model.UserStore;
 
 public interface UserStoreRepository extends JpaRepository<UserStore, Integer>{

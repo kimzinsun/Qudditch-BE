@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goldensnitch.qudditch.mapper.UserStoreMapper">
+    
+    <!-- 새로운 가게유저 추가 -->
+    <insert id="insertUserStore" parameterType="com.goldensnitch.qudditch.model.UserStore">
+        INSERT INTO user_store (
+            store_id, email, password, name, bn_number,
+            state, created_at, modified_at
+        ) VALUES (
+            #{storeId}, #{email}, #{password}, #{name}, #{bnNumber},
+            #{state}, #{createdAt}, #{modifiedAt}
+        )
+    </insert>
+    
+    <!-- 가게유저 검색 -->
+    <select id="selectUserStoreById" parameterType="int" resultType="com.goldensnitch.qudditch.model.UserStore">
+        SELECT * FROM user_store WHERE id = #{id}
+    </select>
+
+    <!-- 가게유저 수정 -->
+    <update id="updateUserStore" parameterType="com.goldensnitch.qudditch.model.UserStore">
+        UPDATE user_store SET
+            store_id = #{storeId},
+            email = #{email},
+            password = #{password},
+            name = #{name},
+            bn_number = #{bnNumber},
+            state = #{state},
+            created_at = #{createdAt},
+            modified_at = #{modifiedAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 가제유저 삭제 -->
+    <delete id="deleteUserStore" parameterType="int">
+        DELETE FROM user_store WHERE id = #{id}
+    </delete>
+    
+    <!-- 추가 쿼리는 사용 사례에 맞게 작성 -->
+
+</mapper>
