@@ -5,10 +5,10 @@ import com.goldensnitch.qudditch.dto.StoreStock;
 import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.service.StoreStockService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @RestController
@@ -24,17 +24,18 @@ public class StoreStockController {
     // TODO : store 관련 기능 구현
 
     @GetMapping("/stock")
-    public List<StoreStockRes> getStockList() {
-        int userStoreId = 2;
-//        int userStoreId = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return storeStockService.selectAllProductByUserStoreId(userStoreId);
+    public List<StoreStockRes> getStockList(@RequestParam @Nullable Integer categoryId) {
+        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        int userStoreId = 2;
+        return categoryId == null ? storeStockService.selectAllProductByUserStoreId(userStoreId) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+
     }
 
 
     @PostMapping("/stock/update")
     public String updateStock(@RequestBody List<StockUpdateReq> stockUpdateReq) {
-//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        int userStoreId = 2;
+        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        int userStoreId = 2;
         for(StockUpdateReq req : stockUpdateReq) {
             StoreStock storeStock = storeStockService.selectProductByUserStoreIdAndProductId(userStoreId, req.getProductId());
             if(req.getQuantity() != null) {
@@ -47,6 +48,8 @@ public class StoreStockController {
         }
         return "success";
     }
+
+
 
 
 }

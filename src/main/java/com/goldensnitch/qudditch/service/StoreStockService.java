@@ -26,4 +26,8 @@ public class StoreStockService {
     public StoreStock selectProductByUserStoreIdAndProductId(int userStoreId, int productId) {
         return storeStockMapper.selectProductByUserStoreIdAndProductId(userStoreId, productId);
     }
+
+    public List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId) {
+        return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+    }
 }

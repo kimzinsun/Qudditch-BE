@@ -13,4 +13,6 @@ public interface StoreStockMapper {
     StoreStock selectProductByUserStoreIdAndProductId(int userStoreId, int productId);
 
     void updateStock(StoreStock storeStock);
+
+    List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId);
 }
