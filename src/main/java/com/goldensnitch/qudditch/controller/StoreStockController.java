@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.StockUpdateReq;
+import com.goldensnitch.qudditch.dto.Store;
 import com.goldensnitch.qudditch.dto.StoreStock;
 import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.service.StoreStockService;
@@ -48,6 +49,15 @@ public class StoreStockController {
         }
         return "success";
     }
+
+    // find stock
+    @GetMapping("/stock/{productId}")
+    public List<Store> getStock(@PathVariable Integer productId) {
+//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        int userStoreId = 2;
+        return storeStockService.getStoreByProductId(productId);
+    }
+
 
 
 

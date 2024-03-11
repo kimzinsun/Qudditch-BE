@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.Store;
 import com.goldensnitch.qudditch.dto.StoreStock;
 import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
@@ -29,5 +30,9 @@ public class StoreStockService {
 
     public List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId) {
         return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+    }
+
+    public List<Store> getStoreByProductId(Integer productId) {
+        return storeStockMapper.selectStoreByProductId(productId);
     }
 }
