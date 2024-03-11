@@ -22,13 +22,20 @@
         FROM store_stock s , product p, category c
         WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id and p.category_id = #{categoryId}
     </select>
-    <select id="selectStoreByProductId" parameterType="int" resultType="Store">
-        select s.*
-        from store_stock ss,
-             store s
-        where ss.product_id = #{productId}
-          and ss.user_store_id = s.id
+
+    <select id="selectStoreByProductId"  resultType="StoreLocQty">
+        select s.id, s.name as name, s.address as address, s.wgs84_x, s.wgs84_y, ss.qty
+        from store s, store_stock ss, user_store us
+        where ss.product_id = #{productId} and s.id = us.store_id and us.id = ss.user_store_id
+        ORDER BY (6371
+            *ACOS(COS(RADIANS(#{currentWgs84X}))
+                      *COS(RADIANS(s.wgs84_x))
+                      *COS(radians(s.wgs84_y)-RADIANS(#{currentWgs84Y}))
+                +SIN(RADIANS(${currentWgs84X}))*SIN(RADIANS(wgs84_x))))
+        LIMIT 10;
     </select>
+
+
 
 
 

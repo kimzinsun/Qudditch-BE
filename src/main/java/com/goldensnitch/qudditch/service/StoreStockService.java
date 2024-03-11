@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.Store;
+import com.goldensnitch.qudditch.dto.StoreLocQty;
 import com.goldensnitch.qudditch.dto.StoreStock;
 import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
@@ -32,7 +33,8 @@ public class StoreStockService {
         return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
     }
 
-    public List<Store> getStoreByProductId(Integer productId) {
-        return storeStockMapper.selectStoreByProductId(productId);
+    public List<StoreLocQty> getStoreByProductId(Integer productId, double currentWgs84X, double currentWgs84Y) {
+        return storeStockMapper.selectStoreByProductId(productId, currentWgs84X, currentWgs84Y);
     }
+
 }

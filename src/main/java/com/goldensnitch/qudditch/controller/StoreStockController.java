@@ -1,9 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.StockUpdateReq;
-import com.goldensnitch.qudditch.dto.Store;
-import com.goldensnitch.qudditch.dto.StoreStock;
-import com.goldensnitch.qudditch.dto.StoreStockRes;
+import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.service.StoreLocationService;
 import com.goldensnitch.qudditch.service.StoreStockService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,10 +15,12 @@ import java.util.List;
 @RequestMapping("/api/store")
 public class StoreStockController {
     final StoreStockService storeStockService;
+    final StoreLocationService storeLocationService;
 
 
-    public StoreStockController(StoreStockService storeStockService) {
+    public StoreStockController(StoreStockService storeStockService, StoreLocationService storeLocationService) {
         this.storeStockService = storeStockService;
+        this.storeLocationService = storeLocationService;
     }
     // TODO : store 관련 기능 구현
 
@@ -50,13 +50,13 @@ public class StoreStockController {
         return "success";
     }
 
-    // find stock
     @GetMapping("/stock/{productId}")
-    public List<Store> getStock(@PathVariable Integer productId) {
-//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        int userStoreId = 2;
-        return storeStockService.getStoreByProductId(productId);
+    public List<StoreLocQty> getLocation(@PathVariable int productId, @RequestParam double currentWgs84X, double currentWgs84Y){
+        return storeStockService.getStoreByProductId(productId, currentWgs84X, currentWgs84Y);
     }
+
+
+
 
 
 

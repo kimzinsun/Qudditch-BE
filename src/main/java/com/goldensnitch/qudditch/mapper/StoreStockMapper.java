@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.mapper;
 
 import com.goldensnitch.qudditch.dto.Store;
+import com.goldensnitch.qudditch.dto.StoreLocQty;
 import com.goldensnitch.qudditch.dto.StoreStock;
 import com.goldensnitch.qudditch.dto.StoreStockRes;
 import org.apache.ibatis.annotations.Mapper;
@@ -17,5 +18,5 @@ public interface StoreStockMapper {
 
     List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId);
 
-    List<Store> selectStoreByProductId(Integer productId);
+    List<StoreLocQty> selectStoreByProductId(Integer productId, double currentWgs84X, double currentWgs84Y);
 }
