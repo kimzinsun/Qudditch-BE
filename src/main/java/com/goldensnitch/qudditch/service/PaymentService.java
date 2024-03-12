@@ -1,14 +1,12 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.PaymentRequest;
 import com.goldensnitch.qudditch.dto.PaymentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 // https://developers.kakao.com/console/app/1046778/config/appKey
@@ -43,8 +41,16 @@ public class PaymentService {
         // "Authorization" 헤더에 카카오페이 인증 키 추가
         headers.add("Authorization", "KakaoAK " + kakaoPayAuthorization);
         // 요청 본문의 "Content-Type"을 "application/x-www-form-urlencoded"로 설정
-        headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+        // headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+        /*
+            HTTP 요청 본문에 포함시키기 위한 HttpMessageConverter를 찾지 못했음을 나타냅니다.
+            기본적으로, RestTemplate은 JSON 형식(application/json)의 데이터 전송에 사용되는
+            HttpMessageConverter를 포함하고 있지만, application/x-www-form-urlencoded 형식으로
+            데이터를 전송하기 위한 컨버터는 별도로 설정해야 합니다.
+         */
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
+        /*
         // 결제 정보를 담는 PaymentRequest 객체 생성 및 초기화
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setCid(cid);
@@ -79,6 +85,36 @@ public class PaymentService {
             e.printStackTrace();
         }
         // 오류 처리 로직, 적절한 오류 메시지나 페이지 URL 반환
+        return "Error";
+    }
+    */
+
+        // PaymentRequest 객체 대신 MultiValueMap을 사용하여 요청 파라미터를 설정
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("cid", cid);
+        map.add("partner_order_id", partnerOrderId);
+        map.add("partner_user_id", partnerUserId);
+        map.add("item_name", itemName);
+        map.add("quantity", quantity.toString());
+        map.add("total_amount", totalAmount.toString());
+        map.add("tax_free_amount", taxFreeAmount.toString());
+        map.add("approval_url", "http://localhost:8080/approval");
+        map.add("cancel_url", "http://localhost:8080/cancel");
+        map.add("fail_url", "http://localhost:8080/fail");
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
+
+        try {
+            ResponseEntity<PaymentResponse> responseEntity = restTemplate.exchange(
+                    kakaoPayReadyUrl, HttpMethod.POST, entity, PaymentResponse.class);
+
+            PaymentResponse paymentResponse = responseEntity.getBody();
+            if (paymentResponse != null) {
+                return paymentResponse.getNext_redirect_pc_url();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return "Error";
     }
 }

@@ -15,8 +15,4 @@ public class CustomerOrder {
     private Integer earnPoint;
     private Date orderedAt;
     private String tid; // 결제 고유번호
-
-    // 추가
-    private String paymentStatus; // 대기, 승인, 실패
-    private String paymentUrl; // URL to redirect user for payment
 }
