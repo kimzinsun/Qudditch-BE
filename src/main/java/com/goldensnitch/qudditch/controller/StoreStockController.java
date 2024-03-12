@@ -70,7 +70,6 @@ public class StoreStockController {
 
     @PostMapping("/stock/dispose")
     public String disposeProduct(@RequestBody List<DisposeReq> list) {
-        System.out.println(list);
 //        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         int userStoreId = 2;
         for (DisposeReq req : list) {
