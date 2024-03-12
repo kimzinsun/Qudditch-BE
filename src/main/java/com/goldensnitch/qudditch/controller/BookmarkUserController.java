@@ -1,7 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.CustomerBookmarkProduct;
-import com.goldensnitch.qudditch.dto.fcm.FCMNotificationRequestDto;
 import com.goldensnitch.qudditch.service.BookmarkUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
