@@ -8,7 +8,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -25,10 +27,21 @@ public class StoreStockController {
     // TODO : store 관련 기능 구현
 
     @GetMapping("/stock")
-    public List<StoreStockRes> getStockList(@RequestParam @Nullable Integer categoryId) {
-        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        int userStoreId = 2;
-        return categoryId == null ? storeStockService.selectAllProductByUserStoreId(userStoreId) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+    public Map<String, Object> getStockList(@RequestParam @Nullable Integer categoryId) {
+//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        int userStoreId = 2;
+        int count = categoryId == null ? storeStockService.cntProductByUserStoreId(userStoreId) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+        List<StoreStockRes> stockList = categoryId == null ? storeStockService.selectAllProductByUserStoreId(userStoreId) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+        Map<String, Object> map = new HashMap<String, Object>();
+        int page = count / 10;
+        if(count % 10 > 0) {
+            page += 1;
+        }
+        map.put("stockList", stockList);
+        map.put("count", count);
+        map.put("page", page);
+
+        return map;
 
     }
 

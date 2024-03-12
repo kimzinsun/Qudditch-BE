@@ -37,4 +37,12 @@ public class StoreStockService {
         return storeStockMapper.selectStoreByProductId(productId, currentWgs84X, currentWgs84Y);
     }
 
+    public int cntProductByUserStoreId(int userStoreId) {
+        return storeStockMapper.cntProductByUserStoreId(userStoreId);
+    }
+
+    public int cntProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId) {
+        return storeStockMapper.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+
+    }
 }
