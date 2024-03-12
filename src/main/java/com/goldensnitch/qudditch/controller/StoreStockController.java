@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.dto.StoreOder.StoreOrderParam;
 import com.goldensnitch.qudditch.service.RedisService;
 import com.goldensnitch.qudditch.service.StoreStockService;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +77,7 @@ public class StoreStockController {
             StoreStock storeStock = storeStockService.selectProductByUserStoreIdAndProductId(userStoreId, req.getProductId());
             storeStock.setQty(storeStock.getQty() - req.getQty());
             storeStockService.updateStock(storeStock);
-            storeStockService.insertDisposeLog(userStoreId,req.getProductId(),req.getQty());
+            storeStockService.insertDisposeLog(userStoreId, req.getProductId(), req.getQty());
         }
         return "success";
     }
@@ -94,6 +95,23 @@ public class StoreStockController {
             page += 1;
         }
         map.put("disposeLog", disposeLog);
+        map.put("count", count);
+        map.put("page", page);
+        return map;
+    }
+
+    @GetMapping("/stock/input")
+    public Map<String, Object> inputList() {
+//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        int userStoreId = 2;
+        Map<String, Object> map = new HashMap<>();
+        List<StockInputRes> inputList = storeStockService.getStoreOrderList(userStoreId);
+        map.put("inputList", inputList);
+        int count = storeStockService.cntStoreOrderList(userStoreId);
+        int page = count / 10;
+        if (count % 10 > 0) {
+            page += 1;
+        }
         map.put("count", count);
         map.put("page", page);
         return map;

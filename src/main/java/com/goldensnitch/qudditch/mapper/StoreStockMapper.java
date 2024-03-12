@@ -24,4 +24,8 @@ public interface StoreStockMapper {
     int getDisposeLogCount(int userStoreId);
 
     List<DisposeLog> getDisposeLog(int userStoreId);
+
+    List<StockInputRes> getStoreOrderList(int userStoreId);
+
+    int cntStoreOrderList(int userStoreId);
 }

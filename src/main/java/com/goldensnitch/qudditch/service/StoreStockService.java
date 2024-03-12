@@ -54,4 +54,12 @@ public class StoreStockService {
     public List<DisposeLog> getDisposeLog(int userStoreId) {
         return storeStockMapper.getDisposeLog(userStoreId);
     }
+
+    public List<StockInputRes> getStoreOrderList(int userStoreId) {
+        return storeStockMapper.getStoreOrderList(userStoreId);
+    }
+
+    public int cntStoreOrderList(int userStoreId) {
+        return storeStockMapper.cntStoreOrderList(userStoreId);
+    }
 }
