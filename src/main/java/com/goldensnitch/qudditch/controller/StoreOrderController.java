@@ -2,9 +2,11 @@ package com.goldensnitch.qudditch.controller;
 
 
 import com.goldensnitch.qudditch.dto.StoreOder.OrderDetailWithProducts;
+import com.goldensnitch.qudditch.dto.StoreOder.ProductWithDetailQty;
 import com.goldensnitch.qudditch.dto.StoreOder.ProductWithQty;
 import com.goldensnitch.qudditch.dto.StoreOder.StoreOrderParam;
 import com.goldensnitch.qudditch.dto.StoreOrder;
+import com.goldensnitch.qudditch.dto.StoreOrderProduct;
 import com.goldensnitch.qudditch.service.StoreOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
@@ -20,11 +22,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 @Slf4j
@@ -58,48 +58,36 @@ public class StoreOrderController {
     }
 
     @PostMapping("")
-    public int insertOrder(@RequestBody List<ProductWithQty> order) {
-        Integer storeId = 1;
-        AtomicReference<Integer> totalAmount = new AtomicReference<>(0);
-        List<ProductWithQty> orderProducts = new ArrayList<>();
+    public int insertOrder(@RequestBody List<ProductWithQty> products) {
+        Integer storeId = 2;
 
         StoreOrder storeOrder = new StoreOrder();
         storeOrder.setUserStoreId(storeId);
+        storeOrderService.insertOrder(storeOrder);
 
-        for (int i = 0; i < order.size(); i++) {
-            ProductWithQty product = order.get(i);
-            totalAmount.updateAndGet(v -> v + product.getPrice() * product.getQty());
+        // storeId 값을 들고와서 변수에 저장
+        int orderId = storeOrderService.getStoreId();
 
-            // 브랜드와 이름
-            String brand = product.getBrand();
-            String name = product.getName();
+        // 제품아이디와 개수를 store_order_product에 저장
+        for (ProductWithQty product : products) {
+            StoreOrderProduct storeOrderProduct = new StoreOrderProduct();
+            storeOrderProduct.setOrderStoreId(orderId);
+            storeOrderProduct.setProductId(product.getProductId());
+            storeOrderProduct.setQty(product.getQty());
 
-            //  추가작업
-            ProductWithQty productWithQty = new ProductWithQty();
-            productWithQty.setBrand(brand);
-            productWithQty.setName(name);
-            orderProducts.add(productWithQty);
-            orderProducts.add(product);
+            storeOrderService.insertId(storeOrderProduct);
         }
-
-        storeOrder.setTotalAmount(totalAmount.get());
-
-        storeOrderService.insertOrder(storeOrder);  // 발주 insert
-        // storeOrderService.insertOrderProducts(orderProducts); // 발주 품목 insert (주석 해제하고 사용)
-
         return 1;
     }
-
-
 
     @GetMapping("/detail/{id}")
     public OrderDetailWithProducts listDetail(@PathVariable int id) {
         log.info("StoreOrderController.listDetail: {}", id);
 
         StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
-        ProductWithQty productWithQty = storeOrderService.getProductWithQty(storeOrder.getId());
+        ProductWithDetailQty productWithDetailQty = storeOrderService.getProductWithQty(storeOrder.getId());
 
-        return new OrderDetailWithProducts(storeOrder, productWithQty);
+        return new OrderDetailWithProducts(storeOrder, productWithDetailQty);
     }
 
     @GetMapping("/download/{id}")
@@ -107,10 +95,10 @@ public class StoreOrderController {
         try {
             // 제품 정보 가져오기
             StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
-            ProductWithQty productWithQty = storeOrderService.getProductWithQty(storeOrder.getId());
+            ProductWithDetailQty productWithDetailQty = storeOrderService.getProductWithQty(storeOrder.getId());
 
             // 엑셀 파일 생성
-            byte[] excelBytes = createExcelFile(storeOrder, productWithQty);
+            byte[] excelBytes = createExcelFile(storeOrder, productWithDetailQty);
 
             // 엑셀 파일을 Resource로 래핑
             ByteArrayResource resource = new ByteArrayResource(excelBytes);
@@ -132,7 +120,7 @@ public class StoreOrderController {
         }
     }
 
-    private byte[] createExcelFile(StoreOrder storeOrder, ProductWithQty productWithQty) {
+    private byte[] createExcelFile(StoreOrder storeOrder, ProductWithDetailQty productWithDetail) {
 
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("발주서");
@@ -143,15 +131,16 @@ public class StoreOrderController {
         headerRow.createCell(1).setCellValue("브랜드");
         headerRow.createCell(2).setCellValue("제품명");
         headerRow.createCell(3).setCellValue("수량");
-        headerRow.createCell(4).setCellValue("총가격");
+
 
         // 데이터 추가
         Row dataRow = sheet.createRow(1);
         dataRow.createCell(0).setCellValue(storeOrder.getId());
-        dataRow.createCell(1).setCellValue(productWithQty.getBrand());
-        dataRow.createCell(2).setCellValue(productWithQty.getName());
-        dataRow.createCell(3).setCellValue(productWithQty.getQty());
-        dataRow.createCell(4).setCellValue(storeOrder.getTotalAmount());
+        dataRow.createCell(1).setCellValue(productWithDetail.getBrand());
+        dataRow.createCell(2).setCellValue(productWithDetail.getName());
+        dataRow.createCell(3).setCellValue(productWithDetail.getQty());
+
+
 
         // 엑셀 파일을 byte 배열로 변환
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -164,23 +153,31 @@ public class StoreOrderController {
         return outputStream.toByteArray();
     }
 
-    @GetMapping("/update/{id}")
-    public int updateOrder(@PathVariable int id, @RequestBody OrderDetailWithProducts orderDetailWithProducts) {
-        log.info("StoreOrderController.updateOrder: {}", id);
+    @GetMapping("/detail/update/{id}")
+    public int updateOrderProducts(@PathVariable int id, @RequestBody List<ProductWithQty> updateProducts) {
 
-        // 발주 Update
-        StoreOrder setStoreOrder = orderDetailWithProducts.getStoreOrder();
-        storeOrderService.updateOrder(setStoreOrder.getId());
+            // 기존 주문 정보
+            StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
+            if (storeOrder == null) {
+                return 0;
+            }
 
-        // 제품 Update
-        ProductWithQty setProductWithQty = orderDetailWithProducts.getProducts().get(0);
-        String brand = setProductWithQty.getBrand();
-        String name = setProductWithQty.getName();
-        storeOrderService.updateOrderProducts(setProductWithQty.getId());
+            for (ProductWithQty updatedProduct : updateProducts) {
+                StoreOrderProduct storeOrderProduct = new StoreOrderProduct();
 
+                // 주문 및 제품 정보
+                storeOrderProduct.setOrderStoreId(storeOrder.getId());
+                storeOrderProduct.setProductId(updatedProduct.getProductId());
+                storeOrderProduct.setQty(updatedProduct.getQty());
 
-        return 1;
+                // 업데이트
+               storeOrderService.updateOrderProducts(storeOrderProduct);
+
+            }
+            return 1;
     }
+
+
 
 
 
