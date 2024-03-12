@@ -39,6 +39,16 @@
                 +SIN(RADIANS(${currentWgs84X}))*SIN(RADIANS(wgs84_x))))
         LIMIT 10;
     </select>
+    <insert id="insertDisposeLog">
+        INSERT INTO store_stock_disuse (user_store_id, product_id, qty)
+        VALUES (#{userStoreId}, #{productId}, #{qty})
+    </insert>
+    <select id="getDisposeLogCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM store_stock_disuse WHERE user_store_id = #{userStoreId}
+    </select>
+    <select id="getDisposeLog" parameterType="int" resultType="DisposeLog">
+        SELECT * FROM store_stock_disuse WHERE user_store_id = #{userStoreId}
+    </select>
 
 
 
