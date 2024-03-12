@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goldensnitch.qudditch.mapper.PaymentMapper">
+
+    <insert id="savePaymentRequest">
+        INSERT INTO payment_requests (cid, partner_order_id, partner_user_id, item_name, quantity, total_amount, tax_free_amount, approval_url, cancel_url, fail_url)
+        VALUES (#{paymentRequest.cid}, #{paymentRequest.partner_order_id}, #{paymentRequest.partner_user_id}, #{paymentRequest.item_name}, #{paymentRequest.quantity}, #{paymentRequest.total_amount}, #{paymentRequest.tax_free_amount}, #{paymentRequest.approval_url}, #{paymentRequest.cancel_url}, #{paymentRequest.fail_url})
+    </insert>
+
+</mapper>
