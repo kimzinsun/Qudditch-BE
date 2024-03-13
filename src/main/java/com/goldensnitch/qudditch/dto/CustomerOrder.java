@@ -7,7 +7,8 @@ import java.sql.Date;
 @Data
 public class CustomerOrder {
     private Integer id;
-    private Integer customerId;
+    private Integer userCustomerId;
+    private Integer userStoreId;
     private Integer totalAmount;
     private Integer usedPoint;
     private Integer totalPay;

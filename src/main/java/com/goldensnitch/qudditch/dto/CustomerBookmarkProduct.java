@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class CustomerBookmarkProduct {
     private Integer id;
-    private Integer customerId;
+    private Integer userCustomerId;
     private Integer productId;
 }
