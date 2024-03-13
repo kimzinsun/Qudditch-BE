@@ -1,13 +1,11 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.goldensnitch.qudditch.dto.manage.InputReq;
 import com.goldensnitch.qudditch.dto.manage.OrderDetailRes;
 import com.goldensnitch.qudditch.dto.manage.OrderRes;
 import com.goldensnitch.qudditch.service.ManageService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,4 +28,10 @@ public class ManageController {
     public List<OrderDetailRes> getOrderDetail(@PathVariable int orderStoreId) {
         return manageService.getOrderDetail(orderStoreId);
     }
+
+    @PostMapping("/order/detail/{orderStoreId}")
+    public void confirmOrder(@PathVariable int orderStoreId, @RequestBody List<InputReq> list) {
+        manageService.confirmOrder(orderStoreId, list);
+    }
+
 }

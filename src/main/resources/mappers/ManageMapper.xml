@@ -25,10 +25,25 @@
         GROUP BY so.id, so.ordered_at;
     </select>
     <select id="getOrderDetail" resultType="OrderDetailRes">
-        select p.id as productId, p.brand, p.name, p.price, sop.qty
+        select p.id as productId, p.brand, p.name, p.price, sop.qty, p.expiration_date as expirationDate
         from store_order_product sop, product p
         where order_store_id = ${orderStoreId} and sop.product_id = p.id
     </select>
-
+    <update id="updateOrderState">
+        update store_order
+        set state = '입고'
+        where id = ${orderStoreId}
+    </update>
+    <insert id="insertStoreInput">
+        insert into store_input (store_order_id)
+        values (${orderStoreId})
+        <selectKey resultType="int" keyProperty="no" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    <insert id="insertStoreInputProduct">
+        insert into store_input_product(store_input_id, product_id, exp_date, qty)
+        values (${storeInputId}, ${productId}, '${expirationDate}', ${qty})
+    </insert>
 
 </mapper>
