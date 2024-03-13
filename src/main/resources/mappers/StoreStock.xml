@@ -49,42 +49,5 @@
     <select id="getDisposeLog" parameterType="int" resultType="DisposeLog">
         SELECT * FROM store_stock_disuse WHERE user_store_id = #{userStoreId}
     </select>
-    <select id="getStoreOrderList">
-        SELECT so.id,
-               so.input_at,
-               CONCAT(
-                       CASE
-                           WHEN COUNT(p.id) > 1 THEN CONCAT(
-                                   SUBSTRING_INDEX(GROUP_CONCAT(p.name ORDER BY p.id ASC SEPARATOR ', '), ',', 1),
-                                   ' 외 ',
-                                   COUNT(p.id) - 1,
-                                   '개'
-                                                     )
-                           ELSE GROUP_CONCAT(p.name ORDER BY p.id ASC SEPARATOR ', ')
-                           END
-               ) AS items
-        FROM product p
-                 INNER JOIN
-             store_order_product sop ON sop.product_id = p.id
-                 INNER JOIN
-             store_order so ON so.id = sop.order_store_id
-        WHERE so.user_store_id = #{userStoreId}
-          AND so.state = '입고'
-        GROUP BY so.id, so.input_at;
-    </select>
-    <select id="cntStoreOrderList" resultType="int">
-        SELECT COUNT(DISTINCT so.id)
-        FROM product p
-                 INNER JOIN
-             store_order_product sop ON sop.product_id = p.id
-                 INNER JOIN
-             store_order so ON so.id = sop.order_store_id
-        WHERE so.user_store_id = #{userStoreId}
-          AND so.state = '입고'
-    </select>
-
-
-
-
 
 </mapper>
