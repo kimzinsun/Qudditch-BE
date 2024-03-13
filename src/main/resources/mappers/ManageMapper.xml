@@ -25,7 +25,7 @@
         GROUP BY so.id, so.ordered_at;
     </select>
     <select id="getOrderDetail" resultType="OrderDetailRes">
-        select p.brand, p.name, p.price, sop.qty
+        select p.id as productId, p.brand, p.name, p.price, sop.qty
         from store_order_product sop, product p
         where order_store_id = ${orderStoreId} and sop.product_id = p.id
     </select>

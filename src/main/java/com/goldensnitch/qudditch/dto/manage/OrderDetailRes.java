@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class OrderDetailRes {
+    private int productId;
     private String brand;
     private String name;
     private int price;
