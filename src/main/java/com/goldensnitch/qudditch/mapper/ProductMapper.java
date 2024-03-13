@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 public interface ProductMapper {
     void insertProduct(Integer categoryId, String brand, String name, String description, String image, Integer price, String unitPrice, Integer expirationDate);
 
-    // 규원 작성(아래)
+    // 제품 조회
+
     Product findByProductId(Integer productId);
 }

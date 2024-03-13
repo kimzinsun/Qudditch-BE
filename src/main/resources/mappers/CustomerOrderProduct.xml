@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.goldensnitch.qudditch.mapper.CartMapper">
+<mapper namespace="com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper">
 
-    <!-- 주문 항목 추가 -->
-    <insert id="addItemToCustomerOrder" parameterType="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
-        INSERT INTO customer_order_products (customer_order_id, product_id, qty)
+    <!-- CustomerOrder에 추가 -->
+    <insert id="insertCustomerOrder" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder"
+        useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO customer_order (user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid)
+        VALUES (#{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid})
+    </insert>
+
+    <!-- CustomerOrderProduct에 추가 -->
+    <insert id="insertCustomerOrderProduct" parameterType="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
+        INSERT INTO customer_order_product (customer_order_id, product_id, qty)
         VALUES (#{customerOrderId}, #{productId}, #{qty})
     </insert>
 
     <!-- 주문 상세 정보 조회 -->
     <select id="getCustomerOrderDetails" resultType="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
         SELECT product_id, qty
-        FROM customer_order_products
+        FROM customer_order_product
         WHERE customer_order_id = #{customerOrderId}
     </select>
-
-
 
 </mapper>

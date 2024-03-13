@@ -1,15 +1,15 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import com.goldensnitch.qudditch.dto.OrderRequest;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/cart")
+@RequestMapping("/api/order")
 public class CustomerOrderProductController {
 
     private final CustomerOrderProductService customerOrderProductService;
@@ -19,21 +19,19 @@ public class CustomerOrderProductController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addItemToCart(@RequestBody CustomerOrderProduct addItemToCart) {
+    public ResponseEntity<?> addOrder(@RequestBody OrderRequest orderRequest) {
         try{
-            customerOrderProductService.addItemToCustomerOrder(addItemToCart.getCustomerOrderId(),
-                    addItemToCart.getProductId(),
-                    addItemToCart.getQty());
+            customerOrderProductService.createCustomerOrder(orderRequest.getCustomerOrder(), orderRequest.getCustomerOrderProducts());
             return ResponseEntity.ok().body("Item added to cart successfully.");
         }
         catch (Exception e){
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.internalServerError().body("Failed to create order: " + e.getMessage());
         }
     }
 
-    @GetMapping("/{customerOrderId}")
-    public ResponseEntity<?> getCustomerOrderDetails(@PathVariable Integer customerOrderId) {
-        Map<Integer, Integer> orderDetails = customerOrderProductService.getCustomerOrderDetails(customerOrderId).getOrDefault(customerOrderId, new ConcurrentHashMap<>());
-        return ResponseEntity.ok(orderDetails);
-    }
+//    @GetMapping("/{customerOrderId}")
+//    public ResponseEntity<?> getCustomerOrderDetails(@PathVariable Integer customerOrderId) {
+//        Map<Integer, Integer> orderDetails = customerOrderProductService.getCustomerOrderDetails(customerOrderId);
+//        return ResponseEntity.ok(orderDetails);
+//    }
 }

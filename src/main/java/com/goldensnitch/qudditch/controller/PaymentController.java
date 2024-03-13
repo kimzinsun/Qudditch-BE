@@ -31,6 +31,9 @@ public class PaymentController {
                     paymentRequest.getQuantity(),
                     paymentRequest.getTotal_amount(),
                     paymentRequest.getTax_free_amount(),
+                    paymentRequest.getUsedPoint(),
+                    paymentRequest.getEarnPoint(),
+                    paymentRequest.getTotalPay(),
                     paymentRequest.getApproval_url(),
                     paymentRequest.getCancel_url(),
                     paymentRequest.getFail_url());

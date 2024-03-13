@@ -1,28 +1,31 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.StoreOrderProduct;
 import com.goldensnitch.qudditch.service.StoreOrderProductService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 public class StoreOrderProductController {
 
-    private final StoreOrderProductService service;
+    private final StoreOrderProductService storeOrderProductService;
 
-    public StoreOrderProductController(StoreOrderProductService service) {
-        this.service = service;
+    public StoreOrderProductController(StoreOrderProductService storeOrderProductService) {
+        this.storeOrderProductService = storeOrderProductService;
     }
 
-    // QR 코드로 인식된 productId 사용하여 제품 조회
-    @GetMapping("/product/{productId}")
-    public StoreOrderProduct getProductById(@PathVariable Integer productId){
-        return service.findByStoreProductId(productId);
+    @GetMapping("/product/details/{productId}")
+    // 포스트맨 주소연결: {{API_URL}}/api/crawl/product/details/343
+    public ResponseEntity<?> getProductDetailsByProductId(@PathVariable Integer productId){
+        try{
+            Map<String, Object> productDetails = storeOrderProductService.getProductDetailsByProductId(productId);
+            return ResponseEntity.ok(productDetails);
+        }catch (Exception e){
+            return ResponseEntity.notFound().build();
+        }
     }
-
-    // 장바구니에 추가 및 결제 로직 관련 API
-
-    // 해당 부분은 프로젝트의 요구사항에 맞게 구현
 
 }

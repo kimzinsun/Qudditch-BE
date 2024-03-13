@@ -25,6 +25,11 @@ public class PaymentRequest {
     private Integer install_month; // 카드 할부개월
     private String use_share_installment; // 분담무이자 설정
     private Map<String, String> custom_json; // 사전에 정의된 기능
+
+    // 추가
+    private Integer usedPoint; // 포인트 사용금액
+    private Integer totalPay; // 실제 지불금액
+    private Integer earnPoint; // 포인트 모으기
 }
 
 
