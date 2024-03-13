@@ -29,9 +29,13 @@ public class UserService {
 
     // UserCustomer 회원가입 로직
     public void registerUserCustomer(UserCustomer userCustomer) {
+        // 비밀번호 암호화 및 저장
+        // ...
+
         String encodedPassword = passwordEncoder.encode(userCustomer.getPassword());
         userCustomer.setPassword(encodedPassword);
-        
+
+        // 이메일 인증 코드 생성 및 저장
         String verificationCode = UUID.randomUUID().toString();
         userCustomer.setVerificationCode(verificationCode);
     
@@ -45,4 +49,13 @@ public class UserService {
         // UserStore 회원가입 로직을 여기에 구현합니다.
         // 예를 들어, 비밀번호 해시화, 이메일 인증 코드 생성 및 저장, 이메일 인증 메일 전송 등
     }
+
+    // 이메일 인증 코드 검증 메서드
+    public boolean verifyEmail(String verificationCode) {
+        // 데이터베이스에서 인증 코드를 검색하여 검증하는 로직 구현
+        // ...
+        return true; // 또는 false, 검증 결과에 따라
+    }
+
+    // 추가 메서드...
 }

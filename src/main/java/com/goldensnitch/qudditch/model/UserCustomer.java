@@ -3,7 +3,7 @@ package com.goldensnitch.qudditch.model;
 import jakarta.persistence.*; // Jakarta Persistence 사용
 import lombok.Data;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -16,14 +16,14 @@ public class UserCustomer {
     private String password; // 비밀번호
     private String name; // 사용자 이름
     private Integer state; // 유저 상태 (0: 미인증, 1: 일반, 2: 탈퇴)
-    private String verficationCode; // 이메일 인증 코드 필드 추가
+    private String verificationCode; // 이메일 인증 코드 필드 추가
     private String collectionArn; // AWS 컬렉션 ARN
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt; // 계정 생성 시간
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date modifiedAt; // 계정 수정 시간
+    
+    private LocalDateTime createdAt; // 계정 생성 시간
+    
+    private LocalDateTime modifiedAt; // 계정 수정 시간
 
     public void setVerificationCode(String verificationCode) {
-        this.verficationCode = verificationCode;
+        this.verificationCode = verificationCode;
     }
 }
