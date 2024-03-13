@@ -1,10 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.OrderRequest;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,6 +14,7 @@ public class CustomerOrderProductController {
         this.customerOrderProductService = customerOrderProductService;
     }
 
+    /*
     @PostMapping("/add")
     public ResponseEntity<?> addOrder(@RequestBody OrderRequest orderRequest) {
         try{
@@ -34,4 +31,6 @@ public class CustomerOrderProductController {
 //        Map<Integer, Integer> orderDetails = customerOrderProductService.getCustomerOrderDetails(customerOrderId);
 //        return ResponseEntity.ok(orderDetails);
 //    }
+
+     */
 }

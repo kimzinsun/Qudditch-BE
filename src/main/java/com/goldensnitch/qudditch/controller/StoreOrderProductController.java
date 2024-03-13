@@ -18,7 +18,7 @@ public class StoreOrderProductController {
     }
 
     @GetMapping("/product/details/{productId}")
-    // 포스트맨 주소연결: {{API_URL}}/api/crawl/product/details/343
+    // 포스트맨 주소연결: {{API_URL}}/product/details/343
     public ResponseEntity<?> getProductDetailsByProductId(@PathVariable Integer productId){
         try{
             Map<String, Object> productDetails = storeOrderProductService.getProductDetailsByProductId(productId);

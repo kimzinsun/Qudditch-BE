@@ -23,20 +23,7 @@ public class PaymentController {
     @PostMapping("/initiate")
     public ResponseEntity<?> initiatePayment(@RequestBody PaymentRequest paymentRequest) {
         try {
-            String redirectUrl = paymentService.initiatePayment(
-                    paymentRequest.getCid(),
-                    paymentRequest.getPartner_order_id(),
-                    paymentRequest.getPartner_user_id(),
-                    paymentRequest.getItem_name(),
-                    paymentRequest.getQuantity(),
-                    paymentRequest.getTotal_amount(),
-                    paymentRequest.getTax_free_amount(),
-                    paymentRequest.getUsedPoint(),
-                    paymentRequest.getEarnPoint(),
-                    paymentRequest.getTotalPay(),
-                    paymentRequest.getApproval_url(),
-                    paymentRequest.getCancel_url(),
-                    paymentRequest.getFail_url());
+            String redirectUrl = paymentService.initiatePayment(paymentRequest);
 
         if (!"Error".equals(redirectUrl)) {
             return ResponseEntity.ok().body(redirectUrl);

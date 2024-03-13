@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.PaymentRequest;
 import com.goldensnitch.qudditch.dto.PaymentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +16,6 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class PaymentService {
     private final RestTemplate restTemplate;
-    private final CustomerOrderProductService customerOrderProductService;
 
     // kakao.pay.ready.url
     // 카카오페이 결제 준비 API의 엔드포인트 URL
@@ -28,16 +28,13 @@ public class PaymentService {
 
     // RestTemplate 주입을 통한 HTTP 클라이언트 초기화
     @Autowired
-    public PaymentService(RestTemplate restTemplate, CustomerOrderProductService customerOrderProductService) {
+    public PaymentService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.customerOrderProductService = customerOrderProductService;
     }
 
     // 결제 준비를 시작하고 사용자를 결제 페이지로 리디렉션하는 URL을 반환하는 메소드
-    public String initiatePayment(String cid, String partnerOrderId, String partnerUserId,
-                                  String itemName, Integer quantity, Integer totalAmount,
-                                  Integer taxFreeAmount, Integer usedPoint, Integer earnPoint, Integer totalPay,
-                                  String approvalUrl, String cancelUrl, String failUrl) {
+    public String initiatePayment(PaymentRequest paymentRequest) {
+
         HttpHeaders headers = new HttpHeaders();
 
         // "Authorization" 헤더에 카카오페이 인증 키 추가
@@ -91,18 +88,19 @@ public class PaymentService {
     }
     */
 
+
         // PaymentRequest 객체 대신 MultiValueMap을 사용하여 요청 파라미터를 설정
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("cid", cid);
-        map.add("partner_order_id", partnerOrderId);
-        map.add("partner_user_id", partnerUserId);
-        map.add("item_name", itemName);
-        map.add("quantity", quantity.toString());
-        map.add("total_amount", totalAmount.toString());
-        map.add("tax_free_amount", taxFreeAmount.toString());
-        map.add("approval_url", "http://localhost:8080/approval");
-        map.add("cancel_url", "http://localhost:8080/cancel");
-        map.add("fail_url", "http://localhost:8080/fail");
+        map.add("cid", paymentRequest.getCid());
+        map.add("partner_order_id", paymentRequest.getPartner_order_id());
+        map.add("partner_user_id", paymentRequest.getPartner_user_id());
+        map.add("item_name", paymentRequest.getItem_name());
+        map.add("quantity", paymentRequest.getQuantity().toString());
+        map.add("total_amount", paymentRequest.getTotal_amount().toString());
+        map.add("tax_free_amount", paymentRequest.getTax_free_amount().toString());
+        map.add("approval_url", paymentRequest.getApproval_url());
+        map.add("cancel_url", paymentRequest.getCancel_url());
+        map.add("fail_url", paymentRequest.getFail_url());
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
 
