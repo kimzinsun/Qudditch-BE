@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goldensnitch.qudditch.mapper.CustomerBookmarkStore">
+    <!--북마크 설정-->
+    <insert id="addStoreBookmark" parameterType="CustomerBookmarkStore">
+        insert into customer_bookmark_store (user_customer_id, store_id)
+        values ($(userCustomerId), $(StoreId))
+    </insert>
+    <!--북마크 해제-->
+    <delete id="removeStoreBookmark" parameterType="CustomerBookmarkStore">
+        delete from customer_bookmark_store
+        where user_customer_id = $(userCustomerId) and store_id = $(StoreId)
+    </delete>
+
+
+</mapper>

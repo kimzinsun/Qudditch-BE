@@ -11,4 +11,6 @@ public interface StoreLocationMapper {
 
     List<Store> getLocation(Map<String, Object> params);
 
+
+
 }
