@@ -36,15 +36,21 @@ public class CartController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<?> updateItemQty(@RequestParam("userCustomerId") Integer userCustomerId, @RequestBody Integer productId, @RequestBody Integer qty){
+    public ResponseEntity<?> updateItemQty(@RequestParam("userCustomerId") Integer userCustomerId, @RequestParam("productId") Integer productId, @RequestParam("qty") Integer qty){
         cartService.updateItemQty(userCustomerId, productId, qty);
         return ResponseEntity.ok().body("Cart item updated successfully.");
     }
 
     @PostMapping("/remove")
-    public ResponseEntity<?> removeItemFromCart(@RequestParam("userCustomerId") Integer userCustomerId, @RequestBody Integer productId){
+    public ResponseEntity<?> removeItemFromCart(@RequestParam("userCustomerId") Integer userCustomerId, @RequestParam("productId") Integer productId){
         cartService.removeItemFromCart(userCustomerId, productId);
         return ResponseEntity.ok().body("Item removed from cart successfully.");
+    }
+
+    @PostMapping("/clear")
+    public ResponseEntity<?> clearCart(@RequestParam("userCustomerId") Integer userCustomerId){
+        cartService.clearCart(userCustomerId);
+        return ResponseEntity.ok().body("Cart cleared successfully.");
     }
 }
 

@@ -47,7 +47,7 @@ public class CartService {
     }
 
     // 장바구니 비우기
-    public void removeAllItemFromCart(Integer userCustomerId){
+    public void clearCart(Integer userCustomerId){
         List<CartItem> cartItems = userCarts.get(userCustomerId);
         if(cartItems != null){
             cartItems.clear();

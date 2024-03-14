@@ -1,27 +1,25 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.CartItem;
-import com.goldensnitch.qudditch.dto.CustomerOrder;
-import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
-import com.goldensnitch.qudditch.dto.PaymentRequest;
+import com.goldensnitch.qudditch.dto.*;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import com.goldensnitch.qudditch.mapper.ProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class OrderService {
+    // 상품 정보 조회를 위한 매퍼
+    @Autowired
+    private ProductMapper productMapper;
 
     // DB에 주문 정보와 주문 상품 정보를 저장하기 위한 매퍼
     @Autowired
     private CustomerOrderProductMapper customerOrderProductMapper;
-
-    // 상품 정보 조회를 위한 매퍼
-    @Autowired
-    private ProductMapper productMapper;
 
     @Autowired
     private PaymentService paymentService;
@@ -36,71 +34,75 @@ public class OrderService {
             return "장바구니가 비어 있습니다.";
         }
 
-        CustomerOrder customerOrder = new CustomerOrder();
+        int totalAmount = calculateTotalAmount(cartItems);
+        CustomerOrder customerOrder = setupCustomerOrder(userCustomerId, totalAmount);
 
-        customerOrderProductMapper.insertCustomerOrder(customerOrder);
-        Integer orderId = customerOrder.getId();
+        // 결제 요청된 품목은 DB에 저장x, paymentrequest까지 진행 후 결제품목관리는 CustomerOrderProduct로 관리
+        List<CustomerOrderProduct> orderProduct = setupCustomerOrderProduct(cartItems, customerOrder.getId());
 
-        List<CustomerOrderProduct> orderProduct = new ArrayList<>();
-        for (CartItem cartItem : cartItems) {
-            CustomerOrderProduct customerOrderProduct = new CustomerOrderProduct();
-            customerOrderProduct.setCustomerOrderId(orderId);
-            customerOrderProduct.setProductId(cartItem.getProductId());
-            customerOrderProduct.setQty(cartItem.getQty());
-            // Set any other necessary fields for CustomerOrderProduct
-
-            customerOrderProductMapper.insertCustomerOrderProduct(customerOrderProduct);
-            orderProduct.add(customerOrderProduct);
-        }
-
-        // PaymentRequest 생성 로직
+        // 실제 결제에 필요한 정보 설정
         PaymentRequest paymentRequest = createPaymentRequest(customerOrder, orderProduct);
 
         // PaymentService를 사용하여 결제 처리
         String paymentRedirectUrl = paymentService.initiatePayment(paymentRequest);
 
-        cartService.removeAllItemFromCart(userCustomerId);
+        // 결제 성공 품목을 DB에 저장
+        customerOrderProductMapper.insertCustomerOrder(customerOrder);
+
+        orderProduct.forEach(customerOrderProductMapper::insertCustomerOrderProduct);
+
+        cartService.clearCart(userCustomerId);
 
         return paymentRedirectUrl;
     }
-        /*
-        // 주문 정보 생성 및 저장
-        CustomerOrder customerOrder = orderRequest.getCustomerOrder();
+
+    private int calculateTotalAmount(List<CartItem> cartItems) {
+        return cartItems.stream()
+                .mapToInt(item -> {
+                    Product product = productMapper.findByProductId(item.getProductId());
+                    return product.getPrice() * item.getQty();
+                })
+                .sum();
+    }
+
+    private CustomerOrder setupCustomerOrder(Integer userCustomerId, int totalAmount){
+        CustomerOrder customerOrder = new CustomerOrder();
+        customerOrder.setUserCustomerId(userCustomerId);
+        customerOrder.setTotalAmount(totalAmount);
+        customerOrder.setOrderedAt(Date.valueOf(LocalDate.now()));
+
         customerOrderProductMapper.insertCustomerOrder(customerOrder);
-        Integer orderId = customerOrder.getId(); // DB 저장 후 생성된 주문
+        return customerOrder;
+    }
 
-        // 주문 상품 정보 생성 및 저장
-        for (CustomerOrderProduct product : orderRequest.getCustomerOrderProducts()) {
+    private List<CustomerOrderProduct> setupCustomerOrderProduct(List<CartItem> cartItems, Integer orderId){
+        List<CustomerOrderProduct> customerOrderProduct = new ArrayList<>();
+        cartItems.forEach(item -> {
+            CustomerOrderProduct product = new CustomerOrderProduct();
             product.setCustomerOrderId(orderId);
-            customerOrderProductMapper.insertCustomerOrderProduct(product);
-        }
-
-        // PaymentRequest 생성 로직 (여기서 필요한 정보를 설정합니다.)
-        PaymentRequest paymentRequest = createPaymentRequest(customerOrder, orderRequest.getCustomerOrderProducts());
-
-        // PaymentService를 사용하여 결제 처리
-        String paymentRedirectUrl = paymentService.initiatePayment(paymentRequest);
-
-        return paymentRedirectUrl;
-        */
+            product.setProductId(item.getProductId());
+            product.setQty(item.getQty());
+            customerOrderProduct.add(product);
+        });
+        return customerOrderProduct;
+    }
 
     private PaymentRequest createPaymentRequest(CustomerOrder customerOrder, List<CustomerOrderProduct> orderProduct) {
         PaymentRequest paymentRequest = new PaymentRequest();
 
-        return paymentRequest;
+        // 결제 요청에 필요한 정보 설정
+        if (!orderProduct.isEmpty()) {
+            // 상품명 설정
+            Integer firstProductId = orderProduct.get(0).getProductId();
+            Product product = productMapper.findByProductId(firstProductId);
+            String itemName = product.getName();
 
-        /*
-        // 상품 이름과 수량 설정 (여기서는 단순화를 위해 첫 번째 상품의 이름과 전체 수량만을 사용)
-        if (!products.isEmpty()) {
-            CustomerOrderProduct firstProduct = products.get(0);
-            String itemName = productMapper.findByProductId(firstProduct.getProductId()).getName();
-            Integer quantity = products.stream().mapToInt(CustomerOrderProduct::getQty).sum();
-
-            paymentRequest.setItem_name(itemName);
-            paymentRequest.setQuantity(quantity);
+            // 수량 설정
+            int totalQuantity = orderProduct.stream().mapToInt(CustomerOrderProduct::getQty).sum();
+            paymentRequest.setQuantity(totalQuantity);
         }
 
-        // 총액, 고유 번호 등 설정
+        // 총액, 포인트 등 설정
         paymentRequest.setTotal_amount(customerOrder.getTotalAmount());
         paymentRequest.setUsedPoint(customerOrder.getUsedPoint());
         paymentRequest.setTotalPay(customerOrder.getTotalPay());
@@ -121,7 +123,5 @@ public class OrderService {
         paymentRequest.setFail_url("http://localhost:8080/fail");
 
         return paymentRequest;
-    }
-    */
     }
 }
