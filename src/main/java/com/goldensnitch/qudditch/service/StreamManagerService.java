@@ -27,6 +27,7 @@ public class StreamManagerService {
     private String collectionId;
     @Value("${aws.rekognition.match-threshold}")
     private float matchThreshold;
+    private static final int LIST_STREAM_PROCESSORS_MAX_RESULTS = 100;
 
     private final AmazonRekognition rekognitionClient;
 
@@ -97,7 +98,9 @@ public class StreamManagerService {
 
     public void listStreamProcessors() {
         ListStreamProcessorsResult listStreamProcessorsResult =
-            rekognitionClient.listStreamProcessors(new ListStreamProcessorsRequest().withMaxResults(100));
+            rekognitionClient.listStreamProcessors(
+                new ListStreamProcessorsRequest().withMaxResults(LIST_STREAM_PROCESSORS_MAX_RESULTS)
+            );
 
         //List all stream processors (and state) returned from Rekognition
         for (StreamProcessor streamProcessor : listStreamProcessorsResult.getStreamProcessors()) {
