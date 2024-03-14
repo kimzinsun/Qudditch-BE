@@ -1,4 +1,4 @@
-package com.goldensnitch.qudditch.dto;
+package com.goldensnitch.qudditch.dto.StoreBookmark;
 
 import lombok.Data;
 

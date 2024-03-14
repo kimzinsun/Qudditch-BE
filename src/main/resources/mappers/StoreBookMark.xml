@@ -4,7 +4,7 @@
 
 <mapper namespace="com.goldensnitch.qudditch.mapper.StoreBookMarkMapper">
     <!--토글-->
-    <select id="toggleStoreBookmark" >
+    <select id="toggleStoreBookmark" parameterType="Integer" resultType="Integer">
         select count(*) from customer_bookmark_store
         where user_customer_id = #{userCustomerId} and store_id = #{storeId}
     </select>
@@ -14,12 +14,9 @@
         values (#{userCustomerId}, #{storeId})
     </insert>
 
-    <delete id="removeStoreBookmark" parameterType="Integer">
+    <delete id="deleteStoreBookmark" parameterType="Integer">
         delete from customer_bookmark_store
         where user_customer_id = #{userCustomerId} and store_id = #{storeId}
     </delete>
-
-
-
 
 </mapper>
