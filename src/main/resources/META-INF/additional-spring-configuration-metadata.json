@@ -1,0 +1,64 @@
+{
+  "properties": [
+    {
+      "name": "aws.region",
+      "type": "java.lang.String",
+      "description": "AWS 리전을 설정합니다."
+    },
+    {
+      "name": "aws.profile",
+      "type": "java.lang.String",
+      "description": "AWS 자격 증명 프로파일을 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.liveness.output.config.s3-bucket-name",
+      "type": "java.lang.String",
+      "description": "AWS Rekognition Liveness 분석 결과를 저장할 S3 버킷 이름을 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.liveness.setting.audit-images-limit",
+      "type": "java.lang.Integer",
+      "description": "AWS Rekognition Liveness 분석 중 생성할 감사 이미지의 제한을 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.index-faces.max-faces",
+      "type": "java.lang.Integer",
+      "description": "AWS Rekognition 인덱스 생성 시 최대 얼굴 수를 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.index-faces.detection-attribute",
+      "type": "java.lang.String",
+      "description": "AWS Rekognition 인덱스 생성 시 사용할 감지 속성을 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.stream-processor-name",
+      "type": "java.lang.String",
+      "description": "AWS Rekognition 스트림 프로세서의 이름을 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.kinesis-video-stream-arn",
+      "type": "java.lang.String",
+      "description": "AWS Rekognition에서 사용할 Kinesis 비디오 스트림의 Amazon 리소스 이름(ARN)을 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.kinesis-data-stream-arn",
+      "type": "java.lang.String",
+      "description": "AWS Rekognition에서 사용할 Kinesis 데이터 스트림의 Amazon 리소스 이름(ARN)을 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.role-arn",
+      "type": "java.lang.String",
+      "description": "AWS Rekognition에 대한 역할의 Amazon 리소스 이름(ARN)을 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.collection-id",
+      "type": "java.lang.String",
+      "description": "AWS Rekognition에서 사용할 컬렉션의 식별자를 설정합니다."
+    },
+    {
+      "name": "aws.rekognition.match-threshold",
+      "type": "java.lang.Float",
+      "description": "AWS Rekognition에서 얼굴 일치로 간주되는 최소 신뢰도 임계값을 설정합니다."
+    }
+  ]
+}
