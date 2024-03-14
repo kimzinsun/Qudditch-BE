@@ -2,6 +2,7 @@ package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.*;
 import com.goldensnitch.qudditch.dto.storeInput.InputDetailRes;
+import com.goldensnitch.qudditch.dto.storeInput.InputRepoReq;
 import com.goldensnitch.qudditch.dto.storeInput.InputRes;
 import com.goldensnitch.qudditch.dto.storeInput.StockInputReq;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
@@ -67,6 +68,13 @@ public class StoreStockService {
     }
 
     public void insertStoreStock(int userStoreId, StockInputReq req, int storeInputId) {
+        InputRepoReq inputRepoReq = new InputRepoReq();
+        inputRepoReq.setUserStoreId(userStoreId);
+        inputRepoReq.setProductId(req.getProductId());
+        inputRepoReq.setYmd(storeStockMapper.getInputDate(storeInputId));
+        inputRepoReq.setInQty(req.getQty());
+        storeStockMapper.insertInputLog(inputRepoReq);
+
         storeStockMapper.updateConfirmInput(storeInputId, req.getProductId());
         storeStockMapper.insertStoreStock(userStoreId, req.getProductId(), req.getPositionId(), req.getQty(), String.valueOf(req.getExpiredAt()));
     }

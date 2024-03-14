@@ -85,4 +85,11 @@
         set state = '검수완료'
         where store_input_id = ${storeInputId} and product_id = ${productId}
     </update>
+    <insert id="insertInputLog">
+        insert into store_stock_report (user_store_id, product_id, ymd, in_qty)
+        values (#{userStoreId}, #{productId}, #{ymd}, #{inQty})
+    </insert>
+    <select id="getInputDate">
+        select input_at from store_input where id = ${storeInputId}
+    </select>
 </mapper>
