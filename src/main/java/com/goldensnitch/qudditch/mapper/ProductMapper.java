@@ -8,6 +8,6 @@ public interface ProductMapper {
     void insertProduct(Integer categoryId, String brand, String name, String description, String image, Integer price, String unitPrice, Integer expirationDate);
 
     // 제품 조회
-
     Product findByProductId(Integer productId);
+    Product selectProductById(Integer id);
 }
