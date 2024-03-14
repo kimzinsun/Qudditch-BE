@@ -109,9 +109,9 @@ public class RekognitionService {
             .withDetectionAttributes(DETECTION_ATTRIBUTE);
     }
 
-    public void createUserInCollection(String collectionId, String userId) {
+    public CreateUserResult createUserInCollection(String collectionId, String userId) {
         CreateUserRequest request = createUserRequest(collectionId, userId);
-        rekognitionClient.createUser(request);
+        return rekognitionClient.createUser(request);
     }
 
     private CreateUserRequest createUserRequest(String collectionId, String userId) {
