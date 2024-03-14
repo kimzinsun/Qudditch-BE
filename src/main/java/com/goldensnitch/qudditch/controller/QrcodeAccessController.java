@@ -22,25 +22,23 @@ public class QrcodeAccessController {
 
 
     @PostMapping("/request")
-    public ResponseEntity requestQrAccess(){
+    public String requestQrAccess(){
         // TODO : 로그인한 사용자 정보(customer)를 가져와서 request에 넣어줘야함
         QrAccessReq request = new QrAccessReq();
-//        request.setUserId(1);
+        request.setUserId(1);
 //        request.setUserId(Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName()));
-        qrcodeAccessService.requestQrAccess(request);
-        return ResponseEntity.ok().build();
+        return qrcodeAccessService.requestQrAccess(request);
+
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity confirm(String uuid) {
+    public String confirm(String uuid) {
         // TODO : 로그인한 사용자(store) 정보를 가져와서 request에 넣어줘야함
         StoreVisitorLog storeVisitorLog = new StoreVisitorLog();
 //        storeVisitorLog.setUserStoreId((Integer) SecurityContextHolder.getContext().getAuthentication().getCredentials());
-//        storeVisitorLog.setUserStoreId(2);
-        if(!qrcodeAccessService.confirmQrAccess(uuid, storeVisitorLog)) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok().build();
+        storeVisitorLog.setUserStoreId(2);
+        return qrcodeAccessService.confirmQrAccess(uuid, storeVisitorLog);
+
     }
 
 }

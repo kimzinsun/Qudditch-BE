@@ -20,17 +20,17 @@ public class QrcodeAccessService {
     }
 
 
-    public void requestQrAccess(QrAccessReq request) {
+    public String requestQrAccess(QrAccessReq request) {
         String uuid = UUID.randomUUID().toString();
-        System.out.println(uuid);
         redisService.setValues(uuid, String.valueOf(request.getUserId()), Duration.ofSeconds(30));
+        return uuid;
     }
 
-    public boolean confirmQrAccess(String uuid, StoreVisitorLog storeVisitorLog) {
+    public String confirmQrAccess(String uuid, StoreVisitorLog storeVisitorLog) {
 
         if (Objects.equals(redisService.getValues(uuid), "false")) {
-            System.out.println("QR코드 접근이 허용되지 않았습니다.");
-            return false;
+            return "QR코드 접근이 허용되지 않았습니다.";
+
         } else {
             int userId = Integer.parseInt(redisService.getValues(uuid));
             storeVisitorLog.setUserCustomerId(userId);
@@ -38,8 +38,8 @@ public class QrcodeAccessService {
             accessMapper.insertVisitLog(storeVisitorLog);
             redisService.deleteValues(uuid);
 
-            System.out.println("QR코드 접근이 허용되었습니다.");
-            return true;
+            return "QR코드 접근이 허용되었습니다.";
+
         }
 
 
