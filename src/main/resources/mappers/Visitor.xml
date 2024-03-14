@@ -11,8 +11,8 @@
     <select id="getMonthVisitor" resultType="Integer">
         select sum(cnt)
         from store_visitor_daily
-        where substring(ymd, 1, 7) = $(yearMonth)
-        and user_store_id = $(storeId)
+        where substring(ymd, 1, 7) = '${yearMonth}'
+        and user_store_id = ${storeId}
     </select>
 
 
