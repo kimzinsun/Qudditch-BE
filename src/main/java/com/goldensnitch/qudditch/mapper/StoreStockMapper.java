@@ -1,6 +1,8 @@
 package com.goldensnitch.qudditch.mapper;
 
 import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.dto.storeInput.InputDetailRes;
+import com.goldensnitch.qudditch.dto.storeInput.InputRes;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -24,6 +26,9 @@ public interface StoreStockMapper {
     int getDisposeLogCount(int userStoreId);
 
     List<DisposeLog> getDisposeLog(int userStoreId);
+    List<InputRes> getOrderListByUserStoreId(int userStoreId);
+
+    List<InputDetailRes> getOrderDetailByStoreInputId(int storeInputId);
 
 
 }

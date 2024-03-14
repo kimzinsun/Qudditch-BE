@@ -2,6 +2,8 @@ package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.*;
 import com.goldensnitch.qudditch.dto.StoreOder.StoreOrderParam;
+import com.goldensnitch.qudditch.dto.storeInput.InputDetailRes;
+import com.goldensnitch.qudditch.dto.storeInput.InputRes;
 import com.goldensnitch.qudditch.service.RedisService;
 import com.goldensnitch.qudditch.service.StoreStockService;
 import lombok.extern.slf4j.Slf4j;
@@ -101,11 +103,18 @@ public class StoreStockController {
     }
 
     @GetMapping("/stock/input") // 입고 리스트 확인
-    public void inputList() {
+    public Map<String, Object> inputList() {
 //        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         int userStoreId = 2;
+        List<InputRes> inputList = storeStockService.getOrderListByUserStoreId(userStoreId);
+        Map<String, Object> map = new HashMap<>();
+        map.put("inputList", inputList);
+        return map;
+    }
 
-
+    @GetMapping("/stock/input/{inputId}")
+    public List<InputDetailRes> getInputDetail(@PathVariable int inputId) {
+        return storeStockService.getOrderDetailByStoreInputId(inputId);
     }
 
 }
