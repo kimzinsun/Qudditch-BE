@@ -19,7 +19,7 @@ public class StoreOrderService {
         this.storeOrderMapper = storeOrderMapper;
     }
 
-    public List<StoreOrder> orderList(StoreOrderParam param) {
+    public List<StoreOrder> orderList(StoreOrderParam param, int currentPage) {
         return storeOrderMapper.orderList(param);
     }
     public int getallList(StoreOrderParam param) {

@@ -19,13 +19,9 @@ public class StoreBookMarkController {
         this.storeBookMarkService = storeBookMarkService;
     }
 
-    @PostMapping("/add")
-    public void addStoreBookmark(@RequestParam Integer userCustomerId, @RequestParam Integer userStoreId) {
-        storeBookMarkService.addStoreBookmark(userCustomerId, userStoreId);
-    }
-    @PostMapping("/remove")
-    public void removeStoreBookmark(@RequestParam Integer userCustomerId, @RequestParam Integer userStoreId) {
-        storeBookMarkService.removeStoreBookmark(userCustomerId, userStoreId);
+    @PostMapping("toggle")
+    public boolean toggleStoreBookmark(@RequestParam Integer userCustomerId,@RequestParam Integer storeId) {
+        return storeBookMarkService.toggleStoreBookmark(userCustomerId, storeId);
     }
 
 
