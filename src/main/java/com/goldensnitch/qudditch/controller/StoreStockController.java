@@ -21,12 +21,9 @@ import java.util.Map;
 @RequestMapping("/api/store")
 public class StoreStockController {
     private final StoreStockService storeStockService;
-    private final RedisService redisService;
 
-
-    public StoreStockController(StoreStockService storeStockService, RedisService redisService) {
+    public StoreStockController(StoreStockService storeStockService) {
         this.storeStockService = storeStockService;
-        this.redisService = redisService;
     }
     // TODO : store 관련 기능 구현
 
