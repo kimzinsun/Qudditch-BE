@@ -6,4 +6,5 @@ import lombok.Data;
 public class CartItem { /* 장바구니에 담길 아이템 관리 */
     private Integer productId;
     private Integer qty;
+    private Integer userStoreId; // 가게 ID 추가
 }

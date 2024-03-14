@@ -40,7 +40,18 @@
         LIMIT 10;
     </select>
 
+    <!-- 재고 업데이트(결제된 품목 수량만큼 재고를 차감) -->
+    <update id="updateStockQty">
+        UPDATE store_stock
+        SET qty = #{newQty}
+        WHERE user_store_id = #{userStoreId} AND product_id = #{productId}
+    </update>
 
+    <!-- 판매 수량 기록 로그 -->
+    <insert id="insertStoreStockReport">
+        INSERT INTO store_stock_report (user_store_id, product_id, ymd, out_qty)
+        VALUES (#{userStoreId}, #{productId}, #{ymd}, #{outQty})
+    </insert>
 
 
 

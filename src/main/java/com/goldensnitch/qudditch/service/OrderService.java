@@ -3,8 +3,10 @@ package com.goldensnitch.qudditch.service;
 import com.goldensnitch.qudditch.dto.*;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import com.goldensnitch.qudditch.mapper.ProductMapper;
+import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,31 +28,40 @@ public class OrderService {
     @Autowired
     private CartService cartService;
 
+    @Autowired
+    private StoreStockMapper storeStockMapper;
+
+    @Transactional
     public String createOrder(Integer userCustomerId) {
+        // 장바구니 아이템 조회
         List<CartItem> cartItems = cartService.getCartItem(userCustomerId);
 
         if (cartItems.isEmpty()) {
             return "장바구니가 비어 있습니다.";
         }
 
+        // 총액 계산
         int totalAmount = calculateTotalAmount(cartItems);
         CustomerOrder customerOrder = setupCustomerOrder(userCustomerId, totalAmount);
 
-        // 결제 요청된 품목은 DB에 저장x, paymentrequest까지 진행 후 결제품목관리는 CustomerOrderProduct로 관리
+        // 고객 주문 설정 (DB x)
         List<CustomerOrderProduct> orderProduct = setupCustomerOrderProduct(cartItems, customerOrder.getId());
 
-        // 실제 결제에 필요한 정보 설정
+        // 실제 결제에 필요한 정보 설정(결제 요청 -> PaymentService)
         PaymentRequest paymentRequest = createPaymentRequest(customerOrder, orderProduct);
 
-        // PaymentService를 사용하여 결제 처리
+        // 결제 처리 및 리다이렉트 URL 반환
         String paymentRedirectUrl = paymentService.initiatePayment(paymentRequest);
 
-        // 결제 성공 품목을 DB에 저장
+        // 결제 성공 품목을 DB에 저장(customer)
         customerOrderProductMapper.insertCustomerOrder(customerOrder);
-
         orderProduct.forEach(customerOrderProductMapper::insertCustomerOrderProduct);
 
+        // 장바구니 비우기
         cartService.clearCart(userCustomerId);
+
+        // 결제 성공 품목의 재고 차감
+        decrementStockAndUpdateReport(cartItems, orderProduct);
 
         return paymentRedirectUrl;
     }
@@ -122,5 +133,34 @@ public class OrderService {
         paymentRequest.setFail_url("http://localhost:8080/fail");
 
         return paymentRequest;
+    }
+
+    private void decrementStockAndUpdateReport(List<CartItem> cartItems, List<CustomerOrderProduct> orderProducts) {
+        orderProducts.forEach(orderProduct -> {
+            CartItem matchingCartItem = cartItems.stream()
+                                                .filter(cartItem -> cartItem.getProductId().equals(orderProduct.getProductId()) && cartItem.getUserStoreId() != null)
+                                                .findFirst()
+                                                .orElse(null);
+
+            if (matchingCartItem != null) {
+                StoreStock currentStock = storeStockMapper.selectProductByUserStoreIdAndProductId(matchingCartItem.getUserStoreId(), orderProduct.getProductId());
+                if (currentStock != null && currentStock.getQty() >= orderProduct.getQty()) {
+                    // 재고 차감 (현재 재고 - 고객 주문 수량)
+                    int newQty = currentStock.getQty() - orderProduct.getQty();
+                    storeStockMapper.updateStockQty(currentStock.getUserStoreId(), orderProduct.getProductId(), newQty);
+
+                    // 재고 로그 기록
+                    StoreStockReport stockReport = new StoreStockReport();
+                    stockReport.setUserStoreId(matchingCartItem.getUserStoreId());
+                    stockReport.setProductId(orderProduct.getProductId());
+                    stockReport.setYmd(java.sql.Date.valueOf(LocalDate.now()));
+                    stockReport.setOutQty(orderProduct.getQty());
+                    storeStockMapper.insertStoreStockReport(stockReport);
+                } else {
+                    // 재고 부족 예외 처리
+                    throw new RuntimeException("재고가 부족합니다.");
+                }
+            }
+        });
     }
 }
