@@ -31,11 +31,12 @@ public class ManageService {
     }
 
     public void confirmOrder(int orderStoreId, List<InputReq> list) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Map<String, Object> map = new HashMap<>();
         LocalDate NOW = LocalDate.now();
 
+        int userStoreId = manageMapper.getUserStoreIdByOrderId(orderStoreId);
         map.put("orderStoreId", orderStoreId);
+        map.put("userStoreId", userStoreId);
         manageMapper.updateOrderState(orderStoreId);
         manageMapper.insertStoreInput(map);
 

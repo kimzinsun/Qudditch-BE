@@ -15,6 +15,7 @@ public interface ManageMapper {
     void updateOrderState(int orderStoreId);
     void insertStoreInput(Map<String, Object> map);
     void insertStoreInputProduct(InputOrder inputOrder);
+    int getUserStoreIdByOrderId(int orderStoreId);
 
 
 }
