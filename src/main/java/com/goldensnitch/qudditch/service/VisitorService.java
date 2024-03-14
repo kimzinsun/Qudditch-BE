@@ -17,4 +17,11 @@ public class VisitorService {
         }
         return visitorMapper.getDailyVisitor(storeId, date);
     }
+
+    public Integer getMonthVisitor(int storeId, String yearMonth) {
+        if (visitorMapper.getMonthVisitor(storeId, yearMonth) == null) {
+            return 0;
+        }
+        return visitorMapper.getMonthVisitor(storeId, yearMonth);
+    }
 }

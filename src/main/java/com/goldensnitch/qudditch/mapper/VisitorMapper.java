@@ -6,4 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 public interface VisitorMapper {
 
     Integer getDailyVisitor(int storeId, String date);
+
+    Integer getMonthVisitor(int storeId, String yearMonth);
 }

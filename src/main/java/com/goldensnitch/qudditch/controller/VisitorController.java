@@ -25,4 +25,12 @@ public class VisitorController {
         return visitorService.getDailyVisitor(storeId, date);
     }
 
+    @GetMapping("/month")
+    public Integer getMonthVisitor(@RequestParam String yearMonth) {
+        System.out.println(yearMonth);
+        int storeId = 2;
+        // int storeId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return visitorService.getMonthVisitor(storeId, yearMonth);
+    }
+
 }
