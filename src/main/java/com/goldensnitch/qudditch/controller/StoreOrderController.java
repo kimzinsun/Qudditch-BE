@@ -154,12 +154,16 @@ public class StoreOrderController {
     }
 
     @GetMapping("/detail/update/{id}")
-    public int updateOrderProducts(@PathVariable int id, @RequestBody List<ProductWithQty> updateProducts) {
+    public ResponseEntity<String> updateOrderProducts(@PathVariable int id, @RequestBody List<ProductWithQty> updateProducts) {
 
             // 기존 주문 정보
             StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
             if (storeOrder == null) {
-                return 0;
+                return ResponseEntity.badRequest().body("id확인하세용");
+            }
+            // 발주상태가 "대기"가 아니면 업데이트 거부
+            if(!storeOrder.getState().equals("대기")){
+                return ResponseEntity.badRequest().body("대기중인 발주만 수정 가능합니다");
             }
 
             for (ProductWithQty updatedProduct : updateProducts) {
@@ -173,8 +177,13 @@ public class StoreOrderController {
                 // 업데이트
                storeOrderService.updateOrderProducts(storeOrderProduct);
 
+               // 업데이트 후 수량이 0인 경우 제거
+               if(storeOrderProduct.getQty() == 0){
+                   updateProducts.remove(updatedProduct);
+               }
+
             }
-            return 1;
+            return ResponseEntity.ok("수정성공!!");
     }
 
 

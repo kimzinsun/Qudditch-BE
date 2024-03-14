@@ -6,10 +6,8 @@ import lombok.Data;
 public class CustomerBookmarkStore {
     private Integer id;
     private Integer userCustomerId;
-    private Integer userStoreId;
+    private Integer storeId;
 
-    public CustomerBookmarkStore(int userId, Integer storeId) {
-        this.userCustomerId = userId;
-        this.userStoreId = storeId;
-    }
+
+
 }

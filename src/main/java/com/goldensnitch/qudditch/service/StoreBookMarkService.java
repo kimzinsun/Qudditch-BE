@@ -1,9 +1,11 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.CustomerBookmarkStore;
 import com.goldensnitch.qudditch.mapper.StoreBookMarkMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class StoreBookMarkService {
@@ -14,7 +16,17 @@ public class StoreBookMarkService {
         this.storeBookmarkMapper = storeBookmarkMapper;
     }
 
-    public void storeBookmark(CustomerBookmarkStore customerBookmarkStore) {
-        storeBookmarkMapper.storeBookmark(customerBookmarkStore);
+    public void addStoreBookmark(Integer userCustomerId, Integer userStoreId) {
+        Map<String, Integer> params = new HashMap<>();
+        params.put("userCustomerId", userCustomerId);
+        params.put("userStoreId", userStoreId);
+        storeBookmarkMapper.addStoreBookmark(params);
+    }
+
+    public void removeStoreBookmark(Integer userCustomerId, Integer userStoreId) {
+        Map<String, Integer> params = new HashMap<>();
+        params.put("userCustomerId", userCustomerId);
+        params.put("userStoreId", userStoreId);
+        storeBookmarkMapper.removeStoreBookmark(params);
     }
 }
