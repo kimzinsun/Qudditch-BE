@@ -88,7 +88,6 @@ public class PaymentService {
     }
     */
 
-
         // PaymentRequest 객체 대신 MultiValueMap을 사용하여 요청 파라미터를 설정
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("cid", paymentRequest.getCid());
