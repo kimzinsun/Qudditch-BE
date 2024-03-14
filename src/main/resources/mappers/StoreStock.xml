@@ -76,4 +76,13 @@
         from product p, store_input si, store_input_product sip
         where p.id = sip.product_id and si.id = sip.store_input_id and si.id = ${storeInputId}
     </select>
+    <insert id="insertStoreStock" >
+        INSERT INTO store_stock (user_store_id, product_id, qty, position_id, expired_at)
+        VALUES (#{userStoreId}, #{productId}, #{qty}, #{positionId}, #{expiredAt})
+    </insert>
+    <update id="updateConfirmInput">
+        update store_input_product
+        set state = '검수완료'
+        where store_input_id = ${storeInputId} and product_id = ${productId}
+    </update>
 </mapper>

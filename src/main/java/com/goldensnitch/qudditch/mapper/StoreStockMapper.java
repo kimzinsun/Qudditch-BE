@@ -3,6 +3,7 @@ package com.goldensnitch.qudditch.mapper;
 import com.goldensnitch.qudditch.dto.*;
 import com.goldensnitch.qudditch.dto.storeInput.InputDetailRes;
 import com.goldensnitch.qudditch.dto.storeInput.InputRes;
+import com.goldensnitch.qudditch.dto.storeInput.StockInputReq;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -31,4 +32,6 @@ public interface StoreStockMapper {
     List<InputDetailRes> getOrderDetailByStoreInputId(int storeInputId);
 
 
+    void insertStoreStock(int userStoreId, int productId, int positionId, int qty, String expiredAt);
+    void updateConfirmInput(int storeInputId, int productId);
 }

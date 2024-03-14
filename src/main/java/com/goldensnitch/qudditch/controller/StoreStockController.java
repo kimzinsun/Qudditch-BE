@@ -1,8 +1,8 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.*;
-import com.goldensnitch.qudditch.dto.StoreOder.StoreOrderParam;
 import com.goldensnitch.qudditch.dto.storeInput.InputDetailRes;
+import com.goldensnitch.qudditch.dto.storeInput.StockInputReq;
 import com.goldensnitch.qudditch.dto.storeInput.InputRes;
 import com.goldensnitch.qudditch.service.RedisService;
 import com.goldensnitch.qudditch.service.StoreStockService;
@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +116,15 @@ public class StoreStockController {
     @GetMapping("/stock/input/{inputId}")
     public List<InputDetailRes> getInputDetail(@PathVariable int inputId) {
         return storeStockService.getOrderDetailByStoreInputId(inputId);
+    }
+
+    @PostMapping("/stock/input/{inputId}")
+    public void insertStoreStock(@PathVariable int inputId, @RequestBody List<StockInputReq> list) {
+//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        int userStoreId = 2;
+        for (StockInputReq req : list) {
+            storeStockService.insertStoreStock(userStoreId, req, inputId);
+        }
     }
 
 }
