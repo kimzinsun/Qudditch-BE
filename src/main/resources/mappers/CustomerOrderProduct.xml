@@ -3,11 +3,19 @@
 <mapper namespace="com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper">
 
     <!-- CustomerOrder에 추가 -->
+    <!-- localdate를 사용해서 바꿔야하는지 확인: #{orderedAt, jdbcType=DATE} -->
     <insert id="insertCustomerOrder" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder"
         useGeneratedKeys="true" keyProperty="id">
         INSERT INTO customer_order (user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid)
         VALUES (#{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid})
-    </insert>
+        </insert>
+
+    <!-- 주문 정보 조회 -->
+    <select id="findById" parameterType="java.lang.Integer" resultType="com.goldensnitch.qudditch.dto.CustomerOrder">
+        SELECT *
+        FROM customer_order
+        WHERE id = #{id}
+    </select>
 
     <!-- CustomerOrderProduct에 추가 -->
     <insert id="insertCustomerOrderProduct" parameterType="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
@@ -15,11 +23,18 @@
         VALUES (#{customerOrderId}, #{productId}, #{qty})
     </insert>
 
-    <!-- 주문 상세 정보 조회 -->
-    <select id="getCustomerOrderDetails" resultType="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
-        SELECT product_id, qty
-        FROM customer_order_product
-        WHERE customer_order_id = #{customerOrderId}
+    <!-- 사용자 ID로 월별 주문 내역 조회 -->
+    <select id="findByUserCustomerId" parameterType="java.lang.Integer" resultType="com.goldensnitch.qudditch.dto.CustomerOrder">
+        SELECT *
+        FROM customer_order
+        WHERE user_customer_id = #{userCustomerId}
+        <!-- 필요한 경우 날짜 범위 조건을 추가 -->
     </select>
 
+    <!-- 주문 ID로 주문 상품 정보 조회 -->
+    <select id="findByOrderId" parameterType="java.lang.Integer" resultType="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
+        SELECT *
+        FROM customer_order_product
+        WHERE customer_order_id = #{orderId}
+    </select>
 </mapper>

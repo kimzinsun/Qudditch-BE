@@ -1,26 +1,56 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import com.goldensnitch.qudditch.dto.OrderRequest;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-public class CustomerOrderProductService {
+public class CustomerOrderProductService { // 영수증 정보 생성, 월별 주문내역 확인
 
     @Autowired
     private CustomerOrderProductMapper customerOrderProductMapper;
 
-    public void processPaymentProducts(List<CustomerOrderProduct> orderProducts) {
-        // 결제된 상품 정보를 DB에 저장하는 로직
-        for (CustomerOrderProduct orderProduct : orderProducts) {
-            customerOrderProductMapper.insertCustomerOrderProduct(orderProduct);
-            // 여기서 재고 차감 로직을 추가할 수 있습니다(별도 기능, 지금은 구현하지 않음)
-        }
+    public OrderRequest generateReceipt(Integer orderId) {
+        // 주문 정보 조회
+        CustomerOrder customerOrder = customerOrderProductMapper.findById(orderId);
+        // 해당 주문의 상품 정보 조회
+        List<CustomerOrderProduct> products = customerOrderProductMapper.findByOrderId(orderId);
 
-        // 영수증 정보 생성
+        // OrderRequest 객체로 묶기
+        OrderRequest receipt = new OrderRequest();
+        receipt.setCustomerOrder(customerOrder);
+        receipt.setCustomerOrderProducts(products);
+
+        return receipt;
+    }
+
+    public List<OrderRequest> getMonthlyOrderHistory(Integer userCustomerId, String monthYear){
+        // 주문 내역 조회
+        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByUserCustomerId(userCustomerId);
+
+        // 월별 필터링
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-yyyy");
+        List<CustomerOrder> filteredOrders = customerOrders.stream()
+                .filter(order -> order.getOrderedAt().format(formatter).equals(monthYear))
+                .collect(Collectors.toList());
+
+        // OrderRequest 객체 생성
+        List<OrderRequest> monthlyHistory = filteredOrders.stream()
+                .map(order -> {
+                    List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findByOrderId(order.getId());
+                    OrderRequest orderRequest = new OrderRequest();
+                    orderRequest.setCustomerOrder(order);
+                    orderRequest.setCustomerOrderProducts(customerOrderProducts);
+                    return orderRequest;
+                }).collect(Collectors.toList());
+
+        return monthlyHistory;
     }
 }
-
