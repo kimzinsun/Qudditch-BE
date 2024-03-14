@@ -100,21 +100,12 @@ public class StoreStockController {
         return map;
     }
 
-    @GetMapping("/stock/input")
-    public Map<String, Object> inputList() {
+    @GetMapping("/stock/input") // 입고 리스트 확인
+    public void inputList() {
 //        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         int userStoreId = 2;
-        Map<String, Object> map = new HashMap<>();
-        List<StockInputRes> inputList = storeStockService.getStoreOrderList(userStoreId);
-        map.put("inputList", inputList);
-        int count = storeStockService.cntStoreOrderList(userStoreId);
-        int page = count / 10;
-        if (count % 10 > 0) {
-            page += 1;
-        }
-        map.put("count", count);
-        map.put("page", page);
-        return map;
+
+
     }
 
 }
