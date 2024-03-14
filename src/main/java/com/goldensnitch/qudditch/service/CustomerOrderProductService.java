@@ -7,7 +7,6 @@ import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,16 +32,10 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
 
     public List<OrderRequest> getMonthlyOrderHistory(Integer userCustomerId, String monthYear){
         // 주문 내역 조회
-        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByUserCustomerId(userCustomerId);
-
-        // 월별 필터링
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-yyyy");
-        List<CustomerOrder> filteredOrders = customerOrders.stream()
-                .filter(order -> order.getOrderedAt().format(formatter).equals(monthYear))
-                .collect(Collectors.toList());
+        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByUserCustomerId(userCustomerId, monthYear);
 
         // OrderRequest 객체 생성
-        List<OrderRequest> monthlyHistory = filteredOrders.stream()
+        List<OrderRequest> monthlyHistory = customerOrders.stream()
                 .map(order -> {
                     List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findByOrderId(order.getId());
                     OrderRequest orderRequest = new OrderRequest();

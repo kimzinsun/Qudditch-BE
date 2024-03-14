@@ -15,7 +15,7 @@ public interface CustomerOrderProductMapper  {
 
     CustomerOrder findById(@Param("id") Integer id);
 
-    List<CustomerOrder> findByUserCustomerId(@Param("userCustomerId") Integer userCustomerId);
+    List<CustomerOrder> findByUserCustomerId(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear);
 
     List<CustomerOrderProduct> findByOrderId(@Param("orderId") Integer orderId);
 }

@@ -2,20 +2,36 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper">
 
+    <resultMap id="customerOrderResultMap" type="com.goldensnitch.qudditch.dto.CustomerOrder">
+        <id column="id" property="id"/>
+        <result column="user_customer_id" property="userCustomerId"/>
+        <result column="user_store_id" property="userStoreId"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="used_point" property="usedPoint"/>
+        <result column="total_pay" property="totalPay"/>
+        <result column="earn_point" property="earnPoint"/>
+        <result column="ordered_at" property="orderedAt" jdbcType="DATE"/>
+        <result column="tid" property="tid"/>
+    </resultMap>
+
+    <resultMap id="customerOrderProductResultMap" type="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
+        <id column="id" property="id"/>
+        <result column="customer_order_id" property="customerOrderId"/>
+        <result column="product_id" property="productId"/>
+        <result column="qty" property="qty"/>
+        <association property="product" javaType="com.goldensnitch.qudditch.dto.Product">
+            <id column="product_id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
     <!-- CustomerOrder에 추가 -->
     <!-- localdate를 사용해서 바꿔야하는지 확인: #{orderedAt, jdbcType=DATE} -->
     <insert id="insertCustomerOrder" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder"
         useGeneratedKeys="true" keyProperty="id">
         INSERT INTO customer_order (user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid)
         VALUES (#{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid})
-        </insert>
-
-    <!-- 주문 정보 조회 -->
-    <select id="findById" parameterType="java.lang.Integer" resultType="com.goldensnitch.qudditch.dto.CustomerOrder">
-        SELECT *
-        FROM customer_order
-        WHERE id = #{id}
-    </select>
+    </insert>
 
     <!-- CustomerOrderProduct에 추가 -->
     <insert id="insertCustomerOrderProduct" parameterType="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
@@ -23,18 +39,27 @@
         VALUES (#{customerOrderId}, #{productId}, #{qty})
     </insert>
 
+    <!-- 주문 정보 조회 -->
+    <select id="findById" parameterType="java.lang.Integer" resultMap="customerOrderResultMap">
+        SELECT *
+        FROM customer_order
+        WHERE id = #{id}
+    </select>
+
     <!-- 사용자 ID로 월별 주문 내역 조회 -->
-    <select id="findByUserCustomerId" parameterType="java.lang.Integer" resultType="com.goldensnitch.qudditch.dto.CustomerOrder">
+    <select id="findByUserCustomerId" parameterType="map" resultMap="customerOrderResultMap">
         SELECT *
         FROM customer_order
         WHERE user_customer_id = #{userCustomerId}
+        AND DATE_FORMAT(ordered_at, '%Y-%m') = #{monthYear}
         <!-- 필요한 경우 날짜 범위 조건을 추가 -->
     </select>
 
     <!-- 주문 ID로 주문 상품 정보 조회 -->
-    <select id="findByOrderId" parameterType="java.lang.Integer" resultType="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
-        SELECT *
-        FROM customer_order_product
-        WHERE customer_order_id = #{orderId}
+    <select id="findByOrderId" parameterType="java.lang.Integer" resultMap="customerOrderProductResultMap">
+        SELECT cop.*, p.*
+        FROM customer_order_product cop
+        JOIN product p ON cop.product_id = p.id
+        WHERE cop.customer_order_id = #{orderId}
     </select>
 </mapper>

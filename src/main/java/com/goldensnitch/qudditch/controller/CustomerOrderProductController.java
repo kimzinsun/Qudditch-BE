@@ -3,6 +3,7 @@ package com.goldensnitch.qudditch.controller;
 import com.goldensnitch.qudditch.dto.OrderRequest;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +26,7 @@ public class CustomerOrderProductController {
     }
 
     @GetMapping("/history/{userCustomerId}/{monthYear}")
-    public ResponseEntity<List<OrderRequest>> getMonthlyOrderHistory(@PathVariable Integer userCustomerId, @PathVariable String monthYear){
+    public ResponseEntity<List<OrderRequest>> getMonthlyOrderHistory(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear){
         List<OrderRequest> history = customerOrderProductService.getMonthlyOrderHistory(userCustomerId, monthYear);
         return ResponseEntity.ok(history);
     }
