@@ -38,21 +38,22 @@ public class StoreOrderController {
     }
 
     @GetMapping("")
-    public Map<String, Object> orderList(StoreOrderParam param) {
+    public Map<String, Object> orderList(StoreOrderParam param, @RequestParam(defaultValue = "1") int currentPage) {
 
         // 제품리스트
-        List<StoreOrder> orderList = storeOrderService.orderList(param);
+        List<StoreOrder> orderList = storeOrderService.orderList(param, currentPage);
         // 총 수
         int count = storeOrderService.getallList(param);
         // 페이지
-        int page = count / 10;
+        int totalPage = count / 10;
         if(count % 10 > 0) {
-            page += 1;
+            totalPage += 1;
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("orderList", orderList);
         map.put("count", count);
-        map.put("page", page);
+        map.put("totalPage", totalPage);
+        map.put("currentPage", currentPage);
 
         return map;
     }

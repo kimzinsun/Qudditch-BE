@@ -4,9 +4,6 @@ import com.goldensnitch.qudditch.mapper.StoreBookMarkMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Service
 public class StoreBookMarkService {
     private final StoreBookMarkMapper storeBookmarkMapper;
@@ -16,17 +13,18 @@ public class StoreBookMarkService {
         this.storeBookmarkMapper = storeBookmarkMapper;
     }
 
-    public void addStoreBookmark(Integer userCustomerId, Integer userStoreId) {
-        Map<String, Integer> params = new HashMap<>();
-        params.put("userCustomerId", userCustomerId);
-        params.put("userStoreId", userStoreId);
-        storeBookmarkMapper.addStoreBookmark(params);
+    public boolean toggleStoreBookmark(Integer userCustomerId, Integer storeId) {
+       int count = storeBookmarkMapper.toggleStoreBookmark(userCustomerId, storeId);
+        if (count == 0){
+            storeBookmarkMapper.addStoreBookmark(userCustomerId, storeId);
+            return true;
+        }else {
+            storeBookmarkMapper.deleteStoreBookmark(userCustomerId, storeId);
+            return false;
+        }
     }
 
-    public void removeStoreBookmark(Integer userCustomerId, Integer userStoreId) {
-        Map<String, Integer> params = new HashMap<>();
-        params.put("userCustomerId", userCustomerId);
-        params.put("userStoreId", userStoreId);
-        storeBookmarkMapper.removeStoreBookmark(params);
-    }
+
+
+
 }
