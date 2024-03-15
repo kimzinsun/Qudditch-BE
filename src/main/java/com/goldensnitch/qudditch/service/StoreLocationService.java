@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.Store;
 import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.mapper.StoreLocationMapper;
@@ -36,8 +37,12 @@ public class StoreLocationService {
         return storeLocationMapper.getUserstoreIdBystoreId(storeId);
     }
 
-    public List<StoreStockRes> storeStockList(int userStoreId) {
-        return storeLocationMapper.storeStockList(userStoreId);
+    public List<StoreStockRes> storeStockList(int userStoreId, PaginationParam paginationParam) {
+        return storeLocationMapper.storeStockList(userStoreId, paginationParam.getRecordSize(), paginationParam.getOffset());
+    }
+
+    public int cntStoreStockList(int userStoreId) {
+        return storeLocationMapper.cntStoreStockList(userStoreId);
     }
 
 

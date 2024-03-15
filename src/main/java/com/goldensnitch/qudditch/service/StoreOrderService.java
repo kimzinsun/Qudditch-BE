@@ -1,7 +1,7 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.StoreOder.ProductWithDetailQty;
-import com.goldensnitch.qudditch.dto.StoreOder.StoreOrderParam;
 import com.goldensnitch.qudditch.dto.StoreOrder;
 import com.goldensnitch.qudditch.dto.StoreOrderProduct;
 import com.goldensnitch.qudditch.mapper.StoreOrderMapper;
@@ -19,11 +19,11 @@ public class StoreOrderService {
         this.storeOrderMapper = storeOrderMapper;
     }
 
-    public List<StoreOrder> orderList(StoreOrderParam param, int currentPage) {
-        return storeOrderMapper.orderList(param);
+    public List<StoreOrder> orderList(PaginationParam paginationParam) {
+        return storeOrderMapper.orderList(paginationParam.getRecordSize(), paginationParam.getOffset());
     }
-    public int getallList(StoreOrderParam param) {
-        return storeOrderMapper.getallList(param);
+    public int cntOrderList() {
+        return storeOrderMapper.cntOrderList();
     }
 
     public int insertOrder(StoreOrder order) {

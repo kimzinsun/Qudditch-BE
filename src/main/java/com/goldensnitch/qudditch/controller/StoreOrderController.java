@@ -1,10 +1,11 @@
 package com.goldensnitch.qudditch.controller;
 
 
+import com.goldensnitch.qudditch.dto.Pagination;
+import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.StoreOder.OrderDetailWithProducts;
 import com.goldensnitch.qudditch.dto.StoreOder.ProductWithDetailQty;
 import com.goldensnitch.qudditch.dto.StoreOder.ProductWithQty;
-import com.goldensnitch.qudditch.dto.StoreOder.StoreOrderParam;
 import com.goldensnitch.qudditch.dto.StoreOrder;
 import com.goldensnitch.qudditch.dto.StoreOrderProduct;
 import com.goldensnitch.qudditch.service.StoreOrderService;
@@ -38,22 +39,18 @@ public class StoreOrderController {
     }
 
     @GetMapping("")
-    public Map<String, Object> orderList(StoreOrderParam param, @RequestParam(defaultValue = "1") int currentPage) {
+    public Map<String, Object> orderList(PaginationParam paginationParam) {
 
         // 제품리스트
-        List<StoreOrder> orderList = storeOrderService.orderList(param, currentPage);
+        List<StoreOrder> orderList = storeOrderService.orderList(paginationParam);
         // 총 수
-        int count = storeOrderService.getallList(param);
-        // 페이지
-        int totalPage = count / 10;
-        if(count % 10 > 0) {
-            totalPage += 1;
-        }
+        int count = storeOrderService.cntOrderList();
+
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("orderList", orderList);
-        map.put("count", count);
-        map.put("totalPage", totalPage);
-        map.put("currentPage", currentPage);
+
+        Pagination pagination = new Pagination(count, paginationParam);
+        map.put("pagination", pagination);
 
         return map;
     }
