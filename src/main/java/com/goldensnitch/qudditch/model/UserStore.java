@@ -26,4 +26,5 @@ public class UserStore {
     private Date createdAt; // 계정 생성 시간
     private Date modifiedAt; // 계정 수정 시간
     
+    
 }

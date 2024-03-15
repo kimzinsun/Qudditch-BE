@@ -129,7 +129,15 @@ public class JwtTokenProvider {
 
     // 생성자에서는 애플리케이션의 설정을 기반으로 SecreKey를 초기화합니다.
     public JwtTokenProvider(ApplicationProperties properties) {
-        this.secretKey = Keys.hmacShaKeyFor(properties.getJwtSecret().getBytes(StandardCharsets.UTF_8));
+        // 시크릿 키를 생성할 때 적절한 길이 확인
+        byte[] keyBytes = properties.getJwtSecret().getBytes(StandardCharsets.UTF_8);
+        System.out.println("Key length in bits: " + keyBytes.length * 8);
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException("Key length must be at least 256 bits.");
+        }
+
+        // this.secretKey = Keys.hmacShaKeyFor(properties.getJwtSecret().getBytes(StandardCharsets.UTF_8));
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.jwtExpirationInMs = properties.getJwtExpirationInMs();
     }
 
@@ -141,9 +149,9 @@ public class JwtTokenProvider {
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
-                .claim("sub", username)
-                .claim("iat", now)
-                .claim("exp", expiryDate)
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -153,9 +161,9 @@ public class JwtTokenProvider {
         try {
             // 토큰 파싱 시도
             Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(authToken);
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(authToken);
             // 성공적으로 파싱되면 true 반환
             return true;
         } catch (ExpiredJwtException e) {
@@ -167,7 +175,7 @@ public class JwtTokenProvider {
         } catch (MalformedJwtException e) {
             // 구조적으로 잘못된 JWT인 경우
             logger.info("Invalid JWT token.");
-        // 기존의 SignatureException 대신 SecurityException 사용
+            // 기존의 SignatureException 대신 SecurityException 사용
         } catch (SecurityException e) {
             // JWT 서명이 유효하지 않은 경우
             logger.info("Invalid JWT signature.");

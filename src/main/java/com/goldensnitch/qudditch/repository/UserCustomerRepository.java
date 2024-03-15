@@ -2,17 +2,14 @@
 
 package com.goldensnitch.qudditch.repository;
 
-// import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.apache.ibatis.annotations.Mapper;
 
 import com.goldensnitch.qudditch.model.UserCustomer;
-
-// @Repository
-// public interface UserCustomerRepository extends JpaRepository<UserCustomer, Integer> {
-//     UserCustomer findByEmail(String email);
-// }
-@Repository
+@Mapper
 public interface UserCustomerRepository {
+
     UserCustomer selectUserByEmail(String email);
     Integer insertUserCustomer(UserCustomer user);
+    UserCustomer findByVerificationCode(String verificationCode);
+    void updateUserCustomer(UserCustomer userCustomer);
 }

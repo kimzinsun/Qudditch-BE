@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
+
+
 /* @Slf4j
 @Service
 public class EmailService {
@@ -67,14 +69,15 @@ public class EmailService {
     private final SendGrid sendGrid;
     
     // application.properties에서 발신자 이메일을 읽어옵니다.
-    private final String fromEmail;
+    @Value("${twilio.sendgrid.from-email}")
+    private String fromEmail;   // application.properties에서 발신자 이메일 주소를 읽어옵니다.
 
     // 생성자 주입을 위해 @Autowired 주석을 제거
-    public EmailService(SendGrid sendGrid,
-                        @Value("${twilio.sendgrid.from-email}") String fromEmail) {
+    public EmailService(SendGrid sendGrid, @Value("${twilio.sendgrid.from-email}") String fromEmail) {
         this.sendGrid = sendGrid;
         this.fromEmail = fromEmail;
     }
+
 
     // 단일 이메일을 전송하는 메소드입니다.
     public void sendSingleEmail(String toEmail) {
@@ -108,8 +111,18 @@ public class EmailService {
         }
     }
 
-    public void sendVerificationEmail(String email) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sendVerificationEmail'");
+    public void sendVerificationEmail(String email, String verificationCode) {
+        String subject = "계정 인증을 완료해주세요";
+        String verificationUrl = "http://yourdomain.com/verify?code=" + verificationCode; // 예시 URL, 실제 주소에 맞게 수정필요
+        String contentText = String.format("아래 링크를 클릭하여 계정 인증을 완료해주세요: %s", verificationUrl);
+
+        Email from = new Email(this.fromEmail);
+        Email to = new Email(email);
+        Content content = new Content("text/plain", contentText);
+        Mail mail = new Mail(from, subject, to, content);
+
+        sendEmail(mail);
     }
+
+    // sendEmail 메소드는 위에 이미 구현되어 있음
 }
