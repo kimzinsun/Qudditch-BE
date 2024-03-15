@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goldensnitch.qudditch.mapper.StoreStockMapper">
+    <select id="cntProductByUserStoreId" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM store_stock WHERE user_store_id = #{userStoreId}
+    </select>
+    <select id="selectAllProductByUserStoreId" parameterType="int" resultType="StoreStockRes">
+        SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
+        FROM store_stock s , product p, category c
+        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id
+    </select>
+    <select id="selectProductByUserStoreIdAndProductId" parameterType="StoreStock" resultType="StoreStock">
+        SELECT * FROM store_stock WHERE user_store_id = #{userStoreId} and product_id = #{productId}
+    </select>
+    <update id="updateStock" parameterType="StoreStock">
+        UPDATE store_stock
+        SET qty = #{qty}, position_id = #{positionId}
+        WHERE user_store_id = #{userStoreId} and product_id = #{productId}
+    </update>
+    <select id="selectProductByUserStoreIdAndCategoryId">
+        SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
+        FROM store_stock s , product p, category c
+        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id and p.category_id = #{categoryId}
+    </select>
+    <select id="cntProductByUserStoreIdAndCategoryId">
+        SELECT COUNT(*)
+        FROM store_stock s , product p, category c
+        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id and p.category_id = #{categoryId}
+    </select>
+
+    <select id="selectStoreByProductId"  resultType="StoreLocQty">
+        select s.id, s.name as name, s.address as address, s.wgs84_x, s.wgs84_y, ss.qty
+        from store s, store_stock ss, user_store us, product p
+        where p.name like concat('%','${productName}','%') and p.id = ss.product_id and s.id = us.store_id and us.id = ss.user_store_id
+        ORDER BY (6371
+            *ACOS(COS(RADIANS(${currentWgs84X}))
+                      *COS(RADIANS(s.wgs84_x))
+                      *COS(radians(s.wgs84_y)-RADIANS(${currentWgs84Y}))
+                +SIN(RADIANS(${currentWgs84X}))*SIN(RADIANS(wgs84_x))))
+        LIMIT 10;
+    </select>
+
+
+
+
+
+</mapper>
