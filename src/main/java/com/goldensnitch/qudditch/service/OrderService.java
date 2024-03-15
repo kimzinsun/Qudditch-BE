@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +80,7 @@ public class OrderService {
         CustomerOrder customerOrder = new CustomerOrder();
         customerOrder.setUserCustomerId(userCustomerId);
         customerOrder.setTotalAmount(totalAmount);
-        customerOrder.setOrderedAt(LocalDate.now()); // LocalDate 사용
+        customerOrder.setOrderedAt(Date.valueOf(LocalDate.now())); // LocalDate 사용
 
         customerOrderProductMapper.insertCustomerOrder(customerOrder);
         return customerOrder;

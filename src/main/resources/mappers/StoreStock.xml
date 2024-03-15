@@ -40,6 +40,60 @@
         LIMIT 10;
     </select>
 
+    <insert id="insertDisposeLog">
+        INSERT INTO store_stock_disuse (user_store_id, product_id, qty)
+        VALUES (#{userStoreId}, #{productId}, #{qty})
+    </insert>
+    <select id="getDisposeLogCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM store_stock_disuse WHERE user_store_id = #{userStoreId}
+    </select>
+    <select id="getDisposeLog" parameterType="int" resultType="DisposeLog">
+        SELECT * FROM store_stock_disuse WHERE user_store_id = #{userStoreId}
+    </select>
+    <select id="getOrderListByUserStoreId">
+        SELECT si.id as storeInputId,
+               si.input_at,
+               CONCAT(
+                       CASE
+                           WHEN COUNT(p.id) > 1 THEN CONCAT(
+                                   SUBSTRING_INDEX(GROUP_CONCAT(p.name ORDER BY p.id ASC SEPARATOR ', '), ',', 1),
+                                   ' 외 ',
+                                   COUNT(p.id) - 1,
+                                   '개'
+                                                     )
+                           ELSE GROUP_CONCAT(p.name ORDER BY p.id ASC SEPARATOR ', ')
+                           END
+               ) AS items
+        FROM store s,product p
+                         INNER JOIN
+        store_input_product sip ON sip.product_id = p.id
+                         INNER JOIN
+        store_input si ON si.id = sip.store_input_id
+        where s.id = si.user_store_id and user_store_id = ${userStoreId}
+        GROUP BY si.id, si.input_at;
+    </select>
+    <select id="getOrderDetailByStoreInputId">
+        select p.id as productId, p.brand, p.name, p.price, sip.qty, sip.state, sip.exp_date as expDate
+        from product p, store_input si, store_input_product sip
+        where p.id = sip.product_id and si.id = sip.store_input_id and si.id = ${storeInputId}
+    </select>
+    <insert id="insertStoreStock" >
+        INSERT INTO store_stock (user_store_id, product_id, qty, position_id, expired_at)
+        VALUES (#{userStoreId}, #{productId}, #{qty}, #{positionId}, #{expiredAt})
+    </insert>
+    <update id="updateConfirmInput">
+        update store_input_product
+        set state = '검수완료'
+        where store_input_id = ${storeInputId} and product_id = ${productId}
+    </update>
+    <insert id="insertInputLog">
+        insert into store_stock_report (user_store_id, product_id, ymd, in_qty)
+        values (#{userStoreId}, #{productId}, #{ymd}, #{inQty})
+    </insert>
+    <select id="getInputDate">
+        select input_at from store_input where id = ${storeInputId}
+    </select>
+
     <!-- 재고 업데이트(결제된 품목 수량만큼 재고를 차감) -->
     <update id="updateStockQty">
         UPDATE store_stock
@@ -52,7 +106,4 @@
         INSERT INTO store_stock_report (user_store_id, product_id, ymd, out_qty)
         VALUES (#{userStoreId}, #{productId}, #{ymd}, #{outQty})
     </insert>
-
-
-
 </mapper>

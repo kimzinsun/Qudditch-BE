@@ -1,9 +1,10 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.Store;
-import com.goldensnitch.qudditch.dto.StoreLocQty;
-import com.goldensnitch.qudditch.dto.StoreStock;
-import com.goldensnitch.qudditch.dto.StoreStockRes;
+import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.dto.storeInput.InputDetailRes;
+import com.goldensnitch.qudditch.dto.storeInput.InputRepoReq;
+import com.goldensnitch.qudditch.dto.storeInput.InputRes;
+import com.goldensnitch.qudditch.dto.storeInput.StockInputReq;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.stereotype.Service;
 
@@ -44,5 +45,37 @@ public class StoreStockService {
     public int cntProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId) {
         return storeStockMapper.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
 
+    }
+
+    public void insertDisposeLog(int userStoreId, Integer productId, Integer qty) {
+        storeStockMapper.insertDisposeLog(userStoreId, productId, qty);
+    }
+
+    public int getDisposeLogCount(int userStoreId) {
+        return storeStockMapper.getDisposeLogCount(userStoreId);
+    }
+
+    public List<DisposeLog> getDisposeLog(int userStoreId) {
+        return storeStockMapper.getDisposeLog(userStoreId);
+    }
+
+    public List<InputRes> getOrderListByUserStoreId(int userStoreId) {
+        return storeStockMapper.getOrderListByUserStoreId(userStoreId);
+    }
+
+    public List<InputDetailRes> getOrderDetailByStoreInputId(int storeInputId) {
+        return storeStockMapper.getOrderDetailByStoreInputId(storeInputId);
+    }
+
+    public void insertStoreStock(int userStoreId, StockInputReq req, int storeInputId) {
+        InputRepoReq inputRepoReq = new InputRepoReq();
+        inputRepoReq.setUserStoreId(userStoreId);
+        inputRepoReq.setProductId(req.getProductId());
+        inputRepoReq.setYmd(storeStockMapper.getInputDate(storeInputId));
+        inputRepoReq.setInQty(req.getQty());
+        storeStockMapper.insertInputLog(inputRepoReq);
+
+        storeStockMapper.updateConfirmInput(storeInputId, req.getProductId());
+        storeStockMapper.insertStoreStock(userStoreId, req.getProductId(), req.getPositionId(), req.getQty(), String.valueOf(req.getExpiredAt()));
     }
 }

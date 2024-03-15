@@ -3,16 +3,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.goldensnitch.qudditch.mapper.StoreLocationMapper">
-
+    <!--최단거리 구하기 : 하버사인 공식 적용-->
     <select id="getLocation" parameterType="map" resultType="Store">
         SELECT *
         FROM store
         ORDER BY (6371
             *ACOS(COS(RADIANS(#{currentWgs84X}))
-                      *COS(RADIANS(store.wgs84_x))
-                      *COS(radians(store.wgs84_y)-RADIANS(#{currentWgs84Y}))
+                      *COS(RADIANS(wgs84_x))
+                      *COS(radians(wgs84_y)-RADIANS(#{currentWgs84Y}))
                 +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(wgs84_x))))
-        LIMIT 5
+        <if test = "limit != null">
+            limit #{limit}
+        </if>
     </select>
-
 </mapper>

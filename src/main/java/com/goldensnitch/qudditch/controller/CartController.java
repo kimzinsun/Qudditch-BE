@@ -53,4 +53,3 @@ public class CartController {
         return ResponseEntity.ok().body("Cart cleared successfully.");
     }
 }
-

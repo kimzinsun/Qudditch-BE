@@ -21,13 +21,16 @@ public class StoreLocationService {
     }
 
     @GetMapping("")
-    public List<Store> getLocation(double currentWgs84X, double currentWgs84Y) {
+    public List<Store> getLocation(double currentWgs84X, double currentWgs84Y, int limit) {
 
         Map<String, Object> params = new HashMap<>();
 
         params.put("currentWgs84X", currentWgs84X);
         params.put("currentWgs84Y", currentWgs84Y);
+        params.put("limit", limit);
 
         return storeLocationMapper.getLocation(params);
     }
+
+
 }
