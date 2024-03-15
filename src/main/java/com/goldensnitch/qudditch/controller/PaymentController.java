@@ -1,6 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.PaymentRequest;
+import com.goldensnitch.qudditch.dto.payment.PaymentRequest;
 import com.goldensnitch.qudditch.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

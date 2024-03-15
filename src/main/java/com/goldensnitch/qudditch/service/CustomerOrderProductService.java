@@ -2,7 +2,7 @@ package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
-import com.goldensnitch.qudditch.dto.OrderRequest;
+import com.goldensnitch.qudditch.dto.payment.OrderRequest;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.CartItem;
+import com.goldensnitch.qudditch.dto.payment.CartItem;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goldensnitch.qudditch.mapper.UserStoreMapper">
+
+    <!-- user_store_id의 유효성 검증(존재 여부) -->
+    <select id="findUserStoreIdByStoreId" resultType="Integer" parameterType="Integer">
+        SELECT us.id
+        FROM user_store us
+                 INNER JOIN store s
+                     ON us.store_id = s.id
+        WHERE s.id = #{storeId}
+    </select>
+
+    <select id="countUserStoreById" resultType="Integer" parameterType="Integer">
+        SELECT COUNT(*)
+        FROM user_store
+        WHERE id = #{userStoreId}
+    </select>
+</mapper>

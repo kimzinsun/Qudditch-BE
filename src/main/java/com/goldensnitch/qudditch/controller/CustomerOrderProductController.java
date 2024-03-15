@@ -1,6 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.OrderRequest;
+import com.goldensnitch.qudditch.dto.payment.OrderRequest;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;

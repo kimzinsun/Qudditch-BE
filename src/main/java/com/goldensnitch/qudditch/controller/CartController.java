@@ -1,6 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.CartItem;
+import com.goldensnitch.qudditch.dto.payment.CartItem;
 import com.goldensnitch.qudditch.service.CartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
