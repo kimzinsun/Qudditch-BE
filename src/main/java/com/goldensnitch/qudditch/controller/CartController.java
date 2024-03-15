@@ -17,37 +17,38 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @PostMapping("/add")
-    // PostMapping 에서 RequestParam을 사용해도 괜찮은지?
+    @PostMapping
     public ResponseEntity<?> addItemToCart(@RequestBody CartItem cartItem){
-        cartService.addItemToCart(cartItem);
-        return ResponseEntity.ok().body("Item added to cart successfully.");
-    }
-
-    @GetMapping("/get")
-    public ResponseEntity<?> getCartItems(@RequestParam("userCustomerId") Integer userCustomerId) {
-        List<CartItem> cartItems = cartService.getCartItem(userCustomerId);
-
-        if (cartItems == null || cartItems.isEmpty()) {
-            return ResponseEntity.ok().body("Your cart is empty.");
+        if (cartService.addItemToCart(cartItem.getUserStoreId(), cartItem)) {
+            return ResponseEntity.ok().body("Item added to cart successfully.");
         } else {
-            return ResponseEntity.ok(cartItems);
+            return ResponseEntity.badRequest().body("Failed to add item to cart.");
         }
     }
 
-    @PostMapping("/update")
+    @GetMapping("")
+    public ResponseEntity<?> getCartItems(@RequestParam("userCustomerId") Integer userCustomerId) {
+        List<CartItem> cartItems = cartService.getCartItem(userCustomerId);
+        return ResponseEntity.ok(cartItems);
+    }
+
+    @PutMapping("")
     public ResponseEntity<?> updateItemQty(@RequestBody CartItem cartItem){
         cartService.updateItemQty(cartItem);
         return ResponseEntity.ok().body("Cart item updated successfully.");
     }
 
-    @PostMapping("/remove")
-    public ResponseEntity<?> removeItemFromCart(@RequestParam("userCustomerId") Integer userCustomerId, @RequestParam("productId") Integer productId){
-        cartService.removeItemFromCart(userCustomerId, productId);
-        return ResponseEntity.ok().body("Item removed from cart successfully.");
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<?> removeItemFromCart(@PathVariable Integer productId, @RequestParam("userCustomerId") Integer userCustomerId) {
+        boolean isRemoved = cartService.removeItemFromCart(userCustomerId, productId);
+        if (isRemoved) {
+            return ResponseEntity.ok().body("Item removed from cart successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Failed to remove item from cart.");
+        }
     }
 
-    @PostMapping("/clear")
+    @DeleteMapping("/clear")
     public ResponseEntity<?> clearCart(@RequestParam("userCustomerId") Integer userCustomerId){
         cartService.clearCart(userCustomerId);
         return ResponseEntity.ok().body("Cart cleared successfully.");
