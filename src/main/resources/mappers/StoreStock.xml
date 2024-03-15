@@ -4,10 +4,16 @@
     <select id="cntProductByUserStoreId" parameterType="int" resultType="int">
         SELECT COUNT(*) FROM store_stock WHERE user_store_id = #{userStoreId}
     </select>
-    <select id="selectAllProductByUserStoreId" parameterType="int" resultType="StoreStockRes">
+<!--    <select id="selectAllProductByUserStoreId" parameterType="int" resultType="StoreStockRes">-->
+<!--        SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice-->
+<!--        FROM store_stock s , product p, category c-->
+<!--        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id-->
+<!--    </select>-->
+    <select id="selectAllProductByUserStoreId">
         SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
         FROM store_stock s , product p, category c
         WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id
+        limit #{recordSize} offset #{offset}
     </select>
     <select id="selectProductByUserStoreIdAndProductId" parameterType="StoreStock" resultType="StoreStock">
         SELECT * FROM store_stock WHERE user_store_id = #{userStoreId} and product_id = #{productId}
@@ -21,6 +27,7 @@
         SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
         FROM store_stock s , product p, category c
         WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id and p.category_id = #{categoryId}
+        limit #{recordSize} offset #{offset}
     </select>
     <select id="cntProductByUserStoreIdAndCategoryId">
         SELECT COUNT(*)
@@ -39,9 +46,68 @@
                 +SIN(RADIANS(${currentWgs84X}))*SIN(RADIANS(wgs84_x))))
         LIMIT 10;
     </select>
-
-
-
-
-
+    <insert id="insertDisposeLog">
+        INSERT INTO store_stock_disuse (user_store_id, product_id, qty)
+        VALUES (#{userStoreId}, #{productId}, #{qty})
+    </insert>
+    <select id="getDisposeLogCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM store_stock_disuse WHERE user_store_id = #{userStoreId}
+    </select>
+    <select id="getDisposeLog" parameterType="int" resultType="DisposeLog">
+        SELECT * FROM store_stock_disuse WHERE user_store_id = #{userStoreId} limit #{recordSize} offset #{offset}
+    </select>
+    <select id="cntOrderListByUserStoreId">
+        SELECT COUNT(*) FROM store_input WHERE user_store_id = #{userStoreId}
+    </select>
+    <select id="getOrderListByUserStoreId">
+        SELECT
+            si.id AS storeInputId,
+            si.input_at,
+            CONCAT(
+                    CASE
+                        WHEN COUNT(p.id) > 1 THEN CONCAT(
+                                SUBSTRING_INDEX(GROUP_CONCAT(p.name ORDER BY p.id ASC SEPARATOR ', '), ',', 1),
+                                ' 외 ',
+                                COUNT(p.id) - 1,
+                                '개'
+                                                  )
+                        ELSE GROUP_CONCAT(p.name ORDER BY p.id ASC SEPARATOR ', ')
+                        END
+            ) AS items
+        FROM
+            store_input si
+                INNER JOIN
+            store_input_product sip ON si.id = sip.store_input_id
+                INNER JOIN
+            product p ON sip.product_id = p.id
+        WHERE
+            si.user_store_id = ${userStoreId}
+        GROUP BY
+            si.id, si.input_at
+        ORDER BY
+            si.input_at DESC
+        LIMIT
+            #{recordSize} OFFSET #{offset};
+    </select>
+    <select id="getOrderDetailByStoreInputId">
+        select p.id as productId, p.brand, p.name, p.price, sip.qty, sip.state, sip.exp_date as expDate
+        from product p, store_input si, store_input_product sip
+        where p.id = sip.product_id and si.id = sip.store_input_id and si.id = ${storeInputId}
+    </select>
+    <insert id="insertStoreStock" >
+        INSERT INTO store_stock (user_store_id, product_id, qty, position_id, expired_at)
+        VALUES (#{userStoreId}, #{productId}, #{qty}, #{positionId}, #{expiredAt})
+    </insert>
+    <update id="updateConfirmInput">
+        update store_input_product
+        set state = '검수완료'
+        where store_input_id = ${storeInputId} and product_id = ${productId}
+    </update>
+    <insert id="insertInputLog">
+        insert into store_stock_report (user_store_id, product_id, ymd, in_qty)
+        values (#{userStoreId}, #{productId}, #{ymd}, #{inQty})
+    </insert>
+    <select id="getInputDate">
+        select input_at from store_input where id = ${storeInputId}
+    </select>
 </mapper>
