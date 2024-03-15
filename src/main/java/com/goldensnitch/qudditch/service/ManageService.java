@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.manage.InputOrder;
 import com.goldensnitch.qudditch.dto.manage.InputReq;
 import com.goldensnitch.qudditch.dto.manage.OrderDetailRes;
@@ -21,8 +22,8 @@ public class ManageService {
         this.manageMapper = manageMapper;
     }
 
-    public List<OrderRes> getOrderList() {
-        return manageMapper.getOrderList();
+    public List<OrderRes> getOrderList(PaginationParam paginationParam) {
+        return manageMapper.getOrderList(paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 
 
@@ -52,5 +53,9 @@ public class ManageService {
             manageMapper.insertStoreInputProduct(inputOrder);
         }
 
+    }
+
+    public int getOrderCount() {
+        return manageMapper.getOrderCount();
     }
 }

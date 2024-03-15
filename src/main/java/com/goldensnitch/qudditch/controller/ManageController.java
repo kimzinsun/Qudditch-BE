@@ -1,5 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.goldensnitch.qudditch.dto.Pagination;
+import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.manage.InputReq;
 import com.goldensnitch.qudditch.dto.manage.OrderDetailRes;
 import com.goldensnitch.qudditch.dto.manage.OrderRes;
@@ -8,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -20,8 +23,13 @@ public class ManageController {
     }
 
     @GetMapping("/order")
-    public List<OrderRes> getOrderList() {
-        return manageService.getOrderList();
+    public Map<String, Object> getOrderList(PaginationParam paginationParam) {
+        int count = manageService.getOrderCount();
+        List<OrderRes> list = manageService.getOrderList(paginationParam);
+        Pagination pagination = new Pagination(count, paginationParam);
+
+        return Map.of("orderList", list, "pagination", pagination);
+
     }
 
     @GetMapping("/order/detail/{orderStoreId}")
