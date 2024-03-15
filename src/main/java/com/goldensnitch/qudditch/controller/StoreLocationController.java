@@ -22,12 +22,14 @@ public class StoreLocationController {
         this.storeLocationService = storeLocationService;
     }
 
+    // 현재위치 값을 넣을 시 근처 스토어
     @GetMapping("")
     public List<Store> getLocation(@RequestParam double currentWgs84X, double currentWgs84Y){
 
         return storeLocationService.getLocation(currentWgs84X, currentWgs84Y);
     }
 
+    // storeId를 받고 난 userStoreId들의 재고 리스트
     @GetMapping("/stock")
     public List<StoreStockRes> storeStockList(@RequestParam int userStoreId){
        int storeId = storeLocationService.getUserstoreIdBystoreId(userStoreId);
