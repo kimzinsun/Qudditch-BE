@@ -13,5 +13,9 @@ public interface ProductMapper {
 
     List<Product> selectProductByName(String productName);
 
-    List<StoreStock> selectStoreStockByProductId(Integer productId, double currentWgs84X, double currentWgs84Y);
+    List<StoreStock> selectStoreStockByProductId(Integer productId, double currentWgs84X, double currentWgs84Y, int recordSize, int offset);
+
+    int cntStoreStockByProductId(Integer productId);
+
+    int selectProductIdByName(String productName);
 }

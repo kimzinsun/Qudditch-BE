@@ -22,7 +22,17 @@
                       *COS(RADIANS(s.wgs84_x))
                       *COS(radians(s.wgs84_y)-RADIANS(${currentWgs84Y}))
                 +SIN(RADIANS(${currentWgs84X}))*SIN(RADIANS(wgs84_x))))
-        LIMIT 10;
+        limit #{recordSize} OFFSET #{offset};
+    </select>
+    <select id="cntStoreStockByProductId">
+        select count(*)
+        from store_stock ss, store s, user_store us
+        where product_id = #{productId} and ss.user_store_id = us.id and us.store_id = s.id
+    </select>
+    <select id="selectProductIdByName">
+        select id
+        from product
+        where name like concat('%','${name}','%')
     </select>
 
 </mapper>
