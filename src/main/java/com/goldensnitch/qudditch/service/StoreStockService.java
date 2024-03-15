@@ -1,9 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.Store;
-import com.goldensnitch.qudditch.dto.StoreLocQty;
-import com.goldensnitch.qudditch.dto.StoreStock;
-import com.goldensnitch.qudditch.dto.StoreStockRes;
+import com.goldensnitch.qudditch.dto.*;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.stereotype.Service;
 
@@ -44,5 +41,17 @@ public class StoreStockService {
     public int cntProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId) {
         return storeStockMapper.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
 
+    }
+
+    public void insertDisposeLog(int userStoreId, Integer productId, Integer qty) {
+        storeStockMapper.insertDisposeLog(userStoreId,productId,qty);
+    }
+
+    public int getDisposeLogCount(int userStoreId) {
+        return storeStockMapper.getDisposeLogCount(userStoreId);
+    }
+
+    public List<DisposeLog> getDisposeLog(int userStoreId) {
+        return storeStockMapper.getDisposeLog(userStoreId);
     }
 }

@@ -46,19 +46,16 @@ public class StoreStockController {
     }
 
 
-
-
-
     @PostMapping("/stock/update")
     public String updateStock(@RequestBody List<StockUpdateReq> stockUpdateReq) {
         int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        int userStoreId = 2;
-        for(StockUpdateReq req : stockUpdateReq) {
+        for (StockUpdateReq req : stockUpdateReq) {
             StoreStock storeStock = storeStockService.selectProductByUserStoreIdAndProductId(userStoreId, req.getProductId());
-            if(req.getQuantity() != null) {
+            if (req.getQuantity() != null) {
                 storeStock.setQty(req.getQuantity());
             }
-            if(req.getPositionId() != null) {
+            if (req.getPositionId() != null) {
                 storeStock.setPositionId(req.getPositionId());
             }
             storeStockService.updateStock(storeStock);
@@ -66,15 +63,40 @@ public class StoreStockController {
         return "success";
     }
 
+    @GetMapping("/stock/{productName}")
+    public List<StoreLocQty> getLocation(@PathVariable String productName, @RequestParam double currentWgs84X, double currentWgs84Y) {
+        return storeStockService.getStoreByProductId(productName, currentWgs84X, currentWgs84Y);
+    }
 
+    @PostMapping("/stock/dispose")
+    public String disposeProduct(@RequestBody List<DisposeReq> list) {
+//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        int userStoreId = 2;
+        for (DisposeReq req : list) {
+            StoreStock storeStock = storeStockService.selectProductByUserStoreIdAndProductId(userStoreId, req.getProductId());
+            storeStock.setQty(storeStock.getQty() - req.getQty());
+            storeStockService.updateStock(storeStock);
+            storeStockService.insertDisposeLog(userStoreId,req.getProductId(),req.getQty());
+        }
+        return "success";
+    }
 
+    @GetMapping("/stock/dispose")
+    public Map<String, Object> getDisposeLog() {
+//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        int userStoreId = 2;
 
-
-
-
-
-
-
-
+        Map<String, Object> map = new HashMap<>();
+        int count = storeStockService.getDisposeLogCount(userStoreId);
+        List<DisposeLog> disposeLog = storeStockService.getDisposeLog(userStoreId);
+        int page = count / 10;
+        if (count % 10 > 0) {
+            page += 1;
+        }
+        map.put("disposeLog", disposeLog);
+        map.put("count", count);
+        map.put("page", page);
+        return map;
+    }
 
 }
