@@ -8,10 +8,10 @@ import java.util.List;
 @Data
 public class OrderDetailWithProducts {
     StoreOrder storeOrder;
-    List<ProductWithQty> products;
+    List<ProductWithDetailQty> products;
 
 
-    public OrderDetailWithProducts(StoreOrder storeOrder, ProductWithQty productWithQty) {
+    public OrderDetailWithProducts(StoreOrder storeOrder, ProductWithDetailQty productWithQty) {
         this.storeOrder = storeOrder;
         this.products = List.of(productWithQty);
     }

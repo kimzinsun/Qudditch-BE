@@ -1,6 +1,10 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.dto.storeInput.InputDetailRes;
+import com.goldensnitch.qudditch.dto.storeInput.StockInputReq;
+import com.goldensnitch.qudditch.dto.storeInput.InputRes;
+import com.goldensnitch.qudditch.service.RedisService;
 import com.goldensnitch.qudditch.service.StoreLocationService;
 import com.goldensnitch.qudditch.service.StoreStockService;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,13 +21,10 @@ import java.util.Map;
 @Slf4j
 @RequestMapping("/api/store")
 public class StoreStockController {
-    final StoreStockService storeStockService;
-    final StoreLocationService storeLocationService;
+   private final StoreStockService storeStockService;
 
-
-    public StoreStockController(StoreStockService storeStockService, StoreLocationService storeLocationService) {
+    public StoreStockController(StoreStockService storeStockService) {
         this.storeStockService = storeStockService;
-        this.storeLocationService = storeLocationService;
     }
     // TODO : store 관련 기능 구현
 
@@ -97,6 +99,30 @@ public class StoreStockController {
         map.put("count", count);
         map.put("page", page);
         return map;
+    }
+
+    @GetMapping("/stock/input") // 입고 리스트 확인
+    public Map<String, Object> inputList() {
+//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        int userStoreId = 2;
+        List<InputRes> inputList = storeStockService.getOrderListByUserStoreId(userStoreId);
+        Map<String, Object> map = new HashMap<>();
+        map.put("inputList", inputList);
+        return map;
+    }
+
+    @GetMapping("/stock/input/{inputId}")
+    public List<InputDetailRes> getInputDetail(@PathVariable int inputId) {
+        return storeStockService.getOrderDetailByStoreInputId(inputId);
+    }
+
+    @PostMapping("/stock/input/{inputId}")
+    public void insertStoreStock(@PathVariable int inputId, @RequestBody List<StockInputReq> list) {
+//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        int userStoreId = 2;
+        for (StockInputReq req : list) {
+            storeStockService.insertStoreStock(userStoreId, req, inputId);
+        }
     }
 
 }
