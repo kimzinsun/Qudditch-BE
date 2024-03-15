@@ -63,10 +63,12 @@ public class StoreStockController {
         return "success";
     }
 
-    @GetMapping("/stock/{productId}")
-    public List<StoreLocQty> getLocation(@PathVariable int productId, @RequestParam double currentWgs84X, double currentWgs84Y){
-        return storeStockService.getStoreByProductId(productId, currentWgs84X, currentWgs84Y);
+    @GetMapping("/stock/find")
+    public List<StoreLocQty> getLocation(@RequestParam String productName, @RequestParam double currentWgs84X, double currentWgs84Y){
+        return storeStockService.getStoreByProductId(productName, currentWgs84X, currentWgs84Y);
     }
+
+
 
 
 

@@ -30,12 +30,12 @@
 
     <select id="selectStoreByProductId"  resultType="StoreLocQty">
         select s.id, s.name as name, s.address as address, s.wgs84_x, s.wgs84_y, ss.qty
-        from store s, store_stock ss, user_store us
-        where ss.product_id = #{productId} and s.id = us.store_id and us.id = ss.user_store_id
+        from store s, store_stock ss, user_store us, product p
+        where p.name like concat('%','${productName}','%') and p.id = ss.product_id and s.id = us.store_id and us.id = ss.user_store_id
         ORDER BY (6371
-            *ACOS(COS(RADIANS(#{currentWgs84X}))
+            *ACOS(COS(RADIANS(${currentWgs84X}))
                       *COS(RADIANS(s.wgs84_x))
-                      *COS(radians(s.wgs84_y)-RADIANS(#{currentWgs84Y}))
+                      *COS(radians(s.wgs84_y)-RADIANS(${currentWgs84Y}))
                 +SIN(RADIANS(${currentWgs84X}))*SIN(RADIANS(wgs84_x))))
         LIMIT 10;
     </select>

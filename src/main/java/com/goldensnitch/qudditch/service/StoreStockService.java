@@ -33,8 +33,8 @@ public class StoreStockService {
         return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
     }
 
-    public List<StoreLocQty> getStoreByProductId(Integer productId, double currentWgs84X, double currentWgs84Y) {
-        return storeStockMapper.selectStoreByProductId(productId, currentWgs84X, currentWgs84Y);
+    public List<StoreLocQty> getStoreByProductId(String productName, double currentWgs84X, double currentWgs84Y) {
+        return storeStockMapper.selectStoreByProductId(productName, currentWgs84X, currentWgs84Y);
     }
 
     public int cntProductByUserStoreId(int userStoreId) {

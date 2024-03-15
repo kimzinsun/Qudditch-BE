@@ -18,7 +18,7 @@ public interface StoreStockMapper {
 
     List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId);
 
-    List<StoreLocQty> selectStoreByProductId(Integer productId, double currentWgs84X, double currentWgs84Y);
+    List<StoreLocQty> selectStoreByProductId(String productName, double currentWgs84X, double currentWgs84Y);
 
     int cntProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId);
 }
