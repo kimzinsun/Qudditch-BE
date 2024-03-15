@@ -22,9 +22,9 @@ public class StoreLocationController {
     }
 
     @GetMapping("")
-    public List<Store> getLocation(@RequestParam double currentWgs84X, double currentWgs84Y){
+    public List<Store> getLocation(@RequestParam double currentWgs84X, @RequestParam double currentWgs84Y, int limit){
 
-        return storeLocationService.getLocation(currentWgs84X, currentWgs84Y);
+        return storeLocationService.getLocation(currentWgs84X, currentWgs84Y, limit);
     }
 
 
