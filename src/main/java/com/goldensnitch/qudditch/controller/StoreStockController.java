@@ -46,6 +46,9 @@ public class StoreStockController {
     }
 
 
+
+
+
     @PostMapping("/stock/update")
     public String updateStock(@RequestBody List<StockUpdateReq> stockUpdateReq) {
         int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -63,10 +66,7 @@ public class StoreStockController {
         return "success";
     }
 
-    @GetMapping("/stock/find")
-    public List<StoreLocQty> getLocation(@RequestParam String productName, @RequestParam double currentWgs84X, double currentWgs84Y){
-        return storeStockService.getStoreByProductId(productName, currentWgs84X, currentWgs84Y);
-    }
+
 
 
 
