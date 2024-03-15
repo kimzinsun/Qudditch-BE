@@ -9,7 +9,7 @@ public class StoreStockReport {
     private Integer id;
     private Integer userStoreId;
     private Integer productId;
-    private Date ym;
+    private Date ymd;
     private Integer inQty;
     private Integer outQty;
     private Integer dspQty;
