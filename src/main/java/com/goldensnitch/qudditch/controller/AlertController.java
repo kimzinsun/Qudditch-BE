@@ -3,9 +3,7 @@ package com.goldensnitch.qudditch.controller;
 import com.goldensnitch.qudditch.dto.CustomerAlertLog;
 import com.goldensnitch.qudditch.service.AlertService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,5 +21,12 @@ public class AlertController {
     public List<CustomerAlertLog> alertList(int id) {
         return alertService.alertList(id);
     }
+
+    @DeleteMapping("/{id}")
+    public int deleteAlert(@PathVariable int id, @RequestBody int userCustomerId) {
+            alertService.deleteAlert(id, userCustomerId);
+            return 1;
+    }
+
 
 }

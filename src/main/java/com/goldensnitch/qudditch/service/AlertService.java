@@ -12,8 +12,10 @@ public class AlertService {
     public AlertService(AlertMapper alertMapper) {
         this.alertMapper = alertMapper;
     }
-public List<CustomerAlertLog> alertList(int id){
+    public List<CustomerAlertLog> alertList(int id){
         return alertMapper.alertList(id);
-}
-
+    }
+    public int deleteAlert(int id, int userCustomerId){
+        return alertMapper.deleteAlert(id, userCustomerId);
+    }
 }

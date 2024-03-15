@@ -9,4 +9,6 @@ import java.util.List;
 public interface AlertMapper {
 
     List<CustomerAlertLog> alertList(int id);
+
+    int deleteAlert(int id, int userCustomerId);
 }

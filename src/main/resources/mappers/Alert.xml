@@ -9,4 +9,9 @@
         order by created_at DESC
     </select>
 
+    <delete id="deleteAlert">
+        delete from customer_alert_log
+        where id=${id} and user_customer_id=${userCustomerId}
+    </delete>
+
 </mapper>
