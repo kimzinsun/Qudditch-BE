@@ -4,18 +4,18 @@ import lombok.Data;
 
 import java.sql.Date;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+// import jakarta.persistence.Entity;
+// import jakarta.persistence.GeneratedValue;
+// import jakarta.persistence.GenerationType;
+// import jakarta.persistence.Id;
+// import jakarta.persistence.Table;
 
 @Data
-@Entity
-@Table(name = "user_store")
+// @Entity
+// @Table(name = "user_store")
 public class UserStore {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id; // 순번
     private Integer storeId; // 매장 식별자
     private String email; // 이메일 주소

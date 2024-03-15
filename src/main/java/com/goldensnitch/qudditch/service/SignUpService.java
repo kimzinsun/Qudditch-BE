@@ -16,7 +16,7 @@ public class SignUpService {
     private PasswordEncoder passwordEncoder;
 
     // 회원가입 로직
-    public UserCustomer signUp(UserCustomer user) {
+    public Integer signUp(UserCustomer user) {
         // 비밀번호를 암호화하여 저장합니다.
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         
@@ -24,6 +24,6 @@ public class SignUpService {
         user.setState(0);
         
         // 저장된 사용자 객체를 반환합니다.
-        return userCustomerRepository.save(user);
+        return userCustomerRepository.insertUserCustomer(user);
     }
 }

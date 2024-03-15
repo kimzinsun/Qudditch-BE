@@ -1,16 +1,15 @@
 package com.goldensnitch.qudditch.model;
 
-import jakarta.persistence.*; // Jakarta Persistence 사용
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-@Entity
-@Table(name = "user_customer")
+// @Entity
+// @Table(name = "user_customer")
 public class UserCustomer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id; // 순번
     private String email; // 이메일 주소
     private String password; // 비밀번호

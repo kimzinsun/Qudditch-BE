@@ -39,7 +39,7 @@ public class UserService {
         String verificationCode = UUID.randomUUID().toString();
         userCustomer.setVerificationCode(verificationCode);
     
-        userCustomerRepository.save(userCustomer);
+        userCustomerRepository.insertUserCustomer(userCustomer);
         
         emailService.sendVerificationEmail(userCustomer.getEmail());
     }
