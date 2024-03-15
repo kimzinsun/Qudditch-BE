@@ -30,8 +30,8 @@ public class StoreStockService {
         return storeStockMapper.selectProductByUserStoreIdAndProductId(userStoreId, productId);
     }
 
-    public List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId) {
-        return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+    public List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId, PaginationParam paginationParam) {
+        return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 
     public List<StoreLocQty> getStoreByProductId(String productName, double currentWgs84X, double currentWgs84Y) {
@@ -55,12 +55,16 @@ public class StoreStockService {
         return storeStockMapper.getDisposeLogCount(userStoreId);
     }
 
-    public List<DisposeLog> getDisposeLog(int userStoreId) {
-        return storeStockMapper.getDisposeLog(userStoreId);
+    public List<DisposeLog> getDisposeLog(int userStoreId, PaginationParam paginationParam) {
+        return storeStockMapper.getDisposeLog(userStoreId, paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 
-    public List<InputRes> getOrderListByUserStoreId(int userStoreId) {
-        return storeStockMapper.getOrderListByUserStoreId(userStoreId);
+    public List<InputRes> getOrderListByUserStoreId(int userStoreId, PaginationParam paginationParam) {
+        return storeStockMapper.getOrderListByUserStoreId(userStoreId, paginationParam.getRecordSize(), paginationParam.getOffset());
+    }
+
+    public int cntOrderListByUserStoreId(int userStoreId) {
+        return storeStockMapper.cntOrderListByUserStoreId(userStoreId);
     }
 
     public List<InputDetailRes> getOrderDetailByStoreInputId(int storeInputId) {
@@ -77,5 +81,9 @@ public class StoreStockService {
 
         storeStockMapper.updateConfirmInput(storeInputId, req.getProductId());
         storeStockMapper.insertStoreStock(userStoreId, req.getProductId(), req.getPositionId(), req.getQty(), String.valueOf(req.getExpiredAt()));
+    }
+
+    public List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, PaginationParam paginationParam) {
+        return storeStockMapper.selectAllProductByUserStoreId(userStoreId, paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 }

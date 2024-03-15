@@ -18,7 +18,7 @@ public interface StoreStockMapper {
 
     void updateStock(StoreStock storeStock);
 
-    List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId);
+    List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId,int recordSize, int offset);
 
     List<StoreLocQty> selectStoreByProductId(String productName, double currentWgs84X, double currentWgs84Y);
 
@@ -28,8 +28,9 @@ public interface StoreStockMapper {
 
     int getDisposeLogCount(int userStoreId);
 
-    List<DisposeLog> getDisposeLog(int userStoreId);
-    List<InputRes> getOrderListByUserStoreId(int userStoreId);
+    List<DisposeLog> getDisposeLog(int userStoreId, int recordSize, int offset);
+    List<InputRes> getOrderListByUserStoreId(int userStoreId, int recordSize, int offset);
+    int cntOrderListByUserStoreId(int userStoreId);
 
     List<InputDetailRes> getOrderDetailByStoreInputId(int storeInputId);
 
@@ -38,4 +39,6 @@ public interface StoreStockMapper {
     void updateConfirmInput(int storeInputId, int productId);
     void insertInputLog(InputRepoReq inputRepoReq);
     Date getInputDate(int storeInputId);
+
+    List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, int recordSize, int offset);
 }
