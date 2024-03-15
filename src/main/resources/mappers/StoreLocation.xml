@@ -14,5 +14,16 @@
                 +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(wgs84_x))))
         LIMIT 5
     </select>
+    <select id="getUserstoreIdBystoreId" parameterType="int" resultType="int">
+        select id
+        from user_store
+        where store_id = ${storeId}
+    </select>
+
+    <select id="storeStockList">
+        SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
+        FROM store_stock s , product p, category c
+        WHERE user_store_id = #{userStoreId} and  s.product_id = p.id and p.category_id = c.id
+    </select>
 
 </mapper>

@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.Store;
+import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.mapper.StoreLocationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,14 @@ public class StoreLocationService {
         params.put("currentWgs84Y", currentWgs84Y);
 
         return storeLocationMapper.getLocation(params);
+    }
+
+    public int getUserstoreIdBystoreId(int storeId) {
+        return storeLocationMapper.getUserstoreIdBystoreId(storeId);
+    }
+
+    public List<StoreStockRes> storeStockList(int userStoreId) {
+        return storeLocationMapper.storeStockList(userStoreId);
     }
 
 
