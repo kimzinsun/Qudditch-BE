@@ -14,8 +14,8 @@ public class CartService {
     private final Map<Integer, List<CartItem>> userCarts = new ConcurrentHashMap<>();
 
     // 장바구니 아이템 추가
-    public void addItemToCart(Integer userCustomerId, CartItem item){
-        userCarts.computeIfAbsent(userCustomerId, k -> new ArrayList<>()).add(item);
+    public void addItemToCart(CartItem item){
+        userCarts.computeIfAbsent(item.getUserCustomerId(), k -> new ArrayList<>()).add(item);
         // computeIfAbsent: Map에 특정 키에 해당하는 키값이 존재하는지 확인하고 없으면 새로 만들어주는 코드
     }
 
@@ -27,15 +27,13 @@ public class CartService {
     }
 
     // 장바구니 아이템 수량 변경
-    public void updateItemQty(Integer userCustomerId, Integer productId, Integer qty){
-        List<CartItem> cartItem = userCarts.get(userCustomerId);
-        if(cartItem != null){
-            cartItem.forEach(item -> {
-                if(item.getProductId().equals(productId)){
-                    item.setQty(qty);
-                }
-            });
-        }
+    public void updateItemQty(CartItem item){
+        List<CartItem> cartItems = userCarts.getOrDefault(item.getUserCustomerId(), new ArrayList<>());
+        cartItems.forEach(cartitem -> {
+            if(cartitem.getProductId().equals(item.getProductId())){
+                cartitem.setQty(item.getQty());
+            }
+        });
     }
 
     // 장바구니 아이템 삭제

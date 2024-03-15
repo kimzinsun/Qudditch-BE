@@ -19,25 +19,25 @@ public class CartController {
 
     @PostMapping("/add")
     // PostMapping 에서 RequestParam을 사용해도 괜찮은지?
-    public ResponseEntity<?> addItemToCart(@RequestParam("userCustomerId") Integer userCustomerId, @RequestBody CartItem cartItem){
-        cartService.addItemToCart(userCustomerId, cartItem);
+    public ResponseEntity<?> addItemToCart(@RequestBody CartItem cartItem){
+        cartService.addItemToCart(cartItem);
         return ResponseEntity.ok().body("Item added to cart successfully.");
     }
 
     @GetMapping("/get")
-    public ResponseEntity<?> searchCartItem(@RequestParam("userCustomerId") Integer userCustomerId) {
-        List<CartItem> cartItem = cartService.getCartItem(userCustomerId);
+    public ResponseEntity<?> getCartItems(@RequestParam("userCustomerId") Integer userCustomerId) {
+        List<CartItem> cartItems = cartService.getCartItem(userCustomerId);
 
-        if (cartItem == null || cartItem.isEmpty()) {
+        if (cartItems == null || cartItems.isEmpty()) {
             return ResponseEntity.ok().body("Your cart is empty.");
         } else {
-            return ResponseEntity.ok(cartItem);
+            return ResponseEntity.ok(cartItems);
         }
     }
 
     @PostMapping("/update")
-    public ResponseEntity<?> updateItemQty(@RequestParam("userCustomerId") Integer userCustomerId, @RequestParam("productId") Integer productId, @RequestParam("qty") Integer qty){
-        cartService.updateItemQty(userCustomerId, productId, qty);
+    public ResponseEntity<?> updateItemQty(@RequestBody CartItem cartItem){
+        cartService.updateItemQty(cartItem);
         return ResponseEntity.ok().body("Cart item updated successfully.");
     }
 
