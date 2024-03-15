@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goldensnitch.qudditch.mapper.StoreLocationMapper">
+
+    <!--최단거리 구하기 : 하버사인 공식 적용-->
+    <select id="getLocation" parameterType="map" resultType="Store">
+        SELECT *
+        FROM store
+        ORDER BY (6371
+            *ACOS(COS(RADIANS(#{currentWgs84X}))
+                      *COS(RADIANS(store.wgs84_x))
+                      *COS(radians(store.wgs84_y)-RADIANS(#{currentWgs84Y}))
+                +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(wgs84_x))))
+        LIMIT 5
+    </select>
+
+    <!--userStore에 등록된 스토어만 들고오기 위해-->
+    <select id="getUserstoreIdBystoreId" parameterType="int" resultType="int">
+        select id
+        from user_store
+        where store_id = ${storeId}
+    </select>
+    <!--등록된 스토어들의 재고리스트-->
+    <select id="storeStockList">
+        SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
+        FROM store_stock s , product p, category c
+        WHERE user_store_id = #{userStoreId} and  s.product_id = p.id and p.category_id = c.id
+    </select>
+
+</mapper>

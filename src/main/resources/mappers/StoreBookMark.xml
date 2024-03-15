@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goldensnitch.qudditch.mapper.StoreBookMarkMapper">
+    <!--토글-->
+    <select id="toggleStoreBookmark" parameterType="Integer" resultType="Integer">
+        select count(*) from customer_bookmark_store
+        where user_customer_id = #{userCustomerId} and store_id = #{storeId}
+    </select>
+    
+    <insert id="addStoreBookmark" parameterType="Integer">
+        insert into customer_bookmark_store (user_customer_id, store_id)
+        values (#{userCustomerId}, #{storeId})
+    </insert>
+
+    <delete id="deleteStoreBookmark" parameterType="Integer">
+        delete from customer_bookmark_store
+        where user_customer_id = #{userCustomerId} and store_id = #{storeId}
+    </delete>
+
+</mapper>
