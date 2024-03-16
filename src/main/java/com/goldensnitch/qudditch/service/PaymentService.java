@@ -14,13 +14,16 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class PaymentService {
     private final RestTemplate restTemplate;
-    // kakao.pay.ready.url
-    // 카카오페이 결제 준비 API의 엔드포인트 URL
-    @Value("${kakao.pay.ready.url}")
-    private String kakaoPayReadyUrl;
+
+    // 카카오페이 결제 요청
+    @Value("${kakao.pay.ready.url}") private String kakaoPayReadyUrl;
+    // 결제 승인
+    @Value("${kakao.pay.approve.url}") private String kakaoPayApproveUrl;
+    // 결제 취소
+    @Value("${kakao.pay.cancel.url}") private String kakaoPayCancelUrl;
     // 카카오페이 API 사용을 위한 인증 키
-    @Value("${kakao.pay.authorization}")
-    private String kakaoPayAuthorization;
+    @Value("${kakao.pay.authorization}") private String kakaoPayAuthorization;
+
     // RestTemplate 주입을 통한 HTTP 클라이언트 초기화
     @Autowired
     public PaymentService(RestTemplate restTemplate) {
@@ -66,5 +69,43 @@ public class PaymentService {
             e.printStackTrace();
         }
         return "Error";
+    }
+
+    public PaymentResponse approvePayment(String tid, String pgToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "KakaoAK " + kakaoPayAuthorization);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+        parameters.add("cid", "TC0ONETIME"); // 가맹점 코드
+        parameters.add("tid", tid); // 결제 고유 번호
+        parameters.add("pg_token", pgToken); // 사용자 결제 인증 토큰
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<PaymentResponse> response = restTemplate.exchange(
+                kakaoPayApproveUrl, HttpMethod.POST, entity, PaymentResponse.class);
+
+        return response.getBody();
+    }
+
+    // 결제 취소 메서드
+    public PaymentResponse cancelPayment(String tid, String cancelAmount, String cancelTaxFreeAmount) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "KakaoAK " + kakaoPayAuthorization);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+        parameters.add("cid", "TC0ONETIME"); // 가맹점 코드
+        parameters.add("tid", tid); // 결제 고유 번호
+        parameters.add("cancel_amount", cancelAmount); // 취소 금액
+        parameters.add("cancel_tax_free_amount", cancelTaxFreeAmount); // 비과세 금액
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
+
+        ResponseEntity<PaymentResponse> response = restTemplate.exchange(
+                kakaoPayCancelUrl, HttpMethod.POST, entity, PaymentResponse.class);
+
+        return response.getBody();
     }
 }

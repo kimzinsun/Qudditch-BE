@@ -1,6 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.payment.OrderRequest;
+import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -20,14 +20,14 @@ public class CustomerOrderProductController {
     private CustomerOrderProductService customerOrderProductService;
 
     @GetMapping("/{orderId}/receipt")
-    public ResponseEntity<OrderRequest> generateReceipt(@PathVariable Integer orderId){
-        OrderRequest receipt = customerOrderProductService.generateReceipt(orderId);
+    public ResponseEntity<OrderResponse> generateReceipt(@PathVariable Integer orderId){
+        OrderResponse receipt = customerOrderProductService.generateReceipt(orderId);
         return ResponseEntity.ok(receipt);
     }
 
     @GetMapping("/history/{userCustomerId}/{monthYear}")
-    public ResponseEntity<List<OrderRequest>> getMonthlyOrderHistory(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear){
-        List<OrderRequest> history = customerOrderProductService.getMonthlyOrderHistory(userCustomerId, monthYear);
+    public ResponseEntity<List<OrderResponse>> getMonthlyOrderHistory(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear){
+        List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(userCustomerId, monthYear);
         return ResponseEntity.ok(history);
     }
 }

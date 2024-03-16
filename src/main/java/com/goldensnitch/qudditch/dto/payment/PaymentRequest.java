@@ -31,5 +31,3 @@ public class PaymentRequest {
     private Integer totalPay; // 실제 지불금액
     private Integer earnPoint; // 포인트 모으기
 }
-
-

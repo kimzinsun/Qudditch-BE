@@ -2,7 +2,7 @@ package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
-import com.goldensnitch.qudditch.dto.payment.OrderRequest;
+import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,34 +16,28 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
     @Autowired
     private CustomerOrderProductMapper customerOrderProductMapper;
 
-    public OrderRequest generateReceipt(Integer orderId) {
+    public OrderResponse generateReceipt(Integer orderId) {
         // 주문 정보 조회
         CustomerOrder customerOrder = customerOrderProductMapper.findById(orderId);
         // 해당 주문의 상품 정보 조회
         List<CustomerOrderProduct> products = customerOrderProductMapper.findByOrderId(orderId);
 
-        // OrderRequest 객체로 묶기
-        OrderRequest receipt = new OrderRequest();
+        OrderResponse receipt = new OrderResponse();
         receipt.setCustomerOrder(customerOrder);
         receipt.setCustomerOrderProducts(products);
 
         return receipt;
     }
 
-    public List<OrderRequest> getMonthlyOrderHistory(Integer userCustomerId, String monthYear){
+    public List<OrderResponse> getMonthlyOrderHistory(Integer userCustomerId, String monthYear){
         // 주문 내역 조회
         List<CustomerOrder> customerOrders = customerOrderProductMapper.findByUserCustomerId(userCustomerId, monthYear);
-
-        // OrderRequest 객체 생성
-        List<OrderRequest> monthlyHistory = customerOrders.stream()
-                .map(order -> {
-                    List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findByOrderId(order.getId());
-                    OrderRequest orderRequest = new OrderRequest();
-                    orderRequest.setCustomerOrder(order);
-                    orderRequest.setCustomerOrderProducts(customerOrderProducts);
-                    return orderRequest;
-                }).collect(Collectors.toList());
-
-        return monthlyHistory;
+        return customerOrders.stream().map(order -> {
+            List<CustomerOrderProduct> products = customerOrderProductMapper.findByOrderId(order.getId());
+            OrderResponse orderResponse = new OrderResponse();
+            orderResponse.setCustomerOrder(order);
+            orderResponse.setCustomerOrderProducts(products);
+            return orderResponse;
+        }).collect(Collectors.toList());
     }
 }

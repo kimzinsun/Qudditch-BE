@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class CartService {
+public class CartService { // 장바구니 기능 (추가, 조회, 수량변경, 개별삭제, 모두삭제)
     private final Map<Integer, List<CartItem>> userCarts = new ConcurrentHashMap<>();
     private final StoreSelectionService storeSelectionService;
 
