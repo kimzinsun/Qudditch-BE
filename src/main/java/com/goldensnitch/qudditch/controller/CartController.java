@@ -17,7 +17,7 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @PostMapping
+    @PostMapping("")
     public ResponseEntity<?> addItemToCart(@RequestBody CartItem cartItem){
         if (cartService.addItemToCart(cartItem.getUserStoreId(), cartItem)) {
             return ResponseEntity.ok().body("Item added to cart successfully.");
