@@ -11,13 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+// UserService 클래스는 사용자 관련 비즈니스 로직을 처리합니다.
 @Service
 public class UserService {
     
+    // 필요한 의존성 컴포넌트들을 자동 주입합니다.
     @Autowired
     private UserCustomerRepository userCustomerRepository;
 
-    @SuppressWarnings("unused")
     @Autowired
     private UserStoreRepository userStoreRepository;
 
@@ -25,7 +26,10 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private EmailService emailService;
+    private EmailService emailService;  // SendGrid 이메일 서비스
+
+    @Autowired
+    private NaverMailService naverMailService;  // NaverMailService 주입
 
     // UserCustomer 회원가입 로직
     public void registerUserCustomer(UserCustomer userCustomer) {
@@ -36,11 +40,13 @@ public class UserService {
         // 이메일 인증 코드 생성 및 저장
         String verificationCode = UUID.randomUUID().toString();
         userCustomer.setVerificationCode(verificationCode);
-    
+        
+        // UserCustomer 정보를 데이터베이스에 저장
         userCustomerRepository.insertUserCustomer(userCustomer);
         
-        // 수정된 부분: 이메일 주소와 인증 코드를 sendVerificationEmail 메소드에 전달
+        // SendGrid와 네이버 메일 서비스를 모두 사용하여 이메일 발송
         emailService.sendVerificationEmail(userCustomer.getEmail(), verificationCode);
+        naverMailService.sendVerificationEmail(userCustomer.getEmail(), verificationCode);
     }
 
     // UserStore 회원가입 로직 (예시, 구체적인 구현은 생략)

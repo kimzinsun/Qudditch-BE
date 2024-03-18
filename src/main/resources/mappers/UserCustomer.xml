@@ -4,7 +4,7 @@
 
     <insert id="insertUserCustomer" parameterType="com.goldensnitch.qudditch.model.UserCustomer">
         INSERT INTO user_customer (
-            email, password, name, state, verficationCode,
+            email, password, name, state, verificationCode,
             collectionArn, createdAt, modifiedAt
         ) VALUES (
             #{email}, #{password}, #{name}, #{state}, #{verificationCode},
