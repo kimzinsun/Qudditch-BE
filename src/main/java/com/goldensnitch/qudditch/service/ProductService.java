@@ -2,6 +2,7 @@ package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.Product;
+import com.goldensnitch.qudditch.dto.ProductExt;
 import com.goldensnitch.qudditch.dto.StoreStock;
 import com.goldensnitch.qudditch.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
@@ -16,8 +17,8 @@ public class ProductService {
         this.productMapper = productMapper;
     }
 
-    public Product selectProductById(Integer id) {
-        return productMapper.selectProductById(id);
+    public ProductExt selectProductById(Integer productId, Integer userId) {
+        return productMapper.selectProductById(productId, userId);
     }
 
     public List<Product> selectProductByName(String productName) {
