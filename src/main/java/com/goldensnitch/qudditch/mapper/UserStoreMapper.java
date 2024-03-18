@@ -10,5 +10,4 @@ public interface UserStoreMapper {
 
     // 특정 매장 서비스 사용 가능 여부
     Integer countUserStoreById(Integer userStoreId);
-
 }

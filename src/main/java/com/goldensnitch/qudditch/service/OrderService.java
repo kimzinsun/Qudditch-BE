@@ -1,9 +1,12 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.dto.CustomerOrder;
+import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import com.goldensnitch.qudditch.dto.StoreStock;
+import com.goldensnitch.qudditch.dto.StoreStockReport;
 import com.goldensnitch.qudditch.dto.payment.CartItem;
+import com.goldensnitch.qudditch.dto.payment.PaymentResponse;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
-import com.goldensnitch.qudditch.mapper.ProductMapper;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,9 +18,6 @@ import java.util.List;
 
 @Service
 public class OrderService {
-    // 상품 정보 조회를 위한 매퍼
-    @Autowired
-    private ProductMapper productMapper;
 
     // DB에 주문 정보와 주문 상품 정보를 저장하기 위한 매퍼
     @Autowired
@@ -27,25 +27,69 @@ public class OrderService {
     private StoreStockMapper storeStockMapper;
 
     @Autowired
-    private ProductService productService; // 상품 서비스 의존성 추가
-
-    @Autowired
     private PaymentService paymentService;
 
     @Autowired
     private CartService cartService;
 
     @Transactional
-    public String createOrder(List<CartItem> cartItems, Integer userCustomerId) {
+    public String createOrder(Integer userCustomerId) {
+        // 사용자의 장바구니 아이템 조회
+        List<CartItem> cartItems = cartService.getCartItem(userCustomerId);
+
         if (cartItems.isEmpty()) {
             return "장바구니가 비어 있습니다.";
         }
 
+//        List<Product> products = productMapper.findProductsByUserCustomerId(userCustomerId);
+//        if (products.isEmpty()) {
+//            return "상품 정보를 찾을 수 없습니다.";
+//        }
+
+        // cartItem 에서 첫 번째 상품의 이름을 사용하도록 수정
+        String itemName = cartItems.get(0).getProductName();
+
         // 결제 승인된 상태를 가정 (실제 결제 승인 로직은 별도로 처리)
         int totalAmount = calculateTotalAmount(cartItems);
 
+        // 결제 페이지 URL을 받아오는 부분
+        String paymentPageUrl = paymentService.initiatePayment(
+                "TC0ONETIME",
+                userCustomerId.toString(),
+                "partner_user_id",
+                itemName,
+                1, // 수량, 실제 수량으로 교체 필요
+                totalAmount,
+                0,
+                "http://localhost:8080/approval", // 승인 URL
+                "http://localhost:8080/cancel", // 취소 URL
+                "http://localhost:8080/fail" // 실패 URL
+        );
+
+        return "결제 페이지 URL: " + paymentPageUrl;
+    }
+
+    // 결제 승인을 위한 메서드, 실제 구현에서는 사용자로부터 받은 pgToken 등을 활용
+    public String approvePayment(String pgToken, String tid, Integer userCustomerId) {
+        PaymentResponse paymentResponse = paymentService.approvePayment(tid, pgToken);
+        if (paymentResponse == null) {
+            throw new RuntimeException("결제 승인 실패");
+        }
+
+        // 사용자의 장바구니 아이템 조회
+        List<CartItem> cartItems = cartService.getCartItem(userCustomerId);
+        if (cartItems.isEmpty()) {
+            return "장바구니가 비어 있습니다.";
+        }
+
+        // 장바구니 아이템을 기반으로 총 결제 금액 계산
+        int totalAmount = calculateTotalAmount(cartItems);
+
+        // 장바구니 아이템 중 첫 번째 항목의 userStoreId를 사용하여 모든 주문 아이템이 같은 매장에서 추가되었음을 가정
+        Integer userStoreId = cartItems.get(0).getUserStoreId();
+
         // 고객 오더 정보 생성 및 저장
-        CustomerOrder customerOrder = setupCustomerOrder(userCustomerId, totalAmount);
+        CustomerOrder customerOrder = setupCustomerOrder(userCustomerId, totalAmount, userStoreId);
 
         // 각 상품에 대한 주문 상품 정보 생성 및 저장
         List<CustomerOrderProduct> orderProducts = setupCustomerOrderProducts(customerOrder.getId(), cartItems);
@@ -61,17 +105,18 @@ public class OrderService {
 
     private int calculateTotalAmount(List<CartItem> cartItems) {
         return cartItems.stream()
-                .mapToInt(item -> {
-                    Product product = productMapper.findByProductId(item.getProductId());
-                    return product.getPrice() * item.getQty();
-                })
+                .mapToInt(item -> item.getProductPrice() * item.getQty())
                 .sum();
     }
 
-    private CustomerOrder setupCustomerOrder(Integer userCustomerId, int totalAmount){
+    private CustomerOrder setupCustomerOrder(Integer userCustomerId, int totalAmount, Integer userStoreId){
         CustomerOrder order = new CustomerOrder();
         order.setUserCustomerId(userCustomerId);
         order.setTotalAmount(totalAmount);
+        order.setUserStoreId(userStoreId); // 매장 정보 설정
+        order.setUsedPoint(0); // used_point에 대한 기본값 설정
+        order.setTotalPay(totalAmount); // 예시로 totalAmount 값을 사용, 실제 비즈니스 로직에 맞게 조정 필요
+        order.setEarnPoint(0); // earn_point에 대한 기본값 설정
         // order 객체를 데이터베이스에 삽입
         customerOrderProductMapper.insertCustomerOrder(order); // 수정된 부분
         return order;

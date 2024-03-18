@@ -16,4 +16,5 @@
         FROM user_store
         WHERE id = #{userStoreId}
     </select>
+
 </mapper>
