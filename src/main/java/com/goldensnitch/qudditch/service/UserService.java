@@ -28,9 +28,8 @@ public class UserService {
     @Autowired
     private EmailService emailService;  // SendGrid 이메일 서비스
 
-    @Autowired
-    private NaverMailService naverMailService;  // NaverMailService 주입
 
+    
     // UserCustomer 회원가입 로직
     public void registerUserCustomer(UserCustomer userCustomer) {
         // 비밀번호 암호화 및 저장
@@ -46,7 +45,7 @@ public class UserService {
         
         // SendGrid와 네이버 메일 서비스를 모두 사용하여 이메일 발송
         emailService.sendVerificationEmail(userCustomer.getEmail(), verificationCode);
-        naverMailService.sendVerificationEmail(userCustomer.getEmail(), verificationCode);
+        
     }
 
     // UserStore 회원가입 로직 (예시, 구체적인 구현은 생략)
