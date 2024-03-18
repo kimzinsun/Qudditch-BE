@@ -4,13 +4,10 @@ import com.goldensnitch.qudditch.dto.Pagination;
 import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.Product;
 import com.goldensnitch.qudditch.dto.StoreStock;
-import com.goldensnitch.qudditch.service.CrawlingService;
 import com.goldensnitch.qudditch.service.ProductService;
-import com.sendgrid.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -57,23 +54,33 @@ public class ProductController {
     // selectProductByName로 먼저 이름을 검색해서 productId를 가져온 후에 selectStoreStockByProductId로 호출하는 방식으로 변경
 
     @GetMapping("/store/{productId}")
-    public Map<String, Object> selectStoreStockByProductId(@PathVariable Integer productId, PaginationParam paginationParam){
-//        double currentWgs84x = SecurityContextHolder.getContext().getAuthentication().getPrincipal().getCurrentX();
-//        double currentWgs84y = SecurityContextHolder.getContext().getAuthentication().getPrincipal().getCurrentY();
-        double currentWgs84X = 128.91231380719825;
-        double currentWgs84Y = 37.79691574964818;
-
-
+    public ResponseEntity<Map<String, Object>> selectStoreStockByProductId(@PathVariable Integer productId, PaginationParam paginationParam, @RequestParam double currentWgs84X, @RequestParam double currentWgs84Y) {
+        Map<String, Object> response = new HashMap<String, Object>();
+        String status;
         int count = productService.cntStoreStockByProductId(productId);
 
-        List<StoreStock> storeStockList = productService.selectStoreStockByProductId(productId, currentWgs84X, currentWgs84Y, paginationParam);
-        Pagination pagination = new Pagination(count, paginationParam);
+        if(currentWgs84X == 0 || currentWgs84Y == 0) {
+            currentWgs84X = 129.1613;
+            currentWgs84Y = 35.16018;
+        }
 
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("pagination", pagination);
-        map.put("storeStockList", storeStockList);
+        if (productId == null || count == 0) {
+            status = "fail";
+            response.put("message", "상품을 찾을 수 없습니다.");
+            response.put("status", status);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } else {
+            status = "success";
+            List<StoreStock> storeStockList = productService.selectStoreStockByProductId(productId, currentWgs84X, currentWgs84Y, paginationParam);
+            Pagination pagination = new Pagination(count, paginationParam);
 
-        return map;
+            response.put("status", status);
+            response.put("pagination", pagination);
+            response.put("storeStockList", storeStockList);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }
+
     }
 
 }
