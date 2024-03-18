@@ -9,4 +9,6 @@ import java.util.List;
 public interface BookmarkUserMapper {
     List<CustomerBookmarkProduct> selectProducts(int userCustomerId);
     int insertProduct(CustomerBookmarkProduct dto);
+
+    int deleteProduct(CustomerBookmarkProduct dto);
 }

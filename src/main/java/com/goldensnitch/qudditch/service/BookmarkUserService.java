@@ -20,4 +20,8 @@ public class BookmarkUserService {
     public boolean createProduct(CustomerBookmarkProduct dto){
         return mapper.insertProduct(dto) > 0;
     }
+
+    public  boolean deleteProduct(CustomerBookmarkProduct dto){
+        return mapper.deleteProduct(dto) > 0;
+    }
 }

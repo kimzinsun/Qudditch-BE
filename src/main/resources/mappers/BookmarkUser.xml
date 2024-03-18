@@ -13,4 +13,10 @@
         VALUES (#{userCustomerId}, #{productId});
     </insert>
 
+    <delete id="deleteProduct" parameterType="com.goldensnitch.qudditch.dto.CustomerBookmarkProduct">
+        DELETE FROM customer_bookmark_product
+        WHERE user_customer_id = #{userCustomerId}
+            AND product_id = #{productId}
+    </delete>
+
 </mapper>

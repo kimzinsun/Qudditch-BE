@@ -29,4 +29,11 @@ public class BookmarkUserController {
 
         return service.createProduct(dto) ? "SUCCESS" : "FAIL";
     }
+
+    @DeleteMapping("/product")
+    public String removeProduct(CustomerBookmarkProduct dto) {
+        log.info("BookmarkUserController.removeProduct: CustomerBookmarkProduct {}", dto);
+
+        return service.deleteProduct(dto) ? "SUCCESS" : "FAIL";
+    }
 }
