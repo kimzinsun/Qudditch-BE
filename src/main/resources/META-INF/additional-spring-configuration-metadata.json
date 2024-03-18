@@ -13,5 +13,25 @@
     "name": "twilio.sendgrid.from-email",
     "type": "java.lang.String",
     "description": "A description for 'twilio.sendgrid.from-email'"
+  },
+  {
+    "name": "naver.api.client-secret",
+    "type": "java.lang.String",
+    "description": "A description for 'naver.api.client-secret'"
+  },
+{
+    "name": "naver.api.client-id",
+    "type": "java.lang.String",
+    "description": "A description for 'naver.api.client-id'"
+  },
+{
+    "name": "naver.api.client-secret",
+    "type": "java.lang.String",
+    "description": "A description for 'naver.api.client-secret'"
+  },
+{
+    "name": "naver.api.mail-url",
+    "type": "java.lang.String",
+    "description": "A description for 'naver.api.mail-url'"
   }
 ]}

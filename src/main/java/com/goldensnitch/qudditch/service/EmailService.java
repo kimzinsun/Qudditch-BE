@@ -65,64 +65,38 @@ public class EmailService {
 @Slf4j
 @Service
 public class EmailService {
-    // Spring Boot에 의해 자동 생성된 SendGrid 빈을 주입받습니다.
     private final SendGrid sendGrid;
-    
-    // application.properties에서 발신자 이메일을 읽어옵니다.
-    @Value("${twilio.sendgrid.from-email}")
-    private String fromEmail;   // application.properties에서 발신자 이메일 주소를 읽어옵니다.
+    private final String fromEmail;
 
-    // 생성자 주입을 위해 @Autowired 주석을 제거
-    public EmailService(SendGrid sendGrid, @Value("${twilio.sendgrid.from-email}") String fromEmail) {
-        this.sendGrid = sendGrid;
+    public EmailService(@Value("${spring.sendgrid.api-key}") String apiKey,
+                        @Value("${twilio.sendgrid.from-email}") String fromEmail) {
+        this.sendGrid = new SendGrid(apiKey);
         this.fromEmail = fromEmail;
     }
 
-
-    // 단일 이메일을 전송하는 메소드입니다.
-    public void sendSingleEmail(String toEmail) {
-        Email from = new Email(this.fromEmail);
-        String subject = "Hello, World!";
-        Email to = new Email(toEmail);
-        Content content = new Content("text/plain", "SendGrid를 이용한 이메일 전송 예제입니다.");
-
-        Mail mail = new Mail(from, subject, to, content);
-
-        sendEmail(mail);
-    }
-
-    // 이메일 전송 실패 시 사용자 친화적인 메시지 반환 메소드
-    
-    private void sendEmail(Mail mail) {
-        try {
-            Request request = new Request();
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-    
-            Response response = sendGrid.api(request);
-            if (response.getStatusCode() != HttpStatus.OK.value()) {
-                log.error("Email sending failed: {}", response.getBody());
-                throw new EmailSendingException("Failed to send email.");
-            }
-        } catch (IOException e) {
-            log.error("Error sending email", e);
-            throw new EmailSendingException("An error occurred while sending the email.");
-        }
-    }
-
-    public void sendVerificationEmail(String email, String verificationCode) {
+    public void sendVerificationEmail(String toEmail, String verificationCode) throws IOException {
         String subject = "계정 인증을 완료해주세요";
-        String verificationUrl = "http://yourdomain.com/verify?code=" + verificationCode; // 예시 URL, 실제 주소에 맞게 수정필요
+        String verificationUrl = "http://yourdomain.com/verify?code=" + verificationCode;
         String contentText = String.format("아래 링크를 클릭하여 계정 인증을 완료해주세요: %s", verificationUrl);
 
         Email from = new Email(this.fromEmail);
-        Email to = new Email(email);
+        Email to = new Email(toEmail);
         Content content = new Content("text/plain", contentText);
         Mail mail = new Mail(from, subject, to, content);
 
         sendEmail(mail);
     }
 
-    // sendEmail 메소드는 위에 이미 구현되어 있음
+    private void sendEmail(Mail mail) throws IOException {
+        Request request = new Request();
+        request.setMethod(Method.POST);
+        request.setEndpoint("mail/send");
+        request.setBody(mail.build());
+
+        Response response = sendGrid.api(request);
+        if (response.getStatusCode() != HttpStatus.OK.value()) {
+            log.error("Email sending failed: {}", response.getBody());
+            throw new RuntimeException("Failed to send email. Status code: " + response.getStatusCode());
+        }
+    }
 }
