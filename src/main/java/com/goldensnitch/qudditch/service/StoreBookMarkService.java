@@ -13,14 +13,14 @@ public class StoreBookMarkService {
         this.storeBookmarkMapper = storeBookmarkMapper;
     }
 
-    public boolean toggleStoreBookmark(Integer userCustomerId, Integer storeId) {
+    public String toggleStoreBookmark(Integer userCustomerId, Integer storeId) {
        int count = storeBookmarkMapper.toggleStoreBookmark(userCustomerId, storeId);
         if (count == 0){
             storeBookmarkMapper.addStoreBookmark(userCustomerId, storeId);
-            return true;
+            return "관심 스토어 등록 성공 !";
         }else {
             storeBookmarkMapper.deleteStoreBookmark(userCustomerId, storeId);
-            return false;
+            return "관심 스토어 설정 해제 !";
         }
     }
 

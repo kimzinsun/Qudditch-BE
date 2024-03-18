@@ -59,36 +59,54 @@ public class StoreOrderController {
     }
 
     @PostMapping("")
-    public int insertOrder(@RequestBody List<ProductWithQty> products) {
-        Integer storeId = 2;
+    public ResponseEntity<String> insertOrder(@RequestBody List<ProductWithQty> products) {
+        try {
+            Integer storeId = 2;
 
-        StoreOrder storeOrder = new StoreOrder();
-        storeOrder.setUserStoreId(storeId);
-        storeOrderService.insertOrder(storeOrder);
+            StoreOrder storeOrder = new StoreOrder();
+            storeOrder.setUserStoreId(storeId);
+            storeOrderService.insertOrder(storeOrder);
 
-        // storeId 값을 들고와서 변수에 저장
-        int orderId = storeOrderService.getStoreId();
+            // storeId 값을 들고와서 변수에 저장
+            int orderId = storeOrderService.getStoreId();
 
-        // 제품아이디와 개수를 store_order_product에 저장
-        for (ProductWithQty product : products) {
-            StoreOrderProduct storeOrderProduct = new StoreOrderProduct();
-            storeOrderProduct.setOrderStoreId(orderId);
-            storeOrderProduct.setProductId(product.getProductId());
-            storeOrderProduct.setQty(product.getQty());
+            // 제품아이디와 개수를 store_order_product에 저장
+            for (ProductWithQty product : products) {
+                StoreOrderProduct storeOrderProduct = new StoreOrderProduct();
+                storeOrderProduct.setOrderStoreId(orderId);
+                storeOrderProduct.setProductId(product.getProductId());
+                storeOrderProduct.setQty(product.getQty());
 
-            storeOrderService.insertId(storeOrderProduct);
+                storeOrderService.insertId(storeOrderProduct);
+            }
+            return ResponseEntity.ok("주문이 성공적으로 추가되었습니다.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("주문을 추가하는 중에 오류가 발생했습니다.");
         }
-        return 1;
     }
 
+
     @GetMapping("/detail/{id}")
-    public OrderDetailWithProducts listDetail(@PathVariable int id) {
-        log.info("StoreOrderController.listDetail: {}", id);
+    public ResponseEntity<OrderDetailWithProducts> listDetail(@PathVariable int id) {
+        try {
+            log.info("StoreOrderController.listDetail: {}", id);
 
-        StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
-        List<ProductWithDetailQty> productWithDetailQty = storeOrderService.getProductWithQty(storeOrder.getId());
+            // 주문 상세 정보 조회
+            StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
+            if (storeOrder == null) {
+                return ResponseEntity.notFound().build(); // 주문이 없는 경우 404
+            }
 
-        return new OrderDetailWithProducts(storeOrder, productWithDetailQty);
+            // 주문에 대한 제품 상세 정보 조회
+            List<ProductWithDetailQty> productWithDetailQty = storeOrderService.getProductWithQty(storeOrder.getId());
+
+            // 조회된 정보를 포함한 응답 반환
+            return ResponseEntity.ok(new OrderDetailWithProducts(storeOrder, productWithDetailQty));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(null); // 서버 오류 500
+        }
     }
 
     @Value("${excel.file.directory}") // 생성된 엑셀 파일을 저장할 디렉토리를 지정
@@ -120,7 +138,7 @@ public class StoreOrderController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.status(500).build(); // 서버 오류 500
         }
     }
 
