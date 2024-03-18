@@ -32,7 +32,7 @@ public class StoreStockController {
         String status;
 //        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Integer userStoreId = 4;
+        Integer userStoreId = 2;
         if (userStoreId == null) {
             response.put("status", "fail");
             response.put("message", "로그인이 필요합니다.");
@@ -154,7 +154,7 @@ public class StoreStockController {
         Map<String, Object> response = new HashMap<>();
         String status;
 //        Integer userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Integer userStoreId = 2;
+        Integer userStoreId = 6;
         if (userStoreId == null) {
             response.put("status", "fail");
             response.put("message", "로그인이 필요합니다.");
@@ -192,12 +192,14 @@ public class StoreStockController {
     }
 
     @PostMapping("/stock/input/{inputId}")
-    public void insertStoreStock(@PathVariable int inputId, @RequestBody List<StockInputReq> list) {
-//        int userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        int userStoreId = 2;
-        for (StockInputReq req : list) {
-            storeStockService.insertStoreStock(userStoreId, req, inputId);
-        }
+    public String insertStoreStock(@PathVariable int inputId, @RequestBody StockInputReq req) {
+//        int userStoreId = (int) SecurityContextHolder.getContet().getAuthentication().getPrincipal();
+        int userStoreId = 6;
+        storeStockService.insertStoreStock(userStoreId, req, inputId);
+
+        return "success";
+
+
     }
 
 }

@@ -41,4 +41,7 @@ public interface StoreStockMapper {
     Date getInputDate(int storeInputId);
 
     List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, int recordSize, int offset);
+    int cntState(int storeInputId);
+
+    void updateState(int storeInputId);
 }

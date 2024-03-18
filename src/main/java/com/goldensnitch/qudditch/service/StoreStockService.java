@@ -81,6 +81,10 @@ public class StoreStockService {
 
         storeStockMapper.updateConfirmInput(storeInputId, req.getProductId());
         storeStockMapper.insertStoreStock(userStoreId, req.getProductId(), req.getPositionId(), req.getQty(), String.valueOf(req.getExpiredAt()));
+
+        if(storeStockMapper.cntState(storeInputId) == 0) {
+            storeStockMapper.updateState(storeInputId);
+        }
     }
 
     public List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, PaginationParam paginationParam) {

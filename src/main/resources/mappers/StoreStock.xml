@@ -70,6 +70,7 @@
         SELECT
             si.id AS storeInputId,
             si.input_at,
+            si.state,
             CONCAT(
                     CASE
                         WHEN COUNT(p.id) > 1 THEN CONCAT(
@@ -117,4 +118,12 @@
     <select id="getInputDate">
         select input_at from store_input where id = ${storeInputId}
     </select>
+    <select id="cntState">
+        select count(*) from store_input_product where state = '검수전' and store_input_id = ${storeInputId}
+    </select>
+    <update id="updateState">
+        update store_input
+        set state = '검수완료'
+        where id = ${storeInputId}
+    </update>
 </mapper>
