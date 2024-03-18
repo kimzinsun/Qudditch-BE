@@ -15,6 +15,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,6 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -83,42 +86,45 @@ public class StoreOrderController {
         log.info("StoreOrderController.listDetail: {}", id);
 
         StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
-        ProductWithDetailQty productWithDetailQty = storeOrderService.getProductWithQty(storeOrder.getId());
+        List<ProductWithDetailQty> productWithDetailQty = storeOrderService.getProductWithQty(storeOrder.getId());
 
         return new OrderDetailWithProducts(storeOrder, productWithDetailQty);
     }
 
+    @Value("${excel.file.directory}") // 생성된 엑셀 파일을 저장할 디렉토리를 지정
+    private String excelFileDirectory;
+
     @GetMapping("/download/{id}")
     public ResponseEntity<ByteArrayResource> downloadOrderDataAsExcel(@PathVariable int id) {
         try {
-            // 제품 정보 가져오기
+            // 주문 데이터를 검색하고 엑셀 파일을 생성
             StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
-            ProductWithDetailQty productWithDetailQty = storeOrderService.getProductWithQty(storeOrder.getId());
-
-            // 엑셀 파일 생성
+            List<ProductWithDetailQty> productWithDetailQty = storeOrderService.getProductWithQty(storeOrder.getId());
             byte[] excelBytes = createExcelFile(storeOrder, productWithDetailQty);
 
-            // 엑셀 파일을 Resource로 래핑
-            ByteArrayResource resource = new ByteArrayResource(excelBytes);
-
-            // 다운로드할 때 사용할 파일 이름 설정
+            // 생성된 엑셀 파일을 서버 파일 시스템의 특정 위치에 저장합니다.
             String fileName = "order_data_" + id + ".xlsx";
+            String filePath = excelFileDirectory + File.separator + fileName;
+            saveExcelFile(excelBytes, filePath);
 
-            // ResponseEntity를 사용하여 파일 다운로드 응답 생성
+            // 다운로드를 위해 파일을 준비합니다.
+            ByteArrayResource resource = new ByteArrayResource(excelBytes);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .headers(headers)
+                    .contentLength(excelBytes.length)
                     .body(resource);
-
 
         } catch (Exception e) {
             e.printStackTrace();
-
             return ResponseEntity.status(500).build();
         }
     }
 
-    private byte[] createExcelFile(StoreOrder storeOrder, ProductWithDetailQty productWithDetail) {
+    private byte[] createExcelFile(StoreOrder storeOrder, List<ProductWithDetailQty> productWithDetail) {
 
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("발주서");
@@ -130,16 +136,14 @@ public class StoreOrderController {
         headerRow.createCell(2).setCellValue("제품명");
         headerRow.createCell(3).setCellValue("수량");
 
-
         // 데이터 추가
-        Row dataRow = sheet.createRow(1);
-        dataRow.createCell(0).setCellValue(storeOrder.getId());
-        dataRow.createCell(1).setCellValue(productWithDetail.getBrand());
-        dataRow.createCell(2).setCellValue(productWithDetail.getName());
-        dataRow.createCell(3).setCellValue(productWithDetail.getQty());
-
-
-
+        for (int i = 0; i < productWithDetail.size(); i++) {
+            Row dataRow = sheet.createRow(1+i);
+            dataRow.createCell(0).setCellValue(storeOrder.getId());
+            dataRow.createCell(1).setCellValue(productWithDetail.get(i).getBrand());
+            dataRow.createCell(2).setCellValue(productWithDetail.get(i).getName());
+            dataRow.createCell(3).setCellValue(productWithDetail.get(i).getQty());
+        }
         // 엑셀 파일을 byte 배열로 변환
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
@@ -150,6 +154,16 @@ public class StoreOrderController {
         }
         return outputStream.toByteArray();
     }
+
+    private void saveExcelFile(byte[] excelBytes, String filePath) {
+        File file = new File(filePath);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(excelBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @GetMapping("/detail/update/{id}")
     public ResponseEntity<String> updateOrderProducts(@PathVariable int id, @RequestBody List<ProductWithQty> updateProducts) {

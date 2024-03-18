@@ -15,7 +15,7 @@ public interface StoreOrderMapper {
     Integer getStoreId();
     int insertId(StoreOrderProduct product);
     StoreOrder getStoreOrderById(int id);
-    ProductWithDetailQty getProductWithQty(Integer id);
+    List<ProductWithDetailQty> getProductWithQty(Integer id);
     int updateOrderProducts(StoreOrderProduct product);
 
 

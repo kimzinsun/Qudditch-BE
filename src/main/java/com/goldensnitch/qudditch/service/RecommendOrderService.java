@@ -23,4 +23,7 @@ public class RecommendOrderService {
     public int cntSelectProductByQty(int userStoreId) {
         return recommendOrderMapper.cntSelectProductByQty(userStoreId);
     }
+
+
+
 }

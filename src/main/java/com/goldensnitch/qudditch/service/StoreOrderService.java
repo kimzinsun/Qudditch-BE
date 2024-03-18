@@ -37,7 +37,7 @@ public class StoreOrderService {
         return storeOrderMapper.getStoreOrderById(id);
     }
 
-    public ProductWithDetailQty getProductWithQty(Integer id) {
+    public List<ProductWithDetailQty> getProductWithQty(Integer id) {
         return storeOrderMapper.getProductWithQty(id);
     }
 

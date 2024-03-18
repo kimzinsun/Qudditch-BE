@@ -11,4 +11,5 @@ public interface RecommendOrderMapper {
     List<RecommendOrderReq> selectProductByQty(int userStoreId, int recordSize, int offset);
 
     int cntSelectProductByQty(int userStoreId);
+
 }
