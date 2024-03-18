@@ -103,7 +103,7 @@ public class StoreOrderController {
             byte[] excelBytes = createExcelFile(storeOrder, productWithDetailQty);
 
             // 생성된 엑셀 파일을 서버 파일 시스템의 특정 위치에 저장합니다.
-            String fileName = "order_data_" + id + ".xlsx";
+            String fileName = "Product order from " + id + ".xlsx";
             String filePath = excelFileDirectory + File.separator + fileName;
             saveExcelFile(excelBytes, filePath);
 
