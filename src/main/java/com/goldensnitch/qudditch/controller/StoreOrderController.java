@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,14 +56,18 @@ public class StoreOrderController {
         Pagination pagination = new Pagination(count, paginationParam);
         map.put("pagination", pagination);
 
+        if(orderList == null){
+            map.put("message", "목록이 없습니다");
+        }else {
+            map.put("message", "발주리스트 불러오기 성공!");
+        }
         return map;
+
     }
 
-    @PostMapping("")
-    public ResponseEntity<String> insertOrder(@RequestBody List<ProductWithQty> products) {
+    @PostMapping("/{storeId}")
+    public ResponseEntity<String> insertOrder(@PathVariable Integer storeId, @RequestBody List<ProductWithQty> products) {
         try {
-            Integer storeId = 2;
-
             StoreOrder storeOrder = new StoreOrder();
             storeOrder.setUserStoreId(storeId);
             storeOrderService.insertOrder(storeOrder);
@@ -109,7 +114,8 @@ public class StoreOrderController {
         }
     }
 
-    @Value("${excel.file.directory}") // 생성된 엑셀 파일을 저장할 디렉토리를 지정
+    // 생성된 엑셀 파일을 저장할 경로 지정
+    @Value("${excel.file.directory}")
     private String excelFileDirectory;
 
     @GetMapping("/download/{id}")
@@ -206,13 +212,16 @@ public class StoreOrderController {
 
                 // 업데이트
                storeOrderService.updateOrderProducts(storeOrderProduct);
-
-               // 업데이트 후 수량이 0인 경우 제거
-               if(storeOrderProduct.getQty() == 0){
-                   updateProducts.remove(updatedProduct);
-               }
-
             }
+            // 업데이트 후 수량이 0인 경우 제거
+            List<ProductWithQty> remove = new ArrayList<>();
+                for (ProductWithQty product : updateProducts) {
+                    if(product.getQty() == 0){
+                    remove.add(product);
+                    }
+                }
+            updateProducts.removeAll(remove);
+
             return ResponseEntity.ok("수정성공!!");
     }
 
