@@ -10,10 +10,17 @@
 <!--        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id-->
 <!--    </select>-->
     <select id="selectAllProductByUserStoreId">
-        SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
-        FROM store_stock s , product p, category c
-        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id
-        limit #{recordSize} offset #{offset}
+        SELECT s.*, c.name AS categoryName, p.name AS productName, p.brand AS brand, p.image AS productImage, p.price AS productPrice,
+               CASE
+                   WHEN DATEDIFF(s.expired_at, CURDATE()) <![CDATA[ <= ]]> 7 THEN 0
+                   ELSE 1
+                   END AS isNearExpiry
+        FROM store_stock s
+                 JOIN product p ON s.product_id = p.id
+                 JOIN category c ON p.category_id = c.id
+        WHERE s.user_store_id = ${userStoreId}
+        ORDER BY isNearExpiry, p.name
+        LIMIT #{recordSize} OFFSET #{offset};
     </select>
     <select id="selectProductByUserStoreIdAndProductId" parameterType="StoreStock" resultType="StoreStock">
         SELECT * FROM store_stock WHERE user_store_id = #{userStoreId} and product_id = #{productId}
@@ -63,6 +70,7 @@
         SELECT
             si.id AS storeInputId,
             si.input_at,
+            si.state,
             CONCAT(
                     CASE
                         WHEN COUNT(p.id) > 1 THEN CONCAT(
@@ -110,4 +118,12 @@
     <select id="getInputDate">
         select input_at from store_input where id = ${storeInputId}
     </select>
+    <select id="cntState">
+        select count(*) from store_input_product where state = '검수전' and store_input_id = ${storeInputId}
+    </select>
+    <update id="updateState">
+        update store_input
+        set state = '검수완료'
+        where id = ${storeInputId}
+    </update>
 </mapper>

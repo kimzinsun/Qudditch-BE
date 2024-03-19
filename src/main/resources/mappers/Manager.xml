@@ -22,7 +22,12 @@
                          INNER JOIN
         store_order so ON so.id = sop.order_store_id
         where s.id = so.user_store_id
-        GROUP BY so.id, so.ordered_at;
+        GROUP BY so.id, so.ordered_at
+        LIMIT ${recordSize} OFFSET ${offset}
+    </select>
+    <select id="getOrderCount">
+        select count(*)
+        from store_order
     </select>
     <select id="getOrderDetail" resultType="OrderDetailRes">
         select p.id as productId, p.brand, p.name, p.price, sop.qty, p.expiration_date as expirationDate
