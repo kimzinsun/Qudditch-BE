@@ -22,7 +22,7 @@ public class RekognitionService {
     private Integer MAX_FACES;
     @Value("${aws.rekognition.index-faces.detection-attribute}")
     private String DETECTION_ATTRIBUTE;
-    private static final String EXTERNAL_IMAGE_ID_PREFIX = "user";
+    private static final String EXTERNAL_IMAGE_ID_PREFIX = "USER";
 
     private final AmazonRekognition rekognitionClient;
     private final AwsUtil awsUtil;
@@ -105,7 +105,7 @@ public class RekognitionService {
             .withQualityFilter(QualityFilter.AUTO)
             .withMaxFaces(MAX_FACES)
             .withCollectionId(collectionId)
-            .withExternalImageId(EXTERNAL_IMAGE_ID_PREFIX + "-" + userId + "-" + key.split("/")[1])
+//            .withExternalImageId(EXTERNAL_IMAGE_ID_PREFIX + "_" + userId + "-" + key.split("/")[1])
             .withDetectionAttributes(DETECTION_ATTRIBUTE);
     }
 
