@@ -51,4 +51,5 @@ public class Pagination {
         this.existPrev = this.startPage != 1;
         this.existNext = !this.endPage.equals(this.totalPageCount);
     }
+
 }

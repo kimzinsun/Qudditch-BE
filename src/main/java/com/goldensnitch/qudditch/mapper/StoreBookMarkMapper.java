@@ -2,14 +2,16 @@ package com.goldensnitch.qudditch.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import java.util.Map;
-
 @Mapper
 public interface StoreBookMarkMapper {
 
-    void addStoreBookmark(Map<String, Integer> params);
+    int toggleStoreBookmark(Integer userCustomerId, Integer storeId);
 
-    void removeStoreBookmark(Map<String, Integer> params);
+    int addStoreBookmark(Integer userCustomerId,Integer storeId);
+
+    int deleteStoreBookmark(Integer userCustomerId,Integer storeId);
+
+
 
 
 

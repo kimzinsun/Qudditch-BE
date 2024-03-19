@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.Store;
+import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.service.StoreLocationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,16 @@ public class StoreLocationController {
 
         return storeLocationService.getLocation(currentWgs84X, currentWgs84Y);
     }
+
+    @GetMapping("/stock")
+    public List<StoreStockRes> storeStockList(@RequestParam int userStoreId){
+       int storeId = storeLocationService.getUserstoreIdBystoreId(userStoreId);
+
+       return storeLocationService.storeStockList(storeId);
+    }
+
+
+
 
 
 
