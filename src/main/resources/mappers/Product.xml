@@ -10,6 +10,11 @@
         FROM product p
         WHERE p.id = #{productId}
     </select>
+    <select id="selectProductNameByID">
+        select name
+        from product
+        where id = #{productId}
+    </select>
     <select id="selectProductByName">
         select *
         from product

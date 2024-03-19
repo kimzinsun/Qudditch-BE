@@ -4,11 +4,6 @@
     <select id="cntProductByUserStoreId" parameterType="int" resultType="int">
         SELECT COUNT(*) FROM store_stock WHERE user_store_id = #{userStoreId}
     </select>
-<!--    <select id="selectAllProductByUserStoreId" parameterType="int" resultType="StoreStockRes">-->
-<!--        SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice-->
-<!--        FROM store_stock s , product p, category c-->
-<!--        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id-->
-<!--    </select>-->
     <select id="selectAllProductByUserStoreId">
         SELECT s.*, c.name AS categoryName, p.name AS productName, p.brand AS brand, p.image AS productImage, p.price AS productPrice,
                CASE
@@ -126,4 +121,9 @@
         set state = '검수완료'
         where id = ${storeInputId}
     </update>
+    <select id="getTargetAlertUserByProductIdAndStoreId">
+        select cbp.user_customer_id as userCustomerId
+        from customer_bookmark_product cbp, customer_bookmark_store cbs, user_store us
+        where cbp.product_id = ${productId} and cbs.store_id = us.store_id and cbs.user_customer_id = cbp.user_customer_id and us.id = ${userStoreId} and us.store_id = cbs.store_id
+    </select>
 </mapper>

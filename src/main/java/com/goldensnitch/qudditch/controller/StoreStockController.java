@@ -29,7 +29,6 @@ public class StoreStockController {
     @GetMapping("/stock")
     public ResponseEntity<Map<String, Object>> getStockList(@RequestParam @Nullable Integer categoryId, PaginationParam paginationParam) {
         Map<String, Object> response = new HashMap<>();
-        String status;
 //        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Integer userStoreId = 2;
@@ -57,7 +56,6 @@ public class StoreStockController {
     @PostMapping("/stock/update")
     public ResponseEntity<Map<String, Object>> updateStock(@RequestBody List<StockUpdateReq> stockUpdateReq) {
         Map<String, Object> response = new HashMap<>();
-        String status;
         Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        Integer userStoreId = null;
         if (userStoreId == null) {
@@ -85,11 +83,9 @@ public class StoreStockController {
         return ResponseEntity.ok(response);
     }
 
-
     @PostMapping("/stock/dispose")
     public ResponseEntity<Map<String, Object>> disposeProduct(@RequestBody List<DisposeReq> list) {
         Map<String, Object> response = new HashMap<>();
-        String status;
 
 //        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer userStoreId = 2;
@@ -126,7 +122,6 @@ public class StoreStockController {
     @GetMapping("/stock/dispose")
     public ResponseEntity<Map<String, Object>> getDisposeLog(PaginationParam paginationParam) {
         Map<String, Object> response = new HashMap<>();
-        String status;
 
 //        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer userStoreId = 2;
@@ -148,7 +143,6 @@ public class StoreStockController {
     @GetMapping("/stock/input") // 입고 리스트 확인
     public ResponseEntity<Map<String, Object>> inputList(PaginationParam paginationParam) {
         Map<String, Object> response = new HashMap<>();
-        String status;
 //        Integer userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer userStoreId = 6;
         if (userStoreId == null) {
@@ -188,14 +182,11 @@ public class StoreStockController {
     }
 
     @PostMapping("/stock/input/{inputId}")
-    public String insertStoreStock(@PathVariable int inputId, @RequestBody StockInputReq req) {
+    public ResponseEntity<String> insertStoreStock(@PathVariable int inputId, @RequestBody StockInputReq req) {
 //        int userStoreId = (int) SecurityContextHolder.getContet().getAuthentication().getPrincipal();
         int userStoreId = 6;
         storeStockService.insertStoreStock(userStoreId, req, inputId);
-
-        return "success";
-
-
+        return ResponseEntity.ok("입고가 성공적으로 처리되었습니다.");
     }
 
 }

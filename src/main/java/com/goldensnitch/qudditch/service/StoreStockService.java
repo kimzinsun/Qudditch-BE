@@ -1,10 +1,12 @@
 package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.dto.fcm.FCMNotificationRequestDto;
 import com.goldensnitch.qudditch.dto.storeInput.InputDetailRes;
 import com.goldensnitch.qudditch.dto.storeInput.InputRepoReq;
 import com.goldensnitch.qudditch.dto.storeInput.InputRes;
 import com.goldensnitch.qudditch.dto.storeInput.StockInputReq;
+import com.goldensnitch.qudditch.mapper.ProductMapper;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +15,13 @@ import java.util.List;
 @Service
 public class StoreStockService {
     final StoreStockMapper storeStockMapper;
+    private final FCMNotificationService fcmNotificationService;
+    private final ProductMapper productMapper;
 
-    public StoreStockService(StoreStockMapper storeStockMapper) {
+    public StoreStockService(StoreStockMapper storeStockMapper, FCMNotificationService fcmNotificationService, ProductMapper productMapper) {
         this.storeStockMapper = storeStockMapper;
+        this.fcmNotificationService = fcmNotificationService;
+        this.productMapper = productMapper;
     }
 
     public List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId) {
@@ -82,14 +88,27 @@ public class StoreStockService {
         storeStockMapper.updateConfirmInput(storeInputId, req.getProductId());
         storeStockMapper.insertStoreStock(userStoreId, req.getProductId(), req.getPositionId(), req.getQty(), String.valueOf(req.getExpiredAt()));
 
-        if(storeStockMapper.cntState(storeInputId) == 0) {
+        if (storeStockMapper.cntState(storeInputId) == 0) {
             storeStockMapper.updateState(storeInputId);
         }
+
+        List<Integer> userId = storeStockMapper.getTargetAlertUserByProductIdAndStoreId(req.getProductId(), userStoreId);
+
+        for (Integer id : userId) {
+            String productName = productMapper.selectProductNameByID(id);
+            FCMNotificationRequestDto fcmNotificationRequestDto = new FCMNotificationRequestDto();
+            fcmNotificationRequestDto.setTargetUserId(id);
+            fcmNotificationRequestDto.setTitle("입고 알림");
+            fcmNotificationRequestDto.setBody(productName+"이 입고되었습니다!");
+
+            System.out.println(fcmNotificationService.sendNotificationByToken(id, fcmNotificationRequestDto));
+        }
+
     }
 
     public List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, PaginationParam paginationParam) {
         return storeStockMapper.selectAllProductByUserStoreId(userStoreId, paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 
-    
+
 }

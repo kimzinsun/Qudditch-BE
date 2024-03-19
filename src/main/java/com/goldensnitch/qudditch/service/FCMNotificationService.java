@@ -23,14 +23,14 @@ public class FCMNotificationService {
     @Autowired
     private FCMMapper mapper;
 
-    public boolean registerCustomerDevice(CustomerDevice dto){
+    public boolean registerCustomerDevice(CustomerDevice dto) {
         int result = -1;
 
         boolean isNotDuplicate = mapper.countCustomerDevice(dto.getUserCustomerId()) == 0;
 
-        if(isNotDuplicate){
+        if (isNotDuplicate) {
             result = mapper.insertCustomerDevice(dto);
-        }else{
+        } else {
             result = mapper.updateCustomerDeviceToken(dto);
         }
 
@@ -39,10 +39,10 @@ public class FCMNotificationService {
 
     public String sendNotificationByToken(int userCustomerId, FCMNotificationRequestDto requestDto) {
         CustomerDevice customerDevice = mapper.selectCustomerDevice(userCustomerId);
-        String token = customerDevice.getToken();
 
         if (customerDevice != null) {
-            if (token!= null && !token.isEmpty()) {
+            String token = customerDevice.getToken();
+            if (token != null && !token.isEmpty()) {
                 Notification notification = Notification.builder()
                         .setTitle(requestDto.getTitle())
                         .setBody(requestDto.getBody())
@@ -79,7 +79,7 @@ public class FCMNotificationService {
         }
     }
 
-    public List<CustomerAlertLog> getCustomerAlertLogs(int userCustomerId){
+    public List<CustomerAlertLog> getCustomerAlertLogs(int userCustomerId) {
         return mapper.selectCustomerAlertLogs(userCustomerId);
     }
 }
