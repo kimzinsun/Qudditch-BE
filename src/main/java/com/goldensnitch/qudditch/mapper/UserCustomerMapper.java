@@ -7,5 +7,8 @@ import com.goldensnitch.qudditch.model.UserCustomer;
 @Mapper
 public interface UserCustomerMapper {
     UserCustomer selectUserByEmail(String email);
-    Integer insertUserCustomer(UserCustomer user);
+    void insertUserCustomer(UserCustomer user);
+    void updateUserCustomer(UserCustomer user);
+    void deleteUserById(Integer id);
+    UserCustomer findByVerificationCode(String verificationCode);
 }

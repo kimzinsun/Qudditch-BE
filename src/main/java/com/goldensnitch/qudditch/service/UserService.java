@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+
 import java.util.UUID;
 
 // UserService 클래스는 사용자 관련 비즈니스 로직을 처리합니다.
@@ -26,21 +26,19 @@ public class UserService {
         this.emailService = emailService;
     }
     public void registerUserCustomer(UserCustomer userCustomer) {
+    try {
         String encodedPassword = passwordEncoder.encode(userCustomer.getPassword());
         userCustomer.setPassword(encodedPassword);
         String verificationCode = UUID.randomUUID().toString();
         userCustomer.setVerificationCode(verificationCode);
-
-
-
         userCustomerRepository.insertUserCustomer(userCustomer);
-
-        try {
-            emailService.sendVerificationEmail(userCustomer.getEmail(), verificationCode);
-        } catch (EmailSendingException | IOException e) {
-            log.error("Failed to send verification email to: {}", userCustomer.getEmail(), e);
-        }
+        emailService.sendVerificationEmail(userCustomer.getEmail(), verificationCode);
+        log.info("User registered successfully: {}", userCustomer.getEmail());
+    } catch (Exception e) {
+        log.error("Failed to register user: {}", userCustomer.getEmail(), e);
+        throw new RuntimeException("Failed to register user", e);
     }
+}
 
     // UserStore 회원가입 로직 및 이메일 인증 코드 검증 메서드는 생략
 }

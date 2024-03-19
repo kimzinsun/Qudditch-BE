@@ -21,6 +21,12 @@
     <select id="selectUserByEmail" parameterType="String" resultType="com.goldensnitch.qudditch.model.UserCustomer">
         select * from user_customer where email = #{email}
     </select>
+
+    <!-- 이메일 인증 코드로 사용자 조회-->
+    <select id="findByVerificationCode" parameterType="String" resultType="com.goldensnitch.qudditch.model.UserCustomer">
+        SELECT * FROM user_customer WHERE verificationCode = #{verificationCode}
+    </select>
+
     <!-- 전체 사용자 조회 -->
     <select id="selectAllUsers" resultType="com.goldensnitch.qudditch.model.UserCustomer">
         select * from user_customer
@@ -34,7 +40,7 @@
             password = #{password},
             name = #{name},
             state = #{state},
-            verficationCode = #{verificationCode},
+            verificationCode = #{verificationCode},
             collectionArn = #{collectionArn},
             modifiedAt = #{modifiedAt}
         where id = #{id}
@@ -46,11 +52,21 @@
         delete from user_customer where id = #{id}
     </delete>
 
-    <!-- 조건부 검색 -->
-    
+    <!-- 조건부 검색: 상태(state)에 따른 사용자 조회-->
+    <select id="selectUsersByState" parameterType="int" resultType="com.goldensnitch.qudditch.model.UserCustomer">
+        SELECT * FROM user_customer WHERE state = #{state}
+    </select>
 
-    <!-- 집계 함수 -->
+    <!-- 집계 함수: 전체 사용자 수 계산 -->
+    <select id="countAllUsers" resultType="int">
+        SELECT COUNT(*) FROM user_customer
+    </select>
 
-    <!-- JOIN연산 -->
-
+    <!-- JOIN연산: user_customer와 user_store 테이블 조인하여 상세 정보 조회 -->
+    <select id="selectUserCustomerWithStore" resultType="map">
+        SELECT uc.*, us.store_id, us.bn_number 
+        FROM user_customer uc
+        JOIN user_store us ON uc.id = us.id
+        WHERE uc.id = #{id}
+    </select>
 </mapper>
