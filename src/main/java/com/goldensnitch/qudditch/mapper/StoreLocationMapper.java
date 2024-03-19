@@ -14,7 +14,9 @@ public interface StoreLocationMapper {
 
     int getUserstoreIdBystoreId(int storeId);
 
-    List<StoreStockRes> storeStockList(int userStoreId);
+    List<StoreStockRes> storeStockList(int userStoreId, int recordSize, int offset);
+
+    int cntStoreStockList(int userStoreId);
 
 
 

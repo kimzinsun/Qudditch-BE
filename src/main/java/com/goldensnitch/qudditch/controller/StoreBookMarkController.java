@@ -17,8 +17,9 @@ public class StoreBookMarkController {
         this.storeBookMarkService = storeBookMarkService;
     }
 
+
     @PostMapping("/toggle")
-    public boolean toggleStoreBookmark(@RequestBody BookmarkReq request) {
+    public String toggleStoreBookmark(@RequestBody BookmarkReq request) {
         return storeBookMarkService.toggleStoreBookmark(request.getUserCustomerId(), request.getStoreId());
     }
 

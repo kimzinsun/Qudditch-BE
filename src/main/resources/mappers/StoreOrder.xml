@@ -5,26 +5,15 @@
 <mapper namespace="com.goldensnitch.qudditch.mapper.StoreOrderMapper">
 
     <!--발주리스트-->
-    <select id="orderList" parameterType="StoreOrderParam" resultType="StoreOrder">
+    <select id="orderList" resultType="StoreOrder">
         select id, user_store_id, state, total_amount
         from store_order
-        <if test="choice !=null and choice != '' and search != null and search != ''">
-        <if test="choice == 'state'">
-        where state like concat('%', #{search},'%')
-        </if>
-        </if>
-        order by id desc
-        limit ${(pageNumber * 10)}, 10
+        limit #{recordSize} offset #{offset}
     </select>
     <!--발주 수-->
-    <select id="getallList" parameterType="storeOrderParam" resultType="Integer">
+    <select id="cntOrderList" parameterType="StoreOrder" resultType="Integer">
         select count(*)
         from store_order
-        <if test="choice != null and choice != '' and search != null and search != '' ">
-        <if test="choice == 'state'">
-        where state like concat('%', #{search}, '%')
-        </if>
-        </if>
     </select>
     <!--발주오더생성-->
     <insert id="insertOrder" parameterType="StoreOrder">
@@ -59,6 +48,7 @@
         set qty = ${qty}
         where order_store_id=${orderStoreId} and product_id=${productId};
     </update>
+
 
 
 </mapper>

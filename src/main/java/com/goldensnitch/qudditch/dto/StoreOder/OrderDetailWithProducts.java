@@ -11,8 +11,8 @@ public class OrderDetailWithProducts {
     List<ProductWithDetailQty> products;
 
 
-    public OrderDetailWithProducts(StoreOrder storeOrder, ProductWithDetailQty productWithQty) {
+    public OrderDetailWithProducts(StoreOrder storeOrder, List<ProductWithDetailQty> productWithQty) {
         this.storeOrder = storeOrder;
-        this.products = List.of(productWithQty);
+        this.products = productWithQty;
     }
 }
