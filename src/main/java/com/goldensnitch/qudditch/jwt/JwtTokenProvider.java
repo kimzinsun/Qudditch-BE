@@ -70,7 +70,7 @@ public class JwtTokenProvider {
             Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
-                .parseSignedClaims(authToken); // 대체 찾기
+                .parseSignedClaims(authToken);
             return true;
         } catch (ExpiredJwtException e) {
             logger.error("Expired JWT token.", e);
