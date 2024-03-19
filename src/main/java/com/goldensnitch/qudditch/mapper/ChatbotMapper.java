@@ -8,4 +8,5 @@ import java.util.List;
 public interface ChatbotMapper {
 
     List<Chatbot> price(String name);
+    List<Chatbot> store(String name);
 }

@@ -11,4 +11,15 @@
         WHERE name like concat('%',#{productName},'%')
     </select>
 
+    <!--검색한 상품이 있는 가게 리스트 챗봇-->
+    <select id="store" resultType="ChatbotStore" parameterType="String">
+        select s.name
+        from store s
+                 Join user_store u ON s.id = u.store_id
+        where u.id =any(select ss.user_store_id
+                        from product p
+                                 Join store_stock ss ON p.id = ss.product_id
+                        where p.name like concat('%',#{name},'%'));
+    </select>
+
 </mapper>

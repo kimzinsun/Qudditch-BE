@@ -22,4 +22,9 @@ public class ChatbotService {
 
         return chatbotMapper.price(name);
     }
+
+    public List<Chatbot> store(String name) {
+
+        return chatbotMapper.store(name);
+    }
 }
