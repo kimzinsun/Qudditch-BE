@@ -44,6 +44,15 @@ public class StoreOrderService {
     public int updateOrderProducts(StoreOrderProduct product) {
         return storeOrderMapper.updateOrderProducts(product);}
 
+    public void removeProduct(int productId, int orderStoreId) {
+        storeOrderMapper.removeProduct(productId, orderStoreId);
+    }
+
+    public int cntProductByStoreOrder(int orderStoreId, int productId) {
+        return storeOrderMapper.cntProductByStoreOrder(orderStoreId, productId);
+    }
+
+
 
 }
 
