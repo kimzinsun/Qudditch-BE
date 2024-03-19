@@ -85,10 +85,6 @@ public class StoreStockController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/stock/{productName}")
-    public List<StoreLocQty> getLocation(@PathVariable String productName, @RequestParam double currentWgs84X, double currentWgs84Y) {
-        return storeStockService.getStoreByProductId(productName, currentWgs84X, currentWgs84Y);
-    }
 
     @PostMapping("/stock/dispose")
     public ResponseEntity<Map<String, Object>> disposeProduct(@RequestBody List<DisposeReq> list) {

@@ -34,7 +34,7 @@ public class StoreStockService {
         return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 
-    public List<StoreLocQty> getStoreByProductId(String productName, double currentWgs84X, double currentWgs84Y) {
+    public List<StoreLocQty> getStoreByProductId(int productName, double currentWgs84X, double currentWgs84Y) {
         return storeStockMapper.selectStoreByProductId(productName, currentWgs84X, currentWgs84Y);
     }
 
@@ -90,4 +90,6 @@ public class StoreStockService {
     public List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, PaginationParam paginationParam) {
         return storeStockMapper.selectAllProductByUserStoreId(userStoreId, paginationParam.getRecordSize(), paginationParam.getOffset());
     }
+
+    
 }
