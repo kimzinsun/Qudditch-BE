@@ -126,4 +126,7 @@
         from customer_bookmark_product cbp, customer_bookmark_store cbs, user_store us
         where cbp.product_id = ${productId} and cbs.store_id = us.store_id and cbs.user_customer_id = cbp.user_customer_id and us.id = ${userStoreId} and us.store_id = cbs.store_id
     </select>
+    <select id="getUserStoreIdByInputId">
+        select user_store_id from store_input where id = ${storeInputId}
+    </select>
 </mapper>

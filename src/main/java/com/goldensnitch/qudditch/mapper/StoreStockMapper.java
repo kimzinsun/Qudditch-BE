@@ -45,4 +45,6 @@ public interface StoreStockMapper {
     void updateState(int storeInputId);
 
     List<Integer> getTargetAlertUserByProductIdAndStoreId(int productId, int userStoreId);
+
+    int getUserStoreIdByInputId(int storeInputId);
 }

@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,6 @@ public class StoreStockController {
     public StoreStockController(StoreStockService storeStockService) {
         this.storeStockService = storeStockService;
     }
-    // TODO : store 관련 기능 구현
 
     @GetMapping("/stock")
     public ResponseEntity<Map<String, Object>> getStockList(@RequestParam @Nullable Integer categoryId, PaginationParam paginationParam) {
@@ -166,11 +166,32 @@ public class StoreStockController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/stock/input/download/{inputId}")
+    public ResponseEntity<Map<String, Object>> downloadInputList(@PathVariable Integer inputId) throws IOException {
+        Map<String, Object> response = new HashMap<>();
+        Integer userstoreId = 2;
+        // Integer userstoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (storeStockService.getOrderDetailByStoreInputId(inputId).isEmpty() || storeStockService.getUserStoreIdByInputId(inputId) != userstoreId) {
+            response.put("status", "fail");
+            response.put("message", "잘못된 접근입니다.");
+
+        } else {
+            storeStockService.downloadInputList(inputId);
+            response.put("status", "success");
+            response.put("message", "입고내역서가 다운로드 되었습니다.");
+
+        }
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/stock/input/{inputId}")
     public ResponseEntity<Map<String, Object>> getInputDetail(@PathVariable Integer inputId) {
         Map<String, Object> response = new HashMap<>();
+//        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Integer userStoreId = 6;
 
-        if (inputId == null || storeStockService.getOrderDetailByStoreInputId(inputId).isEmpty()) {
+        if (userStoreId == null || storeStockService.getUserStoreIdByInputId(inputId) != userStoreId) {
             response.put("status", "fail");
             response.put("message", "잘못된 접근입니다.");
         } else {
@@ -182,11 +203,22 @@ public class StoreStockController {
     }
 
     @PostMapping("/stock/input/{inputId}")
-    public ResponseEntity<String> insertStoreStock(@PathVariable int inputId, @RequestBody StockInputReq req) {
+    public ResponseEntity<Map<String, Object>> insertStoreStock(@PathVariable int inputId, @RequestBody StockInputReq req) {
+        Map<String, Object> response = new HashMap<>();
 //        int userStoreId = (int) SecurityContextHolder.getContet().getAuthentication().getPrincipal();
         int userStoreId = 6;
-        storeStockService.insertStoreStock(userStoreId, req, inputId);
-        return ResponseEntity.ok("입고가 성공적으로 처리되었습니다.");
+
+        if (userStoreId == 0 || storeStockService.getUserStoreIdByInputId(inputId) != userStoreId) {
+            response.put("status", "fail");
+            response.put("message", "잘못된 접근입니다.");
+        } else {
+
+            storeStockService.insertStoreStock(userStoreId, req, inputId);
+            response.put("status", "success");
+            response.put("message", "입고가 완료되었습니다.");
+
+        }
+        return ResponseEntity.ok(response);
     }
 
 }
