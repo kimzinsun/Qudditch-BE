@@ -1,13 +1,17 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.model.*;
 import com.goldensnitch.qudditch.service.RekognitionService;
 import com.goldensnitch.qudditch.service.StreamManagerService;
 import com.goldensnitch.qudditch.util.AwsUtil;
+import com.goldensnitch.qudditch.vo.rekognotion.FirehoseEndpointRes;
 import com.goldensnitch.qudditch.vo.rekognotion.LivenessSessionId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,15 +25,17 @@ public class RekognitionController {
     private String REKOGNITION_COLLECTION_ID;
     private final RekognitionService rekognitionService;
     private final StreamManagerService streamManagerService;
+    private final AmazonRekognition rekognitionClient;
     private final AwsUtil awsUtil;
 
     @Autowired
     public RekognitionController(
         RekognitionService rekognitionService,
-        StreamManagerService streamManagerService, AwsUtil awsUtil
+        StreamManagerService streamManagerService, AmazonRekognition rekognitionClient, AwsUtil awsUtil
     ) {
         this.rekognitionService = rekognitionService;
         this.streamManagerService = streamManagerService;
+        this.rekognitionClient = rekognitionClient;
         this.awsUtil = awsUtil;
     }
 
@@ -131,10 +137,19 @@ public class RekognitionController {
     }
 
     @PostMapping("/customer-enter")
-    public Map<String, Object> customerEnter(@RequestBody Map<String, Object> data) {
-        log.info("records {}", data);
-        List<Map<String, String>> records = (List<Map<String, String>>) data.get("records");
-        log.info("customerEnter: {}", awsUtil.getFaceSearchResultFromBase64(records.get(0).get("data")));
-        return Map.of("status", "success");
+    public ResponseEntity<FirehoseEndpointRes> customerEnter(@RequestBody Map<String, Object> data) {
+        awsUtil.getFaceSearchResult((List<Map<String, String>>) data.get("records"))
+            .forEach((userId, matchedFaces) -> {
+                    awsUtil.getUserIdsFromSearchUsersResult(
+                        matchedFaces.stream().map(rekognitionService::searchUsers)
+                    );
+                }
+            );
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(new FirehoseEndpointRes(
+                    data.get("requestId").toString(),
+                    (Long) data.get("timestamp")
+                )
+            );
     }
 }
