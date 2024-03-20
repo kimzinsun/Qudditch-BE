@@ -26,7 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,7 @@ import java.util.Map;
 @RequestMapping("/api/store/order")
 public class StoreOrderController {
     private final StoreOrderService storeOrderService;
+
     @Autowired
     public StoreOrderController(StoreOrderService storeOrderService) {
         this.storeOrderService = storeOrderService;
@@ -56,9 +56,9 @@ public class StoreOrderController {
         Pagination pagination = new Pagination(count, paginationParam);
         map.put("pagination", pagination);
 
-        if(orderList == null){
+        if (orderList == null) {
             map.put("message", "목록이 없습니다");
-        }else {
+        } else {
             map.put("message", "발주리스트 불러오기 성공!");
         }
         return map;
@@ -126,12 +126,12 @@ public class StoreOrderController {
             List<ProductWithDetailQty> productWithDetailQty = storeOrderService.getProductWithQty(storeOrder.getId());
             byte[] excelBytes = createExcelFile(storeOrder, productWithDetailQty);
 
-            // 생성된 엑셀 파일을 서버 파일 시스템의 특정 위치에 저장합니다.
+            // 생성된 엑셀 파일을 서버 파일 시스템의 특정 위치에 저장
             String fileName = "Product order from " + id + ".xlsx";
             String filePath = excelFileDirectory + File.separator + fileName;
             saveExcelFile(excelBytes, filePath);
 
-            // 다운로드를 위해 파일을 준비합니다.
+            // 다운로드를 위해 파일을 준비
             ByteArrayResource resource = new ByteArrayResource(excelBytes);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
@@ -162,7 +162,7 @@ public class StoreOrderController {
 
         // 데이터 추가
         for (int i = 0; i < productWithDetail.size(); i++) {
-            Row dataRow = sheet.createRow(1+i);
+            Row dataRow = sheet.createRow(1 + i);
             dataRow.createCell(0).setCellValue(storeOrder.getId());
             dataRow.createCell(1).setCellValue(productWithDetail.get(i).getBrand());
             dataRow.createCell(2).setCellValue(productWithDetail.get(i).getName());
@@ -192,41 +192,46 @@ public class StoreOrderController {
     @GetMapping("/detail/update/{id}")
     public ResponseEntity<String> updateOrderProducts(@PathVariable int id, @RequestBody List<ProductWithQty> updateProducts) {
 
-            // 기존 주문 정보
-            StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
-            if (storeOrder == null) {
-                return ResponseEntity.badRequest().body("id확인하세용");
-            }
-            // 발주상태가 "대기"가 아니면 업데이트 거부
-            if(!storeOrder.getState().equals("대기")){
-                return ResponseEntity.badRequest().body("대기중인 발주만 수정 가능합니다");
-            }
+        // 기존 주문 정보
+        StoreOrder storeOrder = storeOrderService.getStoreOrderById(id);
+        if (storeOrder == null) {
+            return ResponseEntity.badRequest().body("id확인하세용");
+        }
+        // 발주상태가 "대기"가 아니면 업데이트 거부
+        if (!storeOrder.getState().equals("대기")) {
+            return ResponseEntity.badRequest().body("대기중인 발주만 수정 가능합니다");
+        }
 
-            for (ProductWithQty updatedProduct : updateProducts) {
+        for (ProductWithQty updatedProduct : updateProducts) {
+            // 제품아이디가 없으면 제품 insert , 제품아이디가 있으면 update
+            if (storeOrderService.cntProductByStoreOrder(id, updatedProduct.getProductId()) == 0) {
+
+                StoreOrderProduct newProducts = new StoreOrderProduct();
+
+                newProducts.setOrderStoreId(storeOrder.getId());
+                newProducts.setProductId(updatedProduct.getProductId());
+                newProducts.setQty(updatedProduct.getQty());
+                // 업데이트
+                storeOrderService.insertId(newProducts);
+            }else{
                 StoreOrderProduct storeOrderProduct = new StoreOrderProduct();
 
-                // 주문 및 제품 정보
                 storeOrderProduct.setOrderStoreId(storeOrder.getId());
                 storeOrderProduct.setProductId(updatedProduct.getProductId());
                 storeOrderProduct.setQty(updatedProduct.getQty());
-
                 // 업데이트
-               storeOrderService.updateOrderProducts(storeOrderProduct);
+                storeOrderService.updateOrderProducts(storeOrderProduct);
+
             }
-            // 업데이트 후 수량이 0인 경우 제거
-            List<ProductWithQty> remove = new ArrayList<>();
-                for (ProductWithQty product : updateProducts) {
-                    if(product.getQty() == 0){
-                    remove.add(product);
-                    }
-                }
-            updateProducts.removeAll(remove);
-
-            return ResponseEntity.ok("수정성공!!");
+        }
+        // 업데이트 후 수량이 0인 경우 제거
+        for (ProductWithQty product : updateProducts) {
+            if (product.getQty() == 0) {
+                storeOrderService.removeProduct(product.getProductId(), id);
+            }
+        }
+        return ResponseEntity.ok("수정성공!!");
     }
-
-
-
 
 
 }

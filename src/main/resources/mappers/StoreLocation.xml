@@ -13,7 +13,9 @@
                       *COS(RADIANS(store.wgs84_x))
                       *COS(radians(store.wgs84_y)-RADIANS(#{currentWgs84Y}))
                 +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(wgs84_x))))
-        LIMIT 5
+        <if test = "limit != null">
+            limit #{limit}
+        </if>
     </select>
 
     <!--userStore에 등록된 스토어만 들고오기 위해-->

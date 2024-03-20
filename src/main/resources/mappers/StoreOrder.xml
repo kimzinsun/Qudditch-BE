@@ -41,13 +41,23 @@
         from product p, store_order_product sop
         where p.id = sop.product_id and sop.order_store_id = ${id}
     </select>
-
     <!--제품수정-->
     <update id="updateOrderProducts" parameterType="storeOrderProduct">
         update store_order_product
         set qty = ${qty}
         where order_store_id=${orderStoreId} and product_id=${productId};
     </update>
+    <!--제품삭제-->
+    <delete id="removeProduct">
+        delete from store_order_product
+        where product_id = ${productId} and order_store_id=${orderStoreId}
+    </delete>
+    <!--update부분에서 제품 insert-->
+    <select id="cntProductByStoreOrder" parameterType="int" resultType="int">
+        select count(*)
+        from store_order_product
+        where order_store_id=${orderStoreId} and product_id=${productId}
+    </select>
 
 
 

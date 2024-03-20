@@ -28,9 +28,14 @@ public class StoreLocationController {
 
     // 현재위치 값을 넣을 시 근처 스토어
     @GetMapping("")
-    public List<Store> getLocation(@RequestParam double currentWgs84X, double currentWgs84Y){
+    public List<Store> getLocation(@RequestParam double currentWgs84X, double currentWgs84Y, Integer limit){
+        Map<String, Object> params = new HashMap<>();
 
-        return storeLocationService.getLocation(currentWgs84X, currentWgs84Y);
+        params.put("currentWgs84X", currentWgs84X);
+        params.put("currentWgs84Y", currentWgs84Y);
+        params.put("limit",limit);
+
+        return storeLocationService.getLocation(params);
     }
 
     // storeId를 받고 난 userStoreId들의 재고 리스트
