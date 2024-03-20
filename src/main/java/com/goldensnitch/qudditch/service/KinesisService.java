@@ -28,7 +28,7 @@ public class KinesisService {
         this.storeStreamMapper = storeStreamMapper;
     }
 
-    public Integer createStream(Integer userStoreId) {
+    public Integer createStream(Integer userStoreId, Boolean mediaStorageEnabled) {
         StoreStream storeStream = new StoreStream();
         storeStream.setUserStoreId(userStoreId);
 
@@ -44,9 +44,11 @@ public class KinesisService {
         String channelARN = createSignalingChannelResult.getChannelARN();
         String videoStreamARN = createVideoStreamResult.getStreamARN();
 
-        kinesisVideoClient.updateMediaStorageConfiguration(
-            createMediaStorageConfigurationRequest(channelARN, videoStreamARN)
-        );
+        if (mediaStorageEnabled) {
+            kinesisVideoClient.updateMediaStorageConfiguration(
+                createMediaStorageConfigurationRequest(channelARN, videoStreamARN)
+            );
+        }
 
         storeStream.setVideoStreamArn(videoStreamARN);
         storeStream.setSignalingChannelArn(channelARN);
@@ -84,12 +86,17 @@ public class KinesisService {
         String videoStreamARN = storeStream.getVideoStreamArn();
         String channelARN = storeStream.getSignalingChannelArn();
 
-        kinesisVideoClient.updateMediaStorageConfiguration(
-            new UpdateMediaStorageConfigurationRequest().withChannelARN(channelARN)
-                .withMediaStorageConfiguration(
-                    new MediaStorageConfiguration().withStatus(MediaStorageConfigurationStatus.DISABLED)
-                )
-        );
+        try {
+            kinesisVideoClient.updateMediaStorageConfiguration(
+                new UpdateMediaStorageConfigurationRequest().withChannelARN(channelARN)
+                    .withMediaStorageConfiguration(
+                        new MediaStorageConfiguration().withStatus(MediaStorageConfigurationStatus.DISABLED)
+                    )
+            );
+        } catch (Exception e) {
+            log.error("Error disabling media storage configuration", e);
+        }
+
         kinesisVideoClient.deleteStream(new DeleteStreamRequest().withStreamARN(videoStreamARN));
         kinesisVideoClient.deleteSignalingChannel(new DeleteSignalingChannelRequest().withChannelARN(channelARN));
 
