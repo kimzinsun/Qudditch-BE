@@ -156,6 +156,18 @@ public class RekognitionService {
             );
     }
 
+    public SearchUsersResult searchUsers(String faceId) {
+        SearchUsersRequest request = createSearchUsersRequest(faceId);
+        return rekognitionClient.searchUsers(request);
+    }
+
+    private SearchUsersRequest createSearchUsersRequest(String faceId) {
+        return new SearchUsersRequest()
+            .withCollectionId(COLLECTION_ID)
+            .withFaceId(faceId)
+            .withMaxUsers(MAX_USERS);
+    }
+
     private Image getImageFromS3(String key) {
         return new Image().withS3Object(awsUtil.createS3Object(LIVENESS_BUCKET_NAME, key));
     }
