@@ -11,8 +11,37 @@
         WHERE name like concat('%',#{productName},'%')
     </select>
 
+    <select id="selectNearProductStores" parameterType="map" resultType="Store">
+        SELECT s.name, s.address
+        FROM store s
+                 JOIN user_store us on s.id = us.store_id
+        WHERE us.id in (SELECT user_store_id
+                        FROM product p
+                                 JOIN store_stock ss on p.id = ss.product_id
+                        WHERE p.name like concat('%', #{productName}, '%'))
+        ORDER BY (6371
+            *ACOS(COS(RADIANS(#{currentWgs84X}))
+                      *COS(RADIANS(s.wgs84_x))
+                      *COS(radians(s.wgs84_y)-RADIANS(#{currentWgs84Y}))
+                +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(s.wgs84_x))))
+        limit 3
+    </select>
+
+    <select id="selectSimilarProductNames" parameterType="String" resultType="String">
+        SELECT name
+        FROM product
+        WHERE name like concat('%', #{productName}, '%')
+    </select>
+
+    <select id="random" parameterType="String" resultType="Chatbot">
+        SELECT name, price
+        FROM product
+        ORDER BY RAND()
+        LIMIT 3;
+    </select>
+
     <!--검색한 상품이 있는 가게 리스트 챗봇-->
-    <select id="store" resultType="ChatbotStore" parameterType="String">
+    <!--<select id="store" resultType="ChatbotStore" parameterType="String">
         select s.name
         from store s
                  Join user_store u ON s.id = u.store_id
@@ -20,6 +49,6 @@
                         from product p
                                  Join store_stock ss ON p.id = ss.product_id
                         where p.name like concat('%',#{name},'%'));
-    </select>
+    </select>-->
 
 </mapper>

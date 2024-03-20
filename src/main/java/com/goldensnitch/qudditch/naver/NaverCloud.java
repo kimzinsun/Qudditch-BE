@@ -106,7 +106,7 @@ public class NaverCloud {
             System.out.println("##"+timestamp);
 
             obj.put("version", "v2");
-            obj.put("userId", "U47b00b58c90f8e47428af8b7bddc1231heo2");
+            obj.put("userId", "1232");
             //=> userId is a unique code for each chat user, not a fixed value, recommend use UUID. use different id for each user could help you to split chat history for users.
 
             obj.put("timestamp", timestamp);
