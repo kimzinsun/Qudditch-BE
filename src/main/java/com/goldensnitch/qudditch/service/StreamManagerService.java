@@ -13,18 +13,14 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class StreamManagerService {
-    @Value("${aws.rekognition.stream-processor-name}")
-    private String streamProcessorName;
-    @Value("${aws.rekognition.kinesis-video-stream-arn}")
-    private String kinesisVideoStreamArn;
     @Value("${aws.rekognition.kinesis-data-stream-arn}")
-    private String kinesisDataStreamArn;
+    private String KINESIS_DATA_STREAM_ARN;
     @Value("${aws.rekognition.role-arn}")
-    private String roleArn;
+    private String ROLE_ARN;
     @Value("${aws.rekognition.collection-id}")
-    private String collectionId;
+    private String COLLECTION_ID;
     @Value("${aws.rekognition.match-threshold}")
-    private float matchThreshold;
+    private float MATCH_THRESHOLD;
     private static final int LIST_STREAM_PROCESSORS_MAX_RESULTS = 100;
     private final AmazonRekognition rekognitionClient;
     private final StoreStreamMapper storeStreamMapper;
@@ -50,18 +46,18 @@ public class StreamManagerService {
             .withArn(getCurrentStoreStream().getVideoStreamArn());
         StreamProcessorInput streamProcessorInput =
             new StreamProcessorInput().withKinesisVideoStream(kinesisVideoStream);
-        KinesisDataStream kinesisDataStream = new KinesisDataStream().withArn(kinesisDataStreamArn);
+        KinesisDataStream kinesisDataStream = new KinesisDataStream().withArn(KINESIS_DATA_STREAM_ARN);
         StreamProcessorOutput streamProcessorOutput =
             new StreamProcessorOutput().withKinesisDataStream(kinesisDataStream);
         FaceSearchSettings faceSearchSettings =
-            new FaceSearchSettings().withCollectionId(collectionId).withFaceMatchThreshold(matchThreshold);
+            new FaceSearchSettings().withCollectionId(COLLECTION_ID).withFaceMatchThreshold(MATCH_THRESHOLD);
         StreamProcessorSettings streamProcessorSettings =
             new StreamProcessorSettings().withFaceSearch(faceSearchSettings);
 
         //Create the stream processor
         return rekognitionClient.createStreamProcessor(
             new CreateStreamProcessorRequest().withInput(streamProcessorInput).withOutput(streamProcessorOutput)
-                .withSettings(streamProcessorSettings).withRoleArn(roleArn)
+                .withSettings(streamProcessorSettings).withRoleArn(ROLE_ARN)
                 .withName(getCurrentStoreStream().getStreamProcessorName()));
     }
 

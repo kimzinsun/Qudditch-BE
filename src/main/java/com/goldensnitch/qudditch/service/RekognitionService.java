@@ -22,8 +22,9 @@ public class RekognitionService {
     private Integer MAX_FACES;
     @Value("${aws.rekognition.index-faces.detection-attribute}")
     private String DETECTION_ATTRIBUTE;
-    private static final String EXTERNAL_IMAGE_ID_PREFIX = "USER";
-
+    @Value("${aws.rekognition.collection-id}")
+    private String COLLECTION_ID;
+    private static final int MAX_USERS = 1;
     private final AmazonRekognition rekognitionClient;
     private final AwsUtil awsUtil;
 
