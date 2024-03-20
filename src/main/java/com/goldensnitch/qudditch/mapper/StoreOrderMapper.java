@@ -9,7 +9,7 @@ import java.util.List;
 
 @Mapper
 public interface StoreOrderMapper {
-    List<StoreOrder> orderList(int recordSize, int offset);
+    List<StoreOrder> orderList(int userStoreId ,int recordSize, int offset);
 
     int cntOrderList();
 

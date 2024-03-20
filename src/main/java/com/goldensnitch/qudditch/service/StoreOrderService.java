@@ -19,8 +19,8 @@ public class StoreOrderService {
         this.storeOrderMapper = storeOrderMapper;
     }
 
-    public List<StoreOrder> orderList(PaginationParam paginationParam) {
-        return storeOrderMapper.orderList(paginationParam.getRecordSize(), paginationParam.getOffset());
+    public List<StoreOrder> orderList(int userStoreId,PaginationParam paginationParam) {
+        return storeOrderMapper.orderList(userStoreId,paginationParam.getRecordSize(), paginationParam.getOffset());
     }
     public int cntOrderList() {
         return storeOrderMapper.cntOrderList();

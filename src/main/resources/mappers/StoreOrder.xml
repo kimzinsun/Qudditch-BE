@@ -8,6 +8,7 @@
     <select id="orderList" resultType="StoreOrder">
         select id, user_store_id, state, total_amount
         from store_order
+        where user_store_id = #{userStoreId}
         limit #{recordSize} offset #{offset}
     </select>
     <!--발주 수-->
@@ -53,7 +54,7 @@
         where product_id = ${productId} and order_store_id=${orderStoreId}
     </delete>
     <!--update부분에서 제품 insert-->
-    <select id="cntProductByStoreOrder" parameterType="int" resultType="int">
+    <select id="cntProductByStoreOrder" parameterType="Integer" resultType="Integer">
         select count(*)
         from store_order_product
         where order_store_id=${orderStoreId} and product_id=${productId}

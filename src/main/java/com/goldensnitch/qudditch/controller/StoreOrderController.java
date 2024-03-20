@@ -45,8 +45,9 @@ public class StoreOrderController {
     @GetMapping("")
     public Map<String, Object> orderList(PaginationParam paginationParam) {
 
+        int userStoreId = 6;
         // 제품리스트
-        List<StoreOrder> orderList = storeOrderService.orderList(paginationParam);
+        List<StoreOrder> orderList = storeOrderService.orderList(userStoreId,paginationParam);
         // 총 수
         int count = storeOrderService.cntOrderList();
 
