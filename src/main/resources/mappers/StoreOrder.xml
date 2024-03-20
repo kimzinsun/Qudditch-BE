@@ -15,6 +15,7 @@
     <select id="cntOrderList" parameterType="StoreOrder" resultType="Integer">
         select count(*)
         from store_order
+        where user_store_id = #{userStoreId}
     </select>
     <!--발주오더생성-->
     <insert id="insertOrder" parameterType="StoreOrder">

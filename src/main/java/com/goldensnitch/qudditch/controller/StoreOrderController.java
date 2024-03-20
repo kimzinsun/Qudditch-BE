@@ -49,7 +49,7 @@ public class StoreOrderController {
         // 제품리스트
         List<StoreOrder> orderList = storeOrderService.orderList(userStoreId,paginationParam);
         // 총 수
-        int count = storeOrderService.cntOrderList();
+        int count = storeOrderService.cntOrderList(userStoreId);
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("orderList", orderList);

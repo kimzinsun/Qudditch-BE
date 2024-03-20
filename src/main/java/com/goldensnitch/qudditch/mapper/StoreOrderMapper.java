@@ -11,7 +11,7 @@ import java.util.List;
 public interface StoreOrderMapper {
     List<StoreOrder> orderList(int userStoreId ,int recordSize, int offset);
 
-    int cntOrderList();
+    int cntOrderList(int userStoreId);
 
     int insertOrder(StoreOrder order);
 
