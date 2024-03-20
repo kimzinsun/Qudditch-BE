@@ -14,4 +14,5 @@ public interface ChatbotMapper {
     /*List<ChatbotStore> store(String name);*/
 
     List<Chatbot> random();
+    List<Store> selectNearStores(double currentWgs84X, double currentWgs84Y);
 }

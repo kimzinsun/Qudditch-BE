@@ -40,6 +40,17 @@
         LIMIT 3;
     </select>
 
+    <select id="selectNearStores" parameterType="map" resultType="Store">
+        SELECT name, address
+        FROM store
+        ORDER BY (6371
+            *ACOS(COS(RADIANS(#{currentWgs84X}))
+                      *COS(RADIANS(store.wgs84_x))
+                      *COS(radians(store.wgs84_y)-RADIANS(#{currentWgs84Y}))
+                +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(wgs84_x))))
+        limit 5;
+    </select>
+
     <!--검색한 상품이 있는 가게 리스트 챗봇-->
     <!--<select id="store" resultType="ChatbotStore" parameterType="String">
         select s.name

@@ -62,7 +62,7 @@ public class ChatbotController {
 
         StringBuilder sb = new StringBuilder();
         for (Chatbot product : searchList) {
-            sb.append(product.getName()).append(": ").append(product.getPrice()).append("\n");
+            sb.append(product.getName()).append(": ").append(product.getPrice()).append("원\n");
         }
 
         log.info("rs {}", rs);
@@ -103,6 +103,7 @@ public class ChatbotController {
         return sr;
     }*/
 
+    /*검색한 상품이 있는 사용자의 근처 편의점 추출*/
     @PostMapping("/store")
     public Map<String, Object> store(@RequestBody Map<String, Object> body){
         log.info("body {}", body);
@@ -110,7 +111,7 @@ public class ChatbotController {
         Map<String, Object> entities = (Map<String, Object>)userinfoMap.get("entities");
         String productName =  (String)entities.get("`@SYSTEM_ANY");
 
-        System.out.println("productName:" + productName);
+        // System.out.println("productName:" + productName);
 
         Map<String,Object>rs=new HashMap<>();
         Map<String,Object>productNameMap=new HashMap<>();
@@ -181,6 +182,16 @@ public class ChatbotController {
                         System.out.println("일치하는 패턴을 찾을 수 없습니다.");
                         returnValue = "Fail";
                     }
+                } else if(msgCode.equals("select_002")){
+                    List<Store> nearStores = chatbotService.getNearStoreList(dto.getCurrentWgs84X(), dto.getCurrentWgs84Y());
+
+                    StringBuilder sb = new StringBuilder();
+
+                    for(Store store : nearStores){
+                        sb.append("가게이름: " + store.getName() + ", 주소: " + store.getAddress()).append("\n");
+                    }
+
+                    returnValue = sb.toString();
                 }
 
             } else {
@@ -217,7 +228,7 @@ public class ChatbotController {
 
         StringBuilder sb = new StringBuilder();
         for (Chatbot random : randomList) {
-            sb.append(random.getName()).append("\n");
+            sb.append(random.getName()).append(" : ").append(random.getPrice()).append("원\n");;
         }
 
         recommend.put("value", sb.toString());
