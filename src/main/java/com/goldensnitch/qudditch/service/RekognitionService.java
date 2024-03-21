@@ -2,8 +2,9 @@ package com.goldensnitch.qudditch.service;
 
 import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.model.*;
+import com.goldensnitch.qudditch.dto.StoreVisitorLog;
+import com.goldensnitch.qudditch.mapper.AccessMapper;
 import com.goldensnitch.qudditch.util.AwsUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 @Service
 public class RekognitionService {
     @Value("${aws.rekognition.liveness.output.config.s3-bucket-name}")
@@ -27,11 +27,13 @@ public class RekognitionService {
     private static final int MAX_USERS = 1;
     private final AmazonRekognition rekognitionClient;
     private final AwsUtil awsUtil;
+    private final AccessMapper accessMapper;
 
     @Autowired
-    public RekognitionService(AmazonRekognition rekognitionClient, AwsUtil awsUtil) {
+    public RekognitionService(AmazonRekognition rekognitionClient, AwsUtil awsUtil, AccessMapper accessMapper) {
         this.rekognitionClient = rekognitionClient;
         this.awsUtil = awsUtil;
+        this.accessMapper = accessMapper;
     }
 
     public String createSession() {
@@ -166,6 +168,14 @@ public class RekognitionService {
             .withCollectionId(COLLECTION_ID)
             .withFaceId(faceId)
             .withMaxUsers(MAX_USERS);
+    }
+
+    public void enteredCustomers(Integer userStoreId, List<Integer> userIds) {
+        for (Integer userId : userIds) {
+            accessMapper.insertVisitLog(
+                new StoreVisitorLog(userStoreId, userId)
+            );
+        }
     }
 
     private Image getImageFromS3(String key) {
