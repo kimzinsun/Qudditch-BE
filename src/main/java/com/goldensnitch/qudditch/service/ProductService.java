@@ -33,7 +33,4 @@ public class ProductService {
         return productMapper.cntStoreStockByProductId(productId);
     }
 
-    public int selecctProductIdByName(String productName) {
-        return productMapper.selectProductIdByName(productName);
-    }
 }
