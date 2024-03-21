@@ -5,15 +5,15 @@
         SELECT COUNT(*) FROM store_stock WHERE user_store_id = #{userStoreId}
     </select>
     <select id="selectAllProductByUserStoreId">
-        SELECT s.*, c.name AS categoryName, p.name AS productName, p.brand AS brand, p.image AS productImage, p.price AS productPrice,
+        SELECT s.*,ps.name as position, c.name AS categoryName, p.name AS productName, p.brand AS brand, p.image AS productImage, p.price AS productPrice,
                CASE
                    WHEN DATEDIFF(s.expired_at, CURDATE()) <![CDATA[ <= ]]> 7 THEN 0
                    ELSE 1
                    END AS isNearExpiry
-        FROM store_stock s
+        FROM position ps, store_stock s
                  JOIN product p ON s.product_id = p.id
                  JOIN category c ON p.category_id = c.id
-        WHERE s.user_store_id = ${userStoreId}
+        WHERE s.user_store_id = ${userStoreId} and ps.id = s.position_id
         ORDER BY isNearExpiry, p.name
         LIMIT #{recordSize} OFFSET #{offset};
     </select>
