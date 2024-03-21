@@ -65,6 +65,7 @@ public class AwsUtil {
         return searchUsersResults
             .flatMap(searchUsersResult -> searchUsersResult.getUserMatches().stream())
             .map(userMatch -> Integer.parseInt(userMatch.getUser().getUserId()))
+            .distinct()
             .collect(Collectors.toList());
     }
 }
