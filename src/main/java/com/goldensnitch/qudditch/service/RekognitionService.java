@@ -72,7 +72,6 @@ public class RekognitionService {
     }
 
     public List<IndexFacesResult> addFacesCollection(
-        String userId,
         String collectionId,
         GetFaceLivenessSessionResultsResult livenessSessionResult
     ) {
@@ -81,7 +80,6 @@ public class RekognitionService {
             .stream()
             .map(auditImage ->
                 createIndexFacesRequest(
-                    userId,
                     auditImage.getS3Object().getName(),
                     collectionId
                 )
@@ -91,7 +89,6 @@ public class RekognitionService {
         indexFacesResults.add(
             rekognitionClient.indexFaces(
                 createIndexFacesRequest(
-                    userId,
                     livenessSessionResult.getReferenceImage()
                         .getS3Object()
                         .getName(),
@@ -102,19 +99,18 @@ public class RekognitionService {
         return indexFacesResults;
     }
 
-    private IndexFacesRequest createIndexFacesRequest(String userId, String key, String collectionId) {
+    private IndexFacesRequest createIndexFacesRequest(String key, String collectionId) {
         return new IndexFacesRequest()
             .withImage(getImageFromS3(key))
             .withQualityFilter(QualityFilter.AUTO)
             .withMaxFaces(MAX_FACES)
             .withCollectionId(collectionId)
-//            .withExternalImageId(EXTERNAL_IMAGE_ID_PREFIX + "_" + userId + "-" + key.split("/")[1])
             .withDetectionAttributes(DETECTION_ATTRIBUTE);
     }
 
-    public CreateUserResult createUserInCollection(String collectionId, String userId) {
+    public void createUserInCollection(String collectionId, String userId) {
         CreateUserRequest request = createUserRequest(collectionId, userId);
-        return rekognitionClient.createUser(request);
+        rekognitionClient.createUser(request);
     }
 
     private CreateUserRequest createUserRequest(String collectionId, String userId) {
@@ -130,13 +126,13 @@ public class RekognitionService {
         return new DeleteUserRequest().withCollectionId(collectionId).withUserId(userId);
     }
 
-    public AssociateFacesResult associateFaces(
+    public void associateFaces(
         String collectionId,
         String userId,
         List<IndexFacesResult> indexFacesResults
     ) {
         AssociateFacesRequest request = createAssociateFacesRequest(collectionId, userId, indexFacesResults);
-        return rekognitionClient.associateFaces(request);
+        rekognitionClient.associateFaces(request);
     }
 
     private AssociateFacesRequest createAssociateFacesRequest(

@@ -50,7 +50,6 @@ public class RekognitionController {
         try {
             GetFaceLivenessSessionResultsResult flsrr = rekognitionService.getSessionResult(sessionId);
             List<IndexFacesResult> indexFacesResults = rekognitionService.addFacesCollection(
-                String.valueOf(userId),
                 REKOGNITION_COLLECTION_ID,
                 flsrr
             );
