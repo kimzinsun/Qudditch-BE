@@ -90,7 +90,7 @@ public class PaymentService {
                 CustomerOrder order = new CustomerOrder();
                 order.setPartnerOrderId(Integer.valueOf(request.getPartner_order_id()));
                 order.setUserCustomerId(2);
-                order.setUserStoreId(Integer.valueOf(request.getPartner_user_id()));
+                order.setUserStoreId(Integer.valueOf(request.getPartner_user_id())); // 가맹점
                 order.setTotalAmount(request.getTotal_amount());
                 order.setUsedPoint(request.getUsedPoint() != null ? request.getUsedPoint() : 0);
                 order.setTotalPay(request.getTotalPay() != null ? request.getTotalPay() : request.getTotal_amount()); // 예시로 total_amount를 기본값으로 사용
@@ -136,10 +136,6 @@ public class PaymentService {
         requestBody.put("pg_token", pgToken);
         requestBody.put("partner_order_id", order.getPartnerOrderId());
         requestBody.put("partner_user_id", order.getUserStoreId());
-//        requestBody.put("item_name", "test item");
-//        requestBody.put("quantity", 1);
-//        requestBody.put("total_amount", 1000);
-//        requestBody.put("tax_free_amount", 0);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
         ResponseEntity<PaymentResponse> responseEntity = restTemplate.exchange(
@@ -149,15 +145,6 @@ public class PaymentService {
 
         return responseEntity.getBody();
     }
-
-//    private void updateOrderStatus(Integer orderId, String tid) {
-//        // Placeholder method. Implement the logic to update the order's status or save the transaction ID (`tid`) to the order in your database.
-//        CustomerOrder order = customerOrderProductMapper.findById(orderId);
-//        if (order != null) {
-//            order.setTid(tid);
-//            customerOrderProductMapper.update(order); // Assuming an `update` method exists to update the order
-//        }
-//    }
 
     // 결제 취소 메서드
     public PaymentResponse cancelPayment(String tid, String cancelAmount, String cancelTaxFreeAmount) {

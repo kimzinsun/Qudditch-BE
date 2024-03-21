@@ -37,7 +37,7 @@ public class PaymentController {
         }
     }
 
-    @GetMapping("/approve")
+    @PostMapping("/approve")
     public ResponseEntity<?> approvePayment(@RequestParam("pg_token") String pg_token, @RequestParam("order_id") String partnerOrderId) {
         try {
             PaymentResponse paymentResponse = paymentService.approvePayment(pg_token, partnerOrderId);
