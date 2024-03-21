@@ -111,7 +111,7 @@ public class StoreStockService {
             fcmNotificationRequestDto.setTitle("입고 알림");
             fcmNotificationRequestDto.setBody(productName+"이 입고되었습니다!");
 
-            System.out.println(fcmNotificationService.sendNotificationByToken(id, fcmNotificationRequestDto));
+            System.out.println(fcmNotificationService.sendNotificationByToken(fcmNotificationRequestDto));
         }
 
     }
