@@ -1,10 +1,11 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.model.UserCustomer;
-import com.goldensnitch.qudditch.repository.UserCustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.repository.UserCustomerRepository;
 
 @Service
 public class SignUpService {

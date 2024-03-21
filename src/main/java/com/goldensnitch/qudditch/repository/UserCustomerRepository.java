@@ -3,7 +3,8 @@
 package com.goldensnitch.qudditch.repository;
 
 import org.apache.ibatis.annotations.Mapper;
-import com.goldensnitch.qudditch.model.UserCustomer;
+
+import com.goldensnitch.qudditch.dto.UserCustomer;
 @Mapper // Mybatis 사용 시 @Mapper 어노테이션 사용
 public interface UserCustomerRepository {
     UserCustomer selectUserByEmail(String email);

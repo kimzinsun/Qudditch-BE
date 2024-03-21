@@ -1,8 +1,8 @@
-package com.goldensnitch.qudditch.model;
-
-import lombok.Data;
+package com.goldensnitch.qudditch.dto;
 
 import java.time.LocalDateTime;
+
+import lombok.Data;
 
 @Data
 // @Entity

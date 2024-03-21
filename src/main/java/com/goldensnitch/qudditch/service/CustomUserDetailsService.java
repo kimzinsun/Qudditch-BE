@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.goldensnitch.qudditch.model.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserCustomer;
 import com.goldensnitch.qudditch.repository.UserCustomerRepository;
 
 // CustomUserDetailsService 클래스는 Spring Security의 UserDetailsService 인터페이스를 구현하여

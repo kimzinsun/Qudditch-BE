@@ -2,7 +2,7 @@ package com.goldensnitch.qudditch.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.goldensnitch.qudditch.model.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserCustomer;
 
 @Mapper
 public interface UserCustomerMapper {

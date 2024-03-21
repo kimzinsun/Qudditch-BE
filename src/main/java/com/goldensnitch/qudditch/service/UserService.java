@@ -1,13 +1,14 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.model.UserCustomer;
-import com.goldensnitch.qudditch.repository.UserCustomerRepository;
-import lombok.extern.slf4j.Slf4j;
+import java.util.UUID;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.repository.UserCustomerRepository;
 
-import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
 // UserService 클래스는 사용자 관련 비즈니스 로직을 처리합니다.
 @Slf4j

@@ -3,7 +3,7 @@
 <mapper namespace="com.goldensnitch.qudditch.mapper.UserStoreMapper">
     
     <!-- 새로운 가게유저 추가 -->
-    <insert id="insertUserStore" parameterType="com.goldensnitch.qudditch.model.UserStore">
+    <insert id="insertUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">
         INSERT INTO user_store (
             store_id, email, password, name, bn_number,
             state, created_at, modified_at
@@ -14,12 +14,12 @@
     </insert>
     
     <!-- 가게유저 검색 -->
-    <select id="selectUserStoreById" parameterType="int" resultType="com.goldensnitch.qudditch.model.UserStore">
+    <select id="selectUserStoreById" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserStore">
         SELECT * FROM user_store WHERE id = #{id}
     </select>
 
     <!-- 가게유저 수정 -->
-    <update id="updateUserStore" parameterType="com.goldensnitch.qudditch.model.UserStore">
+    <update id="updateUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">
         UPDATE user_store SET
             store_id = #{storeId},
             email = #{email},
