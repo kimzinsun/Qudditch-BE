@@ -1,12 +1,9 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.model.*;
 import com.goldensnitch.qudditch.service.RekognitionService;
 import com.goldensnitch.qudditch.service.StreamManagerService;
 import com.goldensnitch.qudditch.util.AwsUtil;
-import com.goldensnitch.qudditch.vo.rekognotion.FirehoseEndpointRes;
-import com.goldensnitch.qudditch.vo.rekognotion.LivenessSessionId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,64 +22,52 @@ public class RekognitionController {
     private String REKOGNITION_COLLECTION_ID;
     private final RekognitionService rekognitionService;
     private final StreamManagerService streamManagerService;
-    private final AmazonRekognition rekognitionClient;
     private final AwsUtil awsUtil;
 
     @Autowired
     public RekognitionController(
         RekognitionService rekognitionService,
-        StreamManagerService streamManagerService, AmazonRekognition rekognitionClient, AwsUtil awsUtil
+        StreamManagerService streamManagerService, AwsUtil awsUtil
     ) {
         this.rekognitionService = rekognitionService;
         this.streamManagerService = streamManagerService;
-        this.rekognitionClient = rekognitionClient;
         this.awsUtil = awsUtil;
     }
 
     @PostMapping("/liveness-session")
-    public LivenessSessionId createSession() {
+    public ResponseEntity<Map<String, Object>> createSession() {
         try {
-            return new LivenessSessionId(rekognitionService.createSession());
+            String sessionId = rekognitionService.createSession();
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("sessionId", sessionId));
         } catch (Exception e) {
             log.error("Error while creating liveness session", e);
-            return null;
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("error", e.getMessage()));
         }
     }
 
     @GetMapping("/liveness-session/{sessionId}")
-    public GetFaceLivenessSessionResultsResult getSessionResult(@PathVariable String sessionId, @RequestParam Integer userId) {
+    public ResponseEntity<Map<String, Object>> getSessionResult(@PathVariable String sessionId, @RequestParam Integer userId) {
         try {
             GetFaceLivenessSessionResultsResult flsrr = rekognitionService.getSessionResult(sessionId);
-            log.info("getSessionResult: {}", flsrr);
-            log.info("addFacesCollection: {}",
-                rekognitionService.addFacesCollection(
-                    String.valueOf(userId),
-                    REKOGNITION_COLLECTION_ID,
-                    flsrr
-                )
-            );
             List<IndexFacesResult> indexFacesResults = rekognitionService.addFacesCollection(
                 String.valueOf(userId),
                 REKOGNITION_COLLECTION_ID,
                 flsrr
             );
-            log.info("addFacesCollection: {}", indexFacesResults);
-            log.info("createUserInCollection: {}",
-                rekognitionService.createUserInCollection(REKOGNITION_COLLECTION_ID, String.valueOf(userId))
-            );
-            log.info("associateFaces: {}", rekognitionService.associateFaces(
+            rekognitionService.createUserInCollection(REKOGNITION_COLLECTION_ID, String.valueOf(userId));
+            rekognitionService.associateFaces(
                 REKOGNITION_COLLECTION_ID,
                 String.valueOf(userId),
                 indexFacesResults
-            ));
-            return flsrr;
+            );
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("result", flsrr));
         } catch (Exception e) {
             log.error(
                 "Error while getting liveness session result for session id: {}",
                 sessionId,
                 e
             );
-            return null;
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -117,39 +102,51 @@ public class RekognitionController {
     }
 
     @GetMapping("/stream-processor")
-    public DescribeStreamProcessorResult getStreamProcessor() {
+    public ResponseEntity<Map<String, Object>> getStreamProcessor() {
         try {
-            return streamManagerService.describeStreamProcessor();
+            return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("streamProcessor", streamManagerService.describeStreamProcessor()));
         } catch (Exception e) {
             log.error("Error while getting stream processor", e);
-            return null;
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("error", e.getMessage()));
         }
     }
 
     @GetMapping("/stream-processors")
-    public ListStreamProcessorsResult getStreamProcessorStatus() {
+    public ResponseEntity<Map<String, Object>> getStreamProcessorStatus() {
         try {
-            return streamManagerService.listStreamProcessors();
+            return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("streamProcessorStatus", streamManagerService.listStreamProcessors()));
         } catch (Exception e) {
             log.error("Error while getting stream processor status", e);
-            return null;
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("error", e.getMessage()));
         }
     }
 
     @PostMapping("/customer-enter")
-    public ResponseEntity<FirehoseEndpointRes> customerEnter(@RequestBody Map<String, Object> data) {
-        awsUtil.getFaceSearchResult((List<Map<String, String>>) data.get("records"))
-            .forEach((userId, matchedFaces) -> {
-                    awsUtil.getUserIdsFromSearchUsersResult(
-                        matchedFaces.stream().map(rekognitionService::searchUsers)
-                    );
-                }
-            );
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(new FirehoseEndpointRes(
-                    data.get("requestId").toString(),
-                    (Long) data.get("timestamp")
-                )
-            );
+    public ResponseEntity<Map<String, Object>> customerEnter(@RequestBody Map<String, Object> data) {
+        try {
+            awsUtil.getFaceSearchResult((List<Map<String, String>>) data.get("records"))
+                .forEach((userStoreId, matchedFaces) -> {
+                        try {
+                            rekognitionService.enteredCustomers(userStoreId, awsUtil.getUserIdsFromSearchUsersResult(
+                                matchedFaces.stream().map(rekognitionService::searchUsers)
+                            ));
+                        } catch (Exception e) {
+                            log.error("Error while entering customers", e);
+                            throw new RuntimeException(e);
+                        }
+                    }
+                );
+            return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("requestId", data.get("requestId"), "timestamp", data.get("timestamp")));
+        } catch (Exception e) {
+            log.error("Error while entering customers", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "error", e.getMessage(),
+                "requestId", data.get("requestId"),
+                "timestamp", data.get("timestamp")
+            ));
+        }
     }
 }
