@@ -38,7 +38,9 @@ public interface StoreStockMapper {
     void insertInputLog(InputRepoReq inputRepoReq);
     Date getInputDate(int storeInputId);
 
-    void updateStockQty(Integer userStoreId, Integer productId, Integer newQty);
+    void updateStockQty(int userStoreId, int productId, int newQty);
 
     void insertStoreStockReport(StoreStockReport stockReport);
+
+    Integer selectProductQty(int productId, int userStoreId);
 }

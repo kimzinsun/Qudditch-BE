@@ -71,7 +71,7 @@ public class OrderService {
 
     private int calculateTotalAmount(List<CartItem> cartItems) {
         return cartItems.stream()
-                .mapToInt(item -> item.getProductPrice() * item.getQty())
+                .mapToInt(item -> item.getPrice() * item.getQty())
                 .sum();
     }
 

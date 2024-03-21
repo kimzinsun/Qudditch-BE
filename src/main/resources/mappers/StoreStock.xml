@@ -106,4 +106,13 @@
         INSERT INTO store_stock_report (user_store_id, product_id, ymd, out_qty)
         VALUES (#{userStoreId}, #{productId}, #{ymd}, #{outQty})
     </insert>
+
+    <!-- userStoreId와 productId로 가게의 상품재고 수 확인 -->
+    <select id="selectProductQty" resultType="Integer">
+        SELECT ss.qty
+        FROM store_stock ss
+                 JOIN product p ON ss.product_id = p.id
+                 JOIN user_store us ON ss.user_store_id = us.id
+        WHERE p.id = #{productId} AND us.id = #{userStoreId}
+    </select>
 </mapper>

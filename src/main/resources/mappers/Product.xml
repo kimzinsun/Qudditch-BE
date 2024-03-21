@@ -6,7 +6,9 @@
         VALUES (#{categoryId}, #{brand}, #{name}, #{description}, #{image}, #{price}, #{unitPrice}, #{expirationDate})
     </insert>
     <select id="selectProductById" parameterType="int" resultType="Product">
-        SELECT * FROM product WHERE id = #{id}
+        SELECT *
+        FROM product
+        WHERE id = #{id}
     </select>
 
 <!-- 규원 작성(아래) -->

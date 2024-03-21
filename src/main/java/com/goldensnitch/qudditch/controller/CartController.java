@@ -18,11 +18,21 @@ public class CartController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> addItemToCart(@RequestBody CartItem cartItem){
-        if (cartService.addItemToCart(cartItem.getUserStoreId(), cartItem)) {
-            return ResponseEntity.ok().body("Item added to cart successfully.");
-        } else {
-            return ResponseEntity.badRequest().body("Failed to add item to cart.");
+    public ResponseEntity<?> addItemToCart(@RequestParam Integer storeId, @RequestParam Integer userCustomerId, @RequestParam Integer productId){
+        try{
+            boolean addItemSuccess = cartService.addItemToCart(storeId, userCustomerId, productId);
+            if(!addItemSuccess){
+                return ResponseEntity.badRequest().body("Failed to add item to cart.");
+            }
+
+        // 장바구니 아이템 추가 후, 현재 장바구니 조회
+        List<CartItem> currentCartItems = cartService.getCartItem(userCustomerId);
+
+        // 현재 장바구니 상태 응답
+        return ResponseEntity.ok(currentCartItems);
+        } catch (Exception e){
+            // 예외 발생
+            return ResponseEntity.badRequest().body("Error adding item: " + e.getMessage());
         }
     }
 
@@ -33,8 +43,8 @@ public class CartController {
     }
 
     @PutMapping("")
-    public ResponseEntity<?> updateItemQty(@RequestBody CartItem cartItem){
-        cartService.updateItemQty(cartItem);
+    public ResponseEntity<?> updateItemQty(@RequestParam Integer userCustomerId, @RequestBody CartItem cartItem){
+        cartService.updateItemQty(userCustomerId, cartItem);
         return ResponseEntity.ok().body("Cart item updated successfully.");
     }
 
