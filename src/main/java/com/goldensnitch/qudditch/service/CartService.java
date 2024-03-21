@@ -14,18 +14,18 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class CartService { // 장바구니 기능 (추가, 조회, 수량변경, 개별삭제, 모두삭제)
     private final Map<Integer, List<CartItem>> userCarts = new ConcurrentHashMap<>();
-    private final StoreSelectionService storeSelectionService;
+    private final UserStoreService userStoreService;
     private final ProductMapper productMapper;
 
     @Autowired
-    public CartService(StoreSelectionService storeSelectionService, ProductMapper productMapper) {
-        this.storeSelectionService = storeSelectionService;
+    public CartService(UserStoreService userStoreService, ProductMapper productMapper) {
+        this.userStoreService = userStoreService;
         this.productMapper = productMapper;
     }
 
     // 장바구니 아이템 추가
     public boolean addItemToCart(Integer storeId, CartItem item) {
-        Integer userStoreId = storeSelectionService.selectServiceStore(storeId);
+        Integer userStoreId = userStoreService.selectUserStore(storeId);
         if (userStoreId == null) {
             throw new RuntimeException("선택한 가게를 찾을 수 없습니다.");
             // return false; // Store selection failed
