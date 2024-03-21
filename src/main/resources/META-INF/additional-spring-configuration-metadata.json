@@ -59,6 +59,16 @@
       "name": "aws.rekognition.match-threshold",
       "type": "java.lang.Float",
       "description": "AWS Rekognition에서 얼굴 일치로 간주되는 최소 신뢰도 임계값을 설정합니다."
+    },
+    {
+      "name": "aws.access-key-id",
+      "type": "java.lang.String",
+      "description": "AWS 액세스 키 ID입니다."
+    },
+    {
+      "name": "aws_secret-access-key",
+      "type": "java.lang.String",
+      "description": "AWS 시크릿 액세스 키입니다."
     }
   ]
 }

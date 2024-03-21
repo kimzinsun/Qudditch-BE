@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.config;
 
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
@@ -14,20 +15,26 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AwsConfig {
-    @Value("${aws.profile}")
-    private String profile;
     @Value("${aws.region}")
     private String region;
+    @Value("${aws.access-key-id}")
+    private String accessKeyId;
+    @Value("${aws.secret-access-key}")
+    private String secretAccessKey;
 
-    private ProfileCredentialsProvider credentialsProvider() {
-        return new ProfileCredentialsProvider(profile);
+    private BasicAWSCredentials basicAWSCredentials() {
+        return new BasicAWSCredentials(accessKeyId, secretAccessKey);
+    }
+
+    private AWSStaticCredentialsProvider staticCredentialsProvider() {
+        return new AWSStaticCredentialsProvider(basicAWSCredentials());
     }
 
     @Bean
     public AmazonRekognition rekognitionClient() {
         return AmazonRekognitionClient.builder()
             .withRegion(Regions.fromName(region))
-            .withCredentials(credentialsProvider())
+            .withCredentials(staticCredentialsProvider())
             .build();
     }
 
@@ -35,7 +42,7 @@ public class AwsConfig {
     public AmazonKinesis kinesisClient() {
         return AmazonKinesisClient.builder()
             .withRegion(Regions.fromName(region))
-            .withCredentials(credentialsProvider())
+            .withCredentials(staticCredentialsProvider())
             .build();
     }
 
@@ -43,7 +50,7 @@ public class AwsConfig {
     public AmazonKinesisVideo kinesisVideoClient() {
         return AmazonKinesisVideoClient.builder()
             .withRegion(Regions.fromName(region))
-            .withCredentials(credentialsProvider())
+            .withCredentials(staticCredentialsProvider())
             .build();
     }
 }
