@@ -2,6 +2,7 @@ package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.CustomerAlertLog;
 import com.goldensnitch.qudditch.dto.CustomerDevice;
+import com.goldensnitch.qudditch.dto.UserCustomer;
 import com.goldensnitch.qudditch.dto.fcm.FCMNotificationRequestDto;
 import com.goldensnitch.qudditch.mapper.FCMMapper;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -37,11 +38,16 @@ public class FCMNotificationService {
         return result > 0;
     }
 
-    public String sendNotificationByToken(int userCustomerId, FCMNotificationRequestDto requestDto) {
-        CustomerDevice customerDevice = mapper.selectCustomerDevice(userCustomerId);
-        String token = customerDevice.getToken();
+    public boolean RemoveCustomerDevice(int userCustomerId){
+        return mapper.deleteCustomerDevice(userCustomerId) > 0;
+    }
+
+    public String sendNotificationByToken(FCMNotificationRequestDto requestDto) {
+        CustomerDevice customerDevice = mapper.selectCustomerDevice(requestDto.getTargetUserId());
 
         if (customerDevice != null) {
+            String token = customerDevice.getToken();
+
             if (token!= null && !token.isEmpty()) {
                 Notification notification = Notification.builder()
                         .setTitle(requestDto.getTitle())
@@ -50,16 +56,13 @@ public class FCMNotificationService {
 
                 Message message = Message.builder()
                         .setToken(token)
-                        //.setToken("fBoToRZwQ6SCRtnYaQ0Zmh:APA91bGSA1oFep7_UHFICfZvZcgkQiAPntGcoYi9zMtrKAD9jBjqVBWld_w2p3nd_fOWyUbrBH_-etOp67sIho8PfOyQiyDlKnHMqnIrF9yU93U2f8cs67YcyKaxIgfilvOMEFl3M4FR")
                         .setNotification(notification)
-                        // .putAllData(requestDto.getData())
                         .build();
-
                 try {
                     firebaseMessaging.send(message);
 
                     CustomerAlertLog alertLog = new CustomerAlertLog();
-                    alertLog.setUserCustomerId(userCustomerId);
+                    alertLog.setUserCustomerId(requestDto.getTargetUserId());
                     alertLog.setTitle(requestDto.getTitle());
                     alertLog.setBody(requestDto.getBody());
 
@@ -81,5 +84,9 @@ public class FCMNotificationService {
 
     public List<CustomerAlertLog> getCustomerAlertLogs(int userCustomerId){
         return mapper.selectCustomerAlertLogs(userCustomerId);
+    }
+
+    public UserCustomer getUserCustomerByEmail(String email){
+        return mapper.selectUserCustomerByEmail(email);
     }
 }

@@ -35,4 +35,15 @@
         VALUES(#{userCustomerId}, #{title}, #{body}, NOW())
     </insert>
 
+    <select id="selectUserCustomerByEmail" parameterType="String" resultType="UserCustomer">
+        SELECT id, email, name, password, state, collection_arn AS collectionArn, user_customer.created_at AS createdAt, user_customer.modified_at AS modifiedAt
+        FROM user_customer
+        WHERE email = #{email}
+    </select>
+
+    <delete id="deleteCustomerDevice" parameterType="Integer">
+        DELETE FROM customer_device
+        WHERE user_customer_id = #{userCustomerId}
+    </delete>
+
 </mapper>
