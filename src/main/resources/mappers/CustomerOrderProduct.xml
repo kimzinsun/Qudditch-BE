@@ -29,8 +29,8 @@
     <!-- localdate를 사용해서 바꿔야하는지 확인: #{orderedAt, jdbcType=DATE} -->
     <insert id="insertCustomerOrder" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder"
         useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO customer_order (user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid)
-        VALUES (#{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid})
+        INSERT INTO customer_order (partner_order_id, user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid, cid)
+        VALUES (#{partnerOrderId}, #{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid}, #{cid})
     </insert>
 
     <!-- CustomerOrderProduct에 추가 -->
@@ -39,12 +39,12 @@
         VALUES (#{customerOrderId}, #{productId}, #{qty})
     </insert>
 
-    <!-- 주문 정보 조회 -->
-    <select id="findById" parameterType="java.lang.Integer" resultMap="customerOrderResultMap">
-        SELECT *
-        FROM customer_order
-        WHERE id = #{id}
-    </select>
+<!--    &lt;!&ndash; 주문 정보 조회 &ndash;&gt;-->
+<!--    <select id="findById" parameterType="java.lang.Integer" resultMap="customerOrderResultMap">-->
+<!--        SELECT *-->
+<!--        FROM customer_order-->
+<!--        WHERE id = #{id}-->
+<!--    </select>-->
 
     <!-- 사용자 ID로 월별 주문 내역 조회 -->
     <select id="findByUserCustomerId" parameterType="map" resultMap="customerOrderResultMap">
@@ -60,6 +60,33 @@
         SELECT cop.*, p.*
         FROM customer_order_product cop
         JOIN product p ON cop.product_id = p.id
-        WHERE cop.customer_order_id = #{orderId}
+        WHERE cop.customer_order_id = #{customerOrderId}
+    </select>
+
+    <update id="update" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder">
+        UPDATE customer_order
+        SET
+            partner_order_id = #{partnerOrderId}
+            user_customer_id = #{userCustomerId},
+            user_store_id = #{userStoreId},
+            total_amount = #{totalAmount},
+            used_point = #{usedPoint},
+            total_pay = #{totalPay},
+            earn_point = #{earnPoint},
+            ordered_at = #{orderedAt},
+            tid = #{tid}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findByTid" resultType="com.goldensnitch.qudditch.dto.CustomerOrder">
+        SELECT *
+        FROM customer_order
+        WHERE tid = #{tid}
+    </select>
+
+    <select id="findByPartnerOrderId" parameterType="java.lang.String" resultType="com.goldensnitch.qudditch.dto.CustomerOrder">
+        SELECT *
+        FROM customer_order
+        WHERE partner_order_id = #{partnerOrderId}
     </select>
 </mapper>

@@ -13,9 +13,15 @@ public interface CustomerOrderProductMapper  {
 
     void insertCustomerOrderProduct(CustomerOrderProduct customerOrderProduct);
 
-    CustomerOrder findById(@Param("id") Integer id);
+    // CustomerOrder findById(int id);
 
     List<CustomerOrder> findByUserCustomerId(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear);
 
-    List<CustomerOrderProduct> findByOrderId(@Param("orderId") Integer orderId);
+    // List<CustomerOrderProduct> findByOrderId(@Param("orderId") Integer orderId);
+
+    CustomerOrder findByPartnerOrderId(String partnerOrderId);
+
+    void update(CustomerOrder order);
+
+    CustomerOrder findByTid(String tid);
 }
