@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,12 +26,20 @@ public class RekognitionService {
     @Value("${aws.rekognition.collection-id}")
     private String COLLECTION_ID;
     private static final int MAX_USERS = 1;
+    private static final int USER_ENTER_TIMEOUT = 1;
+    private final RedisService redisService;
     private final AmazonRekognition rekognitionClient;
     private final AwsUtil awsUtil;
     private final AccessMapper accessMapper;
 
     @Autowired
-    public RekognitionService(AmazonRekognition rekognitionClient, AwsUtil awsUtil, AccessMapper accessMapper) {
+    public RekognitionService(
+        RedisService redisService,
+        AmazonRekognition rekognitionClient,
+        AwsUtil awsUtil,
+        AccessMapper accessMapper
+    ) {
+        this.redisService = redisService;
         this.rekognitionClient = rekognitionClient;
         this.awsUtil = awsUtil;
         this.accessMapper = accessMapper;
@@ -168,6 +177,13 @@ public class RekognitionService {
 
     public void enteredCustomers(Integer userStoreId, List<Integer> userIds) {
         for (Integer userId : userIds) {
+            if (redisService.checkExistsKey(userId.toString())) {
+                continue;
+            } else {
+                redisService.setValues(
+                    userId.toString(), userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT)
+                );
+            }
             accessMapper.insertVisitLog(
                 new StoreVisitorLog(userStoreId, userId)
             );
