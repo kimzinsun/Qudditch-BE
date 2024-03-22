@@ -9,6 +9,7 @@ import com.goldensnitch.qudditch.dto.UserCustomer;
 public interface UserCustomerRepository {
     UserCustomer selectUserByEmail(String email);
     Integer insertUserCustomer(UserCustomer user);
+    UserCustomer findByEmail(String email); // 이메일을 기반으로 사용자를 찾는 메소드 추가
     UserCustomer findByVerificationCode(String verificationCode);
     void updateUserCustomer(UserCustomer userCustomer);
 }

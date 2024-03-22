@@ -80,8 +80,8 @@ package com.goldensnitch.qudditch.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 //import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
@@ -93,6 +93,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+
 import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
 import com.goldensnitch.qudditch.service.CustomUserDetailsService;
 
@@ -105,9 +106,12 @@ public class SecurityConfig {
     
     private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService, ClientRegistrationRepository clientRegistrationRepository) {
+    private final JwtTokenFilter jwtTokenFilter;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService, ClientRegistrationRepository clientRegistrationRepository, JwtTokenFilter jwtTokenFilter) {
         this.userDetailsService = userDetailsService;
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.jwtTokenFilter = jwtTokenFilter;
     }
 
     // PasswordEncoder 빈 정의
@@ -136,23 +140,30 @@ public class SecurityConfig {
     http.csrf(csrf -> csrf.disable())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/public/**").permitAll()
-            .requestMatchers("/user/**").hasRole("USER")
-            .requestMatchers("/store/**").hasRole("STORE")
-            .requestMatchers("/admin/**").hasRole("ADMIN")
-            .anyRequest().authenticated())
+            .requestMatchers("/public/**").permitAll()  // 누구나 접근 가능한 공개 경로
+            .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
+            .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능
+            .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
+            .anyRequest().authenticated())  // 나머지 경로는 인증된 사용자만 접근 가능
+            // 4. 사용자 권한에 따른 UI 구성
+            // 일반 유저: 기본적인 서비스 화면.
+            // 점주: 매출 그래프, 매장 관리 탭 추가. (데이터베이스 또는 서비스 레이어에서 권한에 따른 데이터 접근 로직을 구현 EX.점주는 자신의 매장에 대한정보만 조회할 수 있어야한다.)
+            // 관리자: 발주 관리, 시스템 관리 탭 추가.
         .oauth2Login(oauth -> oauth
             .loginPage("/login")
             .defaultSuccessUrl("/loginSuccess")
             .failureUrl("/loginFailure")
             .clientRegistrationRepository(clientRegistrationRepository))
         .formLogin(form -> form
-            .loginPage("/login").permitAll())
+            .loginPage("/login")
+            .defaultSuccessUrl("/loginSuccess", true)  // 로그인 성공 시 리다이렉트될 URL
+            .failureUrl("/loginFailure")  // 로그인 실패 시 리다이렉트될 URL
+            .permitAll())
         .logout(logout -> logout
-            .logoutSuccessUrl("/").permitAll());
+            .logoutSuccessUrl("/"));  // 로그아웃 성공 시 리다이렉트될 URL
         
         // JWT 필터 설정이 필요하다면 여기에 추가
-        http.addFilterBefore(new JwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -164,6 +175,7 @@ public class SecurityConfig {
         return new RestTemplate();
     }
 
+    
 
 
 }

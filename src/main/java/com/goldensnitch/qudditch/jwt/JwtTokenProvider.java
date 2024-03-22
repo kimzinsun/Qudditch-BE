@@ -11,17 +11,32 @@
 // 성을 검증합니다. 토큰이 유효하면 요청이 처리되고, 유효하지 않으면 에러를 반환합니다.
 package com.goldensnitch.qudditch.jwt;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import javax.crypto.SecretKey;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import com.goldensnitch.qudditch.config.ApplicationProperties;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import javax.crypto.SecretKey;
+import com.goldensnitch.qudditch.config.ApplicationProperties;
+import com.goldensnitch.qudditch.dto.UserAdmin;
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
 
 
 @Component
@@ -37,26 +52,41 @@ public class JwtTokenProvider {
     public JwtTokenProvider(ApplicationProperties properties) {
 
         byte[] keyBytes = properties.getJwtSecret().getBytes(StandardCharsets.UTF_8);
-        if (keyBytes.length * 8 < 256) { // 비트 단위로 계산
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+        this.jwtExpirationInMs = properties.getJwtExpirationInMs();
+        checkKeyLength(keyBytes);
+    }
+
+    private void checkKeyLength(byte[] keyBytes) {
+        if (keyBytes.length * 8 < 256) {
             logger.error("Key length is less than 256 bits.");
             throw new IllegalArgumentException("Key length must be at least 256 bits.");
         }
 
 
-        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
-        this.jwtExpirationInMs = properties.getJwtExpirationInMs();
+
     }
 
 
-
+    
     public String generateToken(Authentication authentication) {
-        // 토큰 생성 로직 수정
-        String username = authentication.getName();
+        Object principal = authentication.getPrincipal();
+        String userId = "";
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
+        if (principal instanceof UserCustomer) {
+        userId = String.valueOf(((UserCustomer) principal).getId());
+        } else if (principal instanceof UserStore) {
+            userId = String.valueOf(((UserStore) principal).getId());
+        } else if (principal instanceof UserAdmin) {
+            userId = String.valueOf(((UserAdmin) principal).getId());
+        }
+
+        
+
         return Jwts.builder()
-                .subject(username)
+                .subject(userId) // 사용자 ID를 주체로 설정
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(secretKey, Jwts.SIG.HS256)
@@ -95,6 +125,35 @@ public class JwtTokenProvider {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+
+
+    public Collection<? extends GrantedAuthority> getAuthorities(String token) {
+        Claims claims = extractClaims(token);
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        // 클레임에서 역할 정보 추출
+        String role = claims.get("role", String.class);
+
+        // 역할에 따라 GrantedAuthority 객체 생성 및 추가
+        if (role != null) {
+            switch (role) {
+                case "USER":
+                    authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                    break;
+                case "STORE":
+                    authorities.add(new SimpleGrantedAuthority("ROLE_STORE"));
+                    break;
+                case "ADMIN":
+                    authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown role: " + role);
+            }
+        }
+
+        return authorities;
     }
 
     

@@ -11,8 +11,15 @@
             #{collectionArn}, #{createdAt}, #{modifiedAt}
         )
     </insert>
+
     
     <!-- select쿼리 -->
+    <!-- login 처리 -->
+    <select id="login" parameterType="map" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
+        SELECT *
+        FROM user_customer
+        WHERE email = #{email} AND password = #{password}
+    </select>
     <!-- ID로 특정 사용자 조회 -->
     <select id="selectUserById" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
         select * from user_customer where id = #{id}
