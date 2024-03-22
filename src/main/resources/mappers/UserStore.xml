@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.goldensnitch.qudditch.mapper.UserStoreMapper">
+<mapper namespace="com.goldensnitch.qudditch.repository.UserStoreRepository">
     
     <!-- 새로운 가게유저 추가 -->
     <insert id="insertUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">
@@ -16,6 +16,11 @@
     <!-- 가게유저 검색 -->
     <select id="selectUserStoreById" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserStore">
         SELECT * FROM user_store WHERE id = #{id}
+    </select>
+    <select id="findByEmail" resultType="com.goldensnitch.qudditch.dto.UserStore">
+        SELECT *
+        FROM user_store
+        WHERE email = #{email}
     </select>
 
     <!-- 가게유저 수정 -->

@@ -1,16 +1,16 @@
 package com.goldensnitch.qudditch.service;
 
-import java.io.IOException;
-import java.util.UUID;
-
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.repository.UserCustomerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.repository.UserCustomerRepository;
+import java.io.IOException;
+import java.util.UUID;
 @Service
 public class UserService {
 
@@ -53,6 +53,33 @@ public class UserService {
             log.error("Failed to register user: {}", userCustomer.getEmail(), e);
             throw new RuntimeException("Failed to register user", e);
         }
+    }
+
+    public ResponseEntity<String> registerUserCustomerTest(UserCustomer userCustomer) {
+        try {
+            // 비밀번호 암호화
+            String encodedPassword = passwordEncoder.encode(userCustomer.getPassword());
+            userCustomer.setPassword(encodedPassword);
+
+            // 인증 코드 생성 및 설정
+//            String verificationCode = UUID.randomUUID().toString();
+//            userCustomer.setVerificationCode(verificationCode);
+
+            // 사용자 상태를 '미인증'(0)으로 설정
+            userCustomer.setState(1);
+
+            // 사용자 정보 저장
+            userCustomerRepository.insertUserCustomer(userCustomer);
+
+            // 인증 이메일 전송
+//            sendVerificationEmail(userCustomer);
+
+            log.info("User registered successfully: {}", userCustomer.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to register user: {}", userCustomer.getEmail(), e);
+            throw new RuntimeException("Failed to register user", e);
+        }
+        return null;
     }
 
     private void sendVerificationEmail(UserCustomer userCustomer) {

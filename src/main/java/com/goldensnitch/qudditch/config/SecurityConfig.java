@@ -38,7 +38,7 @@
 //             .passwordEncoder(passwordEncoder());
 //         return auth.build();
 //     }
-    
+
 //     @Bean
 //     public WebSecurityCustomizer webSecurityCustomizer() {
 //         return (web) -> web.ignoring().requestMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**");
@@ -66,17 +66,17 @@
 //     }
 
 
-
 //     @Bean
 //     public RestTemplate restTemplate() {
 //         return new RestTemplate();
 //     }
-    
 
 
 // }
 package com.goldensnitch.qudditch.config;
 
+import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
+import com.goldensnitch.qudditch.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -84,9 +84,8 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-//import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-//import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -94,16 +93,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
 
-import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
-import com.goldensnitch.qudditch.service.CustomUserDetailsService;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     // UserDetailsService 및 ClientRegistrationRepository 주입
     private final CustomUserDetailsService userDetailsService;
-    
+
     private final ClientRegistrationRepository clientRegistrationRepository;
 
     private final JwtTokenFilter jwtTokenFilter;
@@ -126,42 +122,47 @@ public class SecurityConfig {
             .passwordEncoder(passwordEncoder());
 
     }
-    
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-    return authenticationConfiguration.getAuthenticationManager();
+        return authenticationConfiguration.getAuthenticationManager();
     }
-
 
 
     // SecurityFilterChain 빈 정의
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/public/**").permitAll()  // 누구나 접근 가능한 공개 경로
-            .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
-            .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능
-            .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
-            .anyRequest().authenticated())  // 나머지 경로는 인증된 사용자만 접근 가능
+        http.csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/test/register").permitAll()
+                .requestMatchers("/public/**").permitAll()  // 누구나 접근 가능한 공개 경로
+                .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
+                .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능
+                .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
+                .anyRequest().authenticated())  // 나머지 경로는 인증된 사용자만 접근 가능
             // 4. 사용자 권한에 따른 UI 구성
             // 일반 유저: 기본적인 서비스 화면.
             // 점주: 매출 그래프, 매장 관리 탭 추가. (데이터베이스 또는 서비스 레이어에서 권한에 따른 데이터 접근 로직을 구현 EX.점주는 자신의 매장에 대한정보만 조회할 수 있어야한다.)
             // 관리자: 발주 관리, 시스템 관리 탭 추가.
-        .oauth2Login(oauth -> oauth
-            .loginPage("/login")
-            .defaultSuccessUrl("/loginSuccess")
-            .failureUrl("/loginFailure")
-            .clientRegistrationRepository(clientRegistrationRepository))
-        .formLogin(form -> form
-            .loginPage("/login")
-            .defaultSuccessUrl("/loginSuccess", true)  // 로그인 성공 시 리다이렉트될 URL
-            .failureUrl("/loginFailure")  // 로그인 실패 시 리다이렉트될 URL
-            .permitAll())
-        .logout(logout -> logout
-            .logoutSuccessUrl("/"));  // 로그아웃 성공 시 리다이렉트될 URL
-        
+//                .oauth2Login(Customizer.withDefaults())
+//                .formLogin(AbstractHttpConfigurer::disable)
+//                .logout(Customizer.withDefaults());
+
+            .oauth2Login(oauth -> oauth
+//                .loginPage("/login")
+                .defaultSuccessUrl("/loginSuccess")
+                .failureUrl("/loginFailure")
+                .clientRegistrationRepository(clientRegistrationRepository))
+            .formLogin(AbstractHttpConfigurer::disable)
+//        .formLogin(form -> form
+//            .loginPage("/login")
+//            .defaultSuccessUrl("/loginSuccess", true)  // 로그인 성공 시 리다이렉트될 URL
+//            .failureUrl("/loginFailure")  // 로그인 실패 시 리다이렉트될 URL
+//            .permitAll())
+            .logout(logout -> logout
+                .logoutSuccessUrl("/"));  // 로그아웃 성공 시 리다이렉트될 URL
+
         // JWT 필터 설정이 필요하다면 여기에 추가
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -169,13 +170,10 @@ public class SecurityConfig {
     }
 
 
-
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
-
-    
 
 
 }

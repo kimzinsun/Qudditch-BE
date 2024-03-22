@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.goldensnitch.qudditch.mapper.UserCustomerMapper">
+<mapper namespace="com.goldensnitch.qudditch.repository.UserCustomerRepository">
 
     <insert id="insertUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
-        INSERT INTO user_customer (
-            email, password, name, state, verificationCode,
-            collectionArn, createdAt, modifiedAt
-        ) VALUES (
-            #{email}, #{password}, #{name}, #{state}, #{verificationCode},
-            #{collectionArn}, #{createdAt}, #{modifiedAt}
+        INSERT INTO user_customer (email, password, name, state
+        ) VALUES (#{email}, #{password}, #{name}, #{state}
         )
     </insert>
 
@@ -75,5 +71,10 @@
         FROM user_customer uc
         JOIN user_store us ON uc.id = us.id
         WHERE uc.id = #{id}
+    </select>
+    <select id="findByEmail" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
+        SELECT *
+        FROM user_customer
+        WHERE email = #{email}
     </select>
 </mapper>
