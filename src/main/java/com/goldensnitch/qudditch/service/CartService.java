@@ -48,7 +48,7 @@ public class CartService { // 장바구니 기능 (추가, 조회, 수량변경,
         }
 
         // 상품 수량 조회
-        Integer qty = storeStockMapper.selectProductQty(productId, userStoreId);
+        Integer qty = storeStockMapper.selectStockQtyByProductIdAndUserStoreId(productId, userStoreId);
         if (qty == null || qty <= 0) {
             throw new RuntimeException("선택한 상품의 재고가 없습니다.");
         }
@@ -58,7 +58,7 @@ public class CartService { // 장바구니 기능 (추가, 조회, 수량변경,
         item.setUserStoreId(userStoreId);
         item.setName(product.getName());
         item.setProductId(productId);
-        item.setQty(1);
+        item.setQty(1); // 수량이 1개씩 증가, 수량변경: updateItemQty 메서드
         item.setPrice(product.getPrice());
 
         cart.add(item);

@@ -19,10 +19,6 @@
         <result column="customer_order_id" property="customerOrderId"/>
         <result column="product_id" property="productId"/>
         <result column="qty" property="qty"/>
-        <association property="product" javaType="com.goldensnitch.qudditch.dto.Product">
-            <id column="product_id" property="id"/>
-            <result column="name" property="name"/>
-        </association>
     </resultMap>
 
     <!-- CustomerOrder에 추가 -->
@@ -39,12 +35,12 @@
         VALUES (#{customerOrderId}, #{productId}, #{qty})
     </insert>
 
-<!--    &lt;!&ndash; 주문 정보 조회 &ndash;&gt;-->
-<!--    <select id="findById" parameterType="java.lang.Integer" resultMap="customerOrderResultMap">-->
-<!--        SELECT *-->
-<!--        FROM customer_order-->
-<!--        WHERE id = #{id}-->
-<!--    </select>-->
+    <!-- 주문 정보 조회 -->
+    <select id="findById" parameterType="java.lang.Integer" resultMap="customerOrderResultMap">
+        SELECT *
+        FROM customer_order
+        WHERE id = #{id}
+    </select>
 
     <!-- 사용자 ID로 월별 주문 내역 조회 -->
     <select id="findByUserCustomerId" parameterType="map" resultMap="customerOrderResultMap">
@@ -56,10 +52,12 @@
     </select>
 
     <!-- 주문 ID로 주문 상품 정보 조회 -->
-    <select id="findByOrderId" parameterType="java.lang.Integer" resultMap="customerOrderProductResultMap">
-        SELECT cop.*, p.*
+    <select id="findOrderProductsByOrderId" parameterType="java.lang.Integer" resultMap="customerOrderProductResultMap">
+        SELECT
+            cop.customer_order_id,
+            cop.product_id,
+            cop.qty
         FROM customer_order_product cop
-        JOIN product p ON cop.product_id = p.id
         WHERE cop.customer_order_id = #{customerOrderId}
     </select>
 

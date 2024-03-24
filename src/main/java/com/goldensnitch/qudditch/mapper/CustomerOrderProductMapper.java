@@ -17,11 +17,13 @@ public interface CustomerOrderProductMapper  {
 
     List<CustomerOrder> findByUserCustomerId(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear);
 
-    // List<CustomerOrderProduct> findByOrderId(@Param("orderId") Integer orderId);
+     CustomerOrder findById(int customerOrderId);
 
     CustomerOrder findByPartnerOrderId(String partnerOrderId);
 
     void update(CustomerOrder order);
 
     CustomerOrder findByTid(String tid);
+
+    List<CustomerOrderProduct> findOrderProductsByOrderId(int customerOrderId);
 }

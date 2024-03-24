@@ -7,7 +7,6 @@ import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,21 +26,16 @@ public class OrderService {
     @Autowired
     private CartService cartService;
 
-    @Transactional
-    public Integer createOrder(Integer userCustomerId, List<CartItem> cartItems) {
-        if (cartItems.isEmpty()) {
-            throw new RuntimeException("장바구니가 비어 있습니다.");
-        }
-
-        // 주문 생성
-        Integer totalAmount = calculateTotalAmount(cartItems);
-        CustomerOrder order = new CustomerOrder();
-        setupCustomerOrder(userCustomerId, totalAmount);
-        setupCustomerOrderProducts(order.getId(), cartItems);
-
-        // 아래 결제 페이지 URL 요청 로직은 삭제하고, 대신 주문 ID를 반환
-        return order.getId(); // 생성된 주문의 ID 반환
-    }
+//    @Transactional
+//    public Integer createOrder(Integer userCustomerId, List<CartItem> cartItems) {
+//
+//        CustomerOrder order = new CustomerOrder();
+//        setupCustomerOrder(userCustomerId, totalAmount);
+//        setupCustomerOrderProducts(order.getId(), cartItems);
+//
+//        // 아래 결제 페이지 URL 요청 로직은 삭제하고, 대신 주문 ID를 반환
+//        return order.getId(); // 생성된 주문의 ID 반환
+//    }
 
     // 결제 승인을 위한 메서드, 실제 구현에서는 사용자로부터 받은 pgToken 등을 활용
 //    public String approvePayment(String pgToken, Integer orderId) {
@@ -69,11 +63,7 @@ public class OrderService {
 //        return "주문이 성공적으로 처리되었습니다. 주문 번호: " + order.getId();
 //    }
 
-    private int calculateTotalAmount(List<CartItem> cartItems) {
-        return cartItems.stream()
-                .mapToInt(item -> item.getPrice() * item.getQty())
-                .sum();
-    }
+
 
     private void setupCustomerOrder(Integer userCustomerId, Integer totalAmount){
         CustomerOrder order = new CustomerOrder();

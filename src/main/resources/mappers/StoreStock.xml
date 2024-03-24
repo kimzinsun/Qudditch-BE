@@ -94,13 +94,6 @@
         select input_at from store_input where id = ${storeInputId}
     </select>
 
-    <!-- 재고 업데이트(결제된 품목 수량만큼 재고를 차감) -->
-    <update id="updateStockQty">
-        UPDATE store_stock
-        SET qty = #{newQty}
-        WHERE user_store_id = #{userStoreId} AND product_id = #{productId}
-    </update>
-
     <!-- 판매 수량 기록 로그 -->
     <insert id="insertStoreStockReport">
         INSERT INTO store_stock_report (user_store_id, product_id, ymd, out_qty)
@@ -108,11 +101,37 @@
     </insert>
 
     <!-- userStoreId와 productId로 가게의 상품재고 수 확인 -->
-    <select id="selectProductQty" resultType="Integer">
+    <select id="selectStockQtyByProductIdAndUserStoreId" resultType="Integer">
         SELECT ss.qty
         FROM store_stock ss
-                 JOIN product p ON ss.product_id = p.id
-                 JOIN user_store us ON ss.user_store_id = us.id
-        WHERE p.id = #{productId} AND us.id = #{userStoreId}
+        WHERE ss.product_id = #{productId} AND ss.user_store_id = #{userStoreId}
+    </select>
+
+    <!-- 재고 수량 업데이트 메서드 -->
+    <update id="updateStockQtyByProductIdAndUserStoreId" parameterType="map">
+        UPDATE store_stock
+        SET qty = #{newStoreStock}
+        WHERE product_id = #{productId} AND user_store_id = #{userStoreId}
+    </update>
+
+    <update id="updateStoreStockReportOutQty" parameterType="map">
+        UPDATE store_stock_report
+        SET out_qty = #{outQty}
+        WHERE user_store_id = #{userStoreId}
+          AND product_id = #{productId}
+          AND ymd = #{date}
+    </update>
+
+    <!-- 주문 ID로 주문된 상품 정보 조회 -->
+    <select id="findOrderProductsByOrderId" parameterType="int" resultType="CustomerOrderProduct">
+        SELECT
+            cop.id,
+            cop.customer_order_id,
+            cop.product_id,
+            cop.qty
+        FROM
+            customer_order_product cop
+        WHERE
+            cop.customer_order_id = #{customerOrderId}
     </select>
 </mapper>

@@ -38,9 +38,11 @@ public interface StoreStockMapper {
     void insertInputLog(InputRepoReq inputRepoReq);
     Date getInputDate(int storeInputId);
 
-    void updateStockQty(int userStoreId, int productId, int newQty);
+    void insertStoreStockReport(int userStoreId, int productId, java.sql.Date ymd, int outQty);
 
-    void insertStoreStockReport(StoreStockReport stockReport);
+    Integer selectStockQtyByProductIdAndUserStoreId(int productId, int userStoreId);
 
-    Integer selectProductQty(int productId, int userStoreId);
+    void updateStockQtyByProductIdAndUserStoreId(Integer productId, Integer userStoreId, Integer newStoreStock);
+
+    int updateStoreStockReportOutQty(Integer userStoreId, Integer productId, Date date, Integer outQty);
 }

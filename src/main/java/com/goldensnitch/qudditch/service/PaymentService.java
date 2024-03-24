@@ -1,9 +1,12 @@
 package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.CustomerOrder;
+import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import com.goldensnitch.qudditch.dto.payment.CartItem;
 import com.goldensnitch.qudditch.dto.payment.PaymentRequest;
 import com.goldensnitch.qudditch.dto.payment.PaymentResponse;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
+import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -12,9 +15,13 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 // https://developers.kakao.com/console/app/1046778/config/appKey
 // https://jungkeung.tistory.com/149
@@ -22,6 +29,9 @@ import java.util.Map;
 public class PaymentService {
     private final RestTemplate restTemplate;
     private final String kakaoPayAuthorization;
+
+    @Autowired
+    private StoreStockMapper storeStockMapper;
 
     @Autowired
     private CustomerOrderProductMapper customerOrderProductMapper;
@@ -54,27 +64,15 @@ public class PaymentService {
     }
 
     // 결제 준비를 시작하고 사용자를 결제 페이지로 리디렉션하는 URL을 반환하는 메소드
-    public String initiatePayment(PaymentRequest request) {
+    public String initiatePayment(List<CartItem> cartItems, Integer userCustomerId) {
         HttpHeaders headers = new HttpHeaders();
         // "Authorization" 헤더에 카카오페이 인증 키 추가
         headers.add("Authorization", kakaoPayAuthorization);
         // 요청 본문의 "Content-Type"을 "application/x-www-form-urlencoded"로 설정
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // PaymentRequest 객체 대신 MultiValueMap을 사용하여 요청 파라미터를 설정
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("cid", request.getCid());
-        requestBody.put("partner_order_id", request.getPartner_order_id());
-        requestBody.put("partner_user_id", request.getPartner_user_id());
-        requestBody.put("item_name", request.getItem_name());
-        requestBody.put("quantity", request.getQuantity());
-        requestBody.put("total_amount", request.getTotal_amount());
-        requestBody.put("tax_free_amount", request.getTax_free_amount());
-        requestBody.put("approval_url", "http://localhost:8080/approve");
-        requestBody.put("cancel_url", "http://localhost:8080/cancel");
-        requestBody.put("fail_url", "http://localhost:8080/fail");
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        PaymentRequest request = createPaymentRequest(cartItems);
+        HttpEntity<PaymentRequest> entity = new HttpEntity<>(request, headers);
 
         try {
             ResponseEntity<PaymentResponse> responseEntity = restTemplate.exchange(
@@ -89,7 +87,7 @@ public class PaymentService {
                 // 객체 생성 및 필요한 정보 설정
                 CustomerOrder order = new CustomerOrder();
                 order.setPartnerOrderId(Integer.valueOf(request.getPartner_order_id()));
-                order.setUserCustomerId(2);
+                order.setUserCustomerId(5);
                 order.setUserStoreId(Integer.valueOf(request.getPartner_user_id())); // 가맹점
                 order.setTotalAmount(request.getTotal_amount());
                 order.setUsedPoint(request.getUsedPoint() != null ? request.getUsedPoint() : 0);
@@ -103,6 +101,16 @@ public class PaymentService {
 
                 // DB 에 주문 정보 저장
                 customerOrderProductMapper.insertCustomerOrder(order);
+
+                // 생성된 주문 ID를 사용하여 CustomerOrderProduct에 품목 추가
+                for (CartItem item : cartItems) { // cartItems는 주문에 포함된 품목의 목록
+                    CustomerOrderProduct orderProduct = new CustomerOrderProduct();
+                    orderProduct.setCustomerOrderId(order.getId()); // insertCustomerOrder 후 생성된 주문 ID
+                    orderProduct.setProductId(item.getProductId());
+                    orderProduct.setQty(item.getQty());
+
+                    customerOrderProductMapper.insertCustomerOrderProduct(orderProduct);
+                }
 
                 System.out.println("initiatePayment 3");
                 return response.getNext_redirect_pc_url();
@@ -120,7 +128,7 @@ public class PaymentService {
         headers.add("Authorization", kakaoPayAuthorization);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        System.out.println("~~~~~~~~~~~~~~~~~~~approvePayment 1");
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~approvePayment 1");
 
         CustomerOrder order = customerOrderProductMapper.findByPartnerOrderId(partnerOrderId);
         if (order == null) {
@@ -142,7 +150,12 @@ public class PaymentService {
                 kakaoPayApproveUrl, HttpMethod.POST, entity, PaymentResponse.class);
 
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~approvePayment 3");
-
+        // 결제 승인이 성공한 후의 로직
+        // 결제 승인 후 재고 차감 및 로그 기록을 위한 메서드 호출
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            decrementStockAndUpdateReport(order.getId());
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~approvePayment 4");
+        }
         return responseEntity.getBody();
     }
 
@@ -164,5 +177,98 @@ public class PaymentService {
                 kakaoPayCancelUrl, HttpMethod.POST, entity, PaymentResponse.class);
 
         return response.getBody();
+    }
+
+    private int calculateTotalAmount(List<CartItem> cartItems) {
+        return cartItems.stream()
+                .mapToInt(item -> item.getPrice() * item.getQty())
+                .sum();
+    }
+
+    private PaymentRequest createPaymentRequest(List<CartItem> cartItems) {
+        Random rand = new Random();
+
+        // 카트 아이템 정보를 바탕으로 결제에 필요한 정보 계산 및 설정
+        String partner_user_id = String.valueOf(cartItems.get(0).getUserStoreId());
+        String item_name = cartItems.get(0).getName();
+        String item_code = String.valueOf(cartItems.get(0).getProductId());
+        int random_order = rand.nextInt(90000000) + 10000000;
+        Integer quantity = cartItems.get(0).getQty();
+        Integer total_amount = calculateTotalAmount(cartItems);
+        Integer vat_amount = (int) Math.round(total_amount * 0.1);
+
+        // 결제 요청을 위한 PaymentRequest 객체 생성
+        PaymentRequest paymentRequest = new PaymentRequest();
+
+        // 컨트롤러에 설정한 파라미터가 paymentService 메소드로 전달되어 기능 동작
+        paymentRequest.setCid("TC0ONETIME");
+        paymentRequest.setPartner_order_id(String.valueOf(random_order)); // 고유한 주문 ID 생성
+        paymentRequest.setPartner_user_id(partner_user_id.toString());
+        paymentRequest.setItem_name(item_name.length() > 80 ? item_name.substring(0, 77) + "..." : item_name); // 상품명 설정
+        paymentRequest.setItem_code(item_code);
+        paymentRequest.setQuantity(quantity);
+        paymentRequest.setTotal_amount(total_amount);
+        paymentRequest.setTax_free_amount(0);
+        paymentRequest.setVat_amount(vat_amount);
+        paymentRequest.setApproval_url("http://localhost:8080/approve");
+        paymentRequest.setCancel_url("http://localhost:8080/cancel");
+        paymentRequest.setFail_url("http://localhost:8080/fail");
+
+        return paymentRequest;
+    }
+
+    private void decrementStockAndUpdateReport(int customerOrderId) {
+        try {
+            // 주문 정보 조회
+            CustomerOrder order = customerOrderProductMapper.findById(customerOrderId);
+            if (order == null) {
+                throw new RuntimeException("Order not found with ID: " + customerOrderId);
+            }
+
+            Integer userStoreId = order.getUserStoreId();
+            LocalDate ymd = order.getOrderedAt().toLocalDate();
+
+            // 주문된 상품 정보 조회
+            List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(customerOrderId);
+            if (orderProducts.isEmpty()) {
+                throw new RuntimeException("No products found for order ID: " + customerOrderId);
+            }
+
+            for (CustomerOrderProduct orderProduct : orderProducts) {
+                // 현재 재고 조회
+                Integer currentStoreStock = storeStockMapper.selectStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), userStoreId);
+                if (currentStoreStock == null || currentStoreStock < orderProduct.getQty()) {
+                    throw new RuntimeException("Insufficient stock for product ID: " + orderProduct.getProductId());
+                }
+
+                // 재고 차감
+                Integer newStoreStock = currentStoreStock - orderProduct.getQty();
+                storeStockMapper.updateStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), userStoreId, newStoreStock);
+
+                // 판매 정보 업데이트 또는 삽입
+                updateOrInsertStoreStockReport(userStoreId, orderProduct.getProductId(), ymd, orderProduct.getQty());
+            }
+        } catch (Exception e) {
+            // 에러 로깅
+            System.out.println("Error during decrementStockAndUpdateReport: " + e.getMessage());
+            e.printStackTrace(); // 스택 트레이스를 콘솔에 출력
+            throw e; // 예외를 다시 throw하여 호출자에게 전달
+        }
+    }
+
+    private void updateOrInsertStoreStockReport(Integer userStoreId, Integer productId, LocalDate ymd, Integer outQty) {
+        try {
+            // 판매 수량 업데이트 시도
+            int updatedRows = storeStockMapper.updateStoreStockReportOutQty(userStoreId, productId, Date.valueOf(ymd), outQty);
+            if (updatedRows == 0) {
+                // 업데이트된 행이 없으면 새로운 레코드 추가
+                storeStockMapper.insertStoreStockReport(userStoreId, productId, Date.valueOf(ymd), outQty);
+            }
+        } catch(Exception e){
+            // 에러 로깅
+            System.out.println("Error during updateOrInsertStoreStockReport: " + e.getMessage());
+            e.printStackTrace(); // 스택 트레이스를 콘솔에 출력
+            throw e; // 예외를 다시 throw하여 호출자에게 전달
+        }
     }
 }

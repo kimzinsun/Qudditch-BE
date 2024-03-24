@@ -1,11 +1,13 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.payment.PaymentRequest;
+import com.goldensnitch.qudditch.dto.payment.CartItem;
 import com.goldensnitch.qudditch.dto.payment.PaymentResponse;
 import com.goldensnitch.qudditch.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/payment")
@@ -19,17 +21,12 @@ public class PaymentController {
     }
 
     @PostMapping("/initiate")
-    public ResponseEntity<?> initiatePayment(@RequestBody PaymentRequest paymentRequest) {
+    public ResponseEntity<?> initiatePayment(@RequestBody List<CartItem> cartItems, @RequestParam Integer userCustomerId) {
         try {
-            // 사용자로부터 받은 정보와 주문 ID를 기반으로 결제 초기화
-            // 컨트롤러에 설정한 파라미터가 paymentService 메소드로 전달되어 기능 동작
-            paymentRequest.setCid("TC0ONETIME");
-
-            String redirectUrl = paymentService.initiatePayment(paymentRequest);
-
-            if (!"Error".equals(redirectUrl)) {
+            String redirectUrl = paymentService.initiatePayment(cartItems, userCustomerId); if (!"Error".equals(redirectUrl)) {
                 return ResponseEntity.ok().body(redirectUrl);
-            } else {
+            }
+            else {
                 return ResponseEntity.badRequest().body("Failed to initiate payment");
             }
         } catch (Exception e) {
@@ -59,4 +56,6 @@ public class PaymentController {
             return ResponseEntity.internalServerError().body("Error canceling payment: " + e.getMessage());
         }
     }
+
+
 }
