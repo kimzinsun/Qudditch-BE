@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,16 @@ public class CustomerOrderProductController {
             return ResponseEntity.ok(history);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @GetMapping("/history/point/{userCustomerId}")
+    public ResponseEntity<List<CustomerOrder>> getPointHistoryByCustomerId(@PathVariable Integer userCustomerId) {
+        try {
+            List<CustomerOrder> pointHistory = customerOrderProductService.getPointHistoryByCustomerId(userCustomerId);
+            return ResponseEntity.ok(pointHistory);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
         }
     }
 }

@@ -49,4 +49,8 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
 
         return monthlyOrderHistory;
     }
+
+    public List<CustomerOrder> getPointHistoryByCustomerId(Integer userCustomerId) {
+        return customerOrderProductMapper.findPointHistoryByCustomerId(userCustomerId);
+    }
 }

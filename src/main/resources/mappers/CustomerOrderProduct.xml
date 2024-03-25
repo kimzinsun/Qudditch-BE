@@ -87,4 +87,12 @@
         FROM customer_order
         WHERE tid = #{tid}
     </select>
+
+    <!-- 사용자 ID로 포인트 사용 및 적립 내역 조회 -->
+    <select id="findPointHistoryByCustomerId" parameterType="java.lang.Integer" resultMap="customerOrderResultMap">
+        SELECT *
+        FROM customer_order
+        WHERE user_customer_id = #{userCustomerId}
+        ORDER BY ordered_at DESC
+    </select>
 </mapper>
