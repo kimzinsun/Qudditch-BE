@@ -1,24 +1,39 @@
 package com.goldensnitch.qudditch.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.goldensnitch.qudditch.dto.payment.OrderResponse;
+import com.goldensnitch.qudditch.service.CustomerOrderProductService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/order")
 public class CustomerOrderProductController {
 
-//    @Autowired
-//    private CustomerOrderProductService customerOrderProductService;
-//
-//    @GetMapping("/{orderId}/receipt")
-//    public ResponseEntity<OrderResponse> generateReceipt(@PathVariable Integer orderId){
-//        OrderResponse receipt = customerOrderProductService.generateReceipt(orderId);
-//        return ResponseEntity.ok(receipt);
-//    }
-//
-//    @GetMapping("/history/{userCustomerId}/{monthYear}")
-//    public ResponseEntity<List<OrderResponse>> getMonthlyOrderHistory(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear){
-//        List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(userCustomerId, monthYear);
-//        return ResponseEntity.ok(history);
-//    }
+    private final CustomerOrderProductService customerOrderProductService;
+
+    public CustomerOrderProductController(CustomerOrderProductService customerOrderProductService) {
+        this.customerOrderProductService = customerOrderProductService;
+    }
+
+    @GetMapping("/receipt/{orderId}")
+    public ResponseEntity<?> generateReceipt(@PathVariable Integer orderId){
+        try{
+            OrderResponse order = customerOrderProductService.generateReceipt(orderId); // Adjust based on actual return type
+            return ResponseEntity.ok(order);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<?>> getMonthlyOrderHistory(@RequestParam Integer userCustomerId, @RequestParam String monthYear){
+        try {
+            List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(userCustomerId, monthYear);
+            return ResponseEntity.ok(history);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
 }

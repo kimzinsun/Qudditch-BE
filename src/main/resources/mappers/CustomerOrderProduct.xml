@@ -42,6 +42,12 @@
         WHERE id = #{id}
     </select>
 
+    <select id="findByPartnerOrderId" parameterType="java.lang.String" resultType="com.goldensnitch.qudditch.dto.CustomerOrder">
+        SELECT *
+        FROM customer_order
+        WHERE partner_order_id = #{partnerOrderId}
+    </select>
+
     <!-- 사용자 ID로 월별 주문 내역 조회 -->
     <select id="findByUserCustomerId" parameterType="map" resultMap="customerOrderResultMap">
         SELECT *
@@ -80,11 +86,5 @@
         SELECT *
         FROM customer_order
         WHERE tid = #{tid}
-    </select>
-
-    <select id="findByPartnerOrderId" parameterType="java.lang.String" resultType="com.goldensnitch.qudditch.dto.CustomerOrder">
-        SELECT *
-        FROM customer_order
-        WHERE partner_order_id = #{partnerOrderId}
     </select>
 </mapper>
