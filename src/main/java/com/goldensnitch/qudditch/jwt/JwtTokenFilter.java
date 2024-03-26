@@ -24,8 +24,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    // 토큰에서 권한을 추출하여 Security Context에 저장하는 메소드
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         try {
             if (!isLoginRequest(request)) {
                 String token = getTokenFromRequest(request);
@@ -35,9 +37,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(claims.getSubject(), null, jwtTokenProvider.getAuthorities(token));
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    
                 }
             }
-            filterChain.doFilter(request, response);
+
         } catch (ExpiredJwtException e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
         } catch (MalformedJwtException e) {

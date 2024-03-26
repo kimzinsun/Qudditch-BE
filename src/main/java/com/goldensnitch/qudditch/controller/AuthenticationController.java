@@ -1,12 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
-import com.goldensnitch.qudditch.dto.AuthResponse;
-import com.goldensnitch.qudditch.dto.LoginRequest;
-import com.goldensnitch.qudditch.dto.SocialLoginDto;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
-import com.goldensnitch.qudditch.repository.UserCustomerRepository;
-import com.goldensnitch.qudditch.service.UserService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +11,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.goldensnitch.qudditch.dto.AuthResponse;
+import com.goldensnitch.qudditch.dto.LoginRequest;
+import com.goldensnitch.qudditch.dto.SocialLoginDto;
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
+import com.goldensnitch.qudditch.repository.UserCustomerRepository;
 
 @RestController
 public class AuthenticationController {
@@ -32,12 +38,23 @@ public class AuthenticationController {
     @Autowired
     private UserCustomerRepository userCustomerRepository;
 
-    @Autowired
-    private UserService userService;
+    // @Autowired
+    // private UserService userService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
+    // @GetMapping("/self")
+    // public ResponseEntity<?> getSelf(Authentication authentication) {
+    //     if (authentication == null || !authentication.isAuthenticated()) {
+    //         return ResponseEntity.status(401).body("Unauthorized");
+    //     }
+
+    //     log.info("Authenticated user: {}", authentication.getName());
+    //     return ResponseEntity.ok(authentication);
+    // }
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -51,31 +68,47 @@ public class AuthenticationController {
                 .body("회원가입이 필요합니다.");
         }
 
-        // 인증 로직
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        // 비밀번호 검증 로직 (입력된 비밀번호와 데이터베이스에 저장된 해시를 비교)
+    if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀렸습니다.");
+    }
 
-        // SecurityContext에 인증 정보를 저장
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 인증 로직 (비밀번호 검증이 성공하면 토큰을 생성)
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
+        loginRequest.getEmail(),
+        loginRequest.getPassword()
+    );
+
+    authentication = authenticationManager.authenticate(authentication);
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // // 인증 로직
+        // Authentication authentication = authenticationManager.authenticate(
+        //     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+        
+        // // SecurityContext에 인증 정보를 저장
+        // SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // JWT 토큰 생성
         String token = jwtTokenProvider.generateToken(authentication);
         AuthResponse authResponse = new AuthResponse(token);
 
-        log.info("Security Context에 Authentication: {}", SecurityContextHolder.getContext());
-        log.info("User authenticated successfully: " + authResponse);
+        // 인증 후 응답 로그 변경
+        log.info("Security Conte에 Authentication: {}", authResponse.getToken());
         // 생성된 토큰을 클라이언트에 반환
+        log.info("User authenticated suessfully: " + authResponse);
         return ResponseEntity.ok(authResponse);
     }
 
-    @PostMapping("/test/register")
-    public ResponseEntity<String> registerUser() {
-        UserCustomer userCustomer = new UserCustomer();
-        userCustomer.setEmail("ttt@test.com");
-        userCustomer.setPassword("1234");
-        userCustomer.setName("test");
-        return userService.registerUserCustomerTest(userCustomer);
-    }
+    // @PostMapping("/test/register")
+    // public ResponseEntity<String> registerUser() {
+    //     UserCustomer userCustomer = new UserCustomer();
+    //     userCustomer.setEmail("ttt@test.com");
+    //     userCustomer.setPassword("1234");
+    //     userCustomer.setName("test");
+    //     return userService.registerUserCustomerTest(userCustomer);
+    // }
 
 
     @PostMapping("/store/login")
@@ -127,4 +160,20 @@ public class AuthenticationController {
 
         return ResponseEntity.ok("Account verified successfully.");
     }
+
+    // @GetMapping("/self")
+    // public void getSelf() {
+    //     log.info("ContextHolder {}",SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+    // }
+    @GetMapping("/self")
+public ResponseEntity<?> getSelf(Authentication authentication) {
+    if (authentication == null || !authentication.isAuthenticated()) {
+        return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+    }
+
+    // 여기서는 사용자의 세부 정보를 반환합니다. 예를 들어:
+    Object principal = authentication.getPrincipal();
+    return ResponseEntity.ok(principal);
+}
+    
 }

@@ -75,8 +75,7 @@
 // }
 package com.goldensnitch.qudditch.config;
 
-import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
-import com.goldensnitch.qudditch.service.CustomUserDetailsService;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -88,10 +87,13 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+//import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+
+import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
+import com.goldensnitch.qudditch.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -100,13 +102,13 @@ public class SecurityConfig {
     // UserDetailsService 및 ClientRegistrationRepository 주입
     private final CustomUserDetailsService userDetailsService;
 
-    private final ClientRegistrationRepository clientRegistrationRepository;
+//    private final ClientRegistrationRepository clientRegistrationRepository;
 
     private final JwtTokenFilter jwtTokenFilter;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService, ClientRegistrationRepository clientRegistrationRepository, JwtTokenFilter jwtTokenFilter) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtTokenFilter jwtTokenFilter) {
         this.userDetailsService = userDetailsService;
-        this.clientRegistrationRepository = clientRegistrationRepository;
+//        this.clientRegistrationRepository = clientRegistrationRepository;
         this.jwtTokenFilter = jwtTokenFilter;
     }
 
@@ -116,13 +118,16 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // 스프링 시큐리티가 제공하는 기본 구성을 사용하여 AuthenticationManager를 설정합니다.
+    // 스프링 시큐리티가 제공하는 기본 구성을 사용하여
+    // AuthenticationManager를 설정합니다.
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService)
             .passwordEncoder(passwordEncoder());
+            // 기존 록지 + jwttokenfilter추가
 
     }
 
+    // AuthenticationManager 빈을 생성합니다.
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -132,11 +137,15 @@ public class SecurityConfig {
     // SecurityFilterChain 빈 정의
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http//  CSRF 비활성화
+            .csrf(AbstractHttpConfigurer::disable)
+            //  세션 관리 정책 설정
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // 권한 설정 및 접근
+                .requestMatchers("/self").authenticated()
                 .requestMatchers("/test/register").permitAll()
-                .requestMatchers("/public/**").permitAll()  // 누구나 접근 가능한 공개 경로
+                .requestMatchers("/public/**", "/login", "/test/register").permitAll()
                 .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
                 .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능
                 .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
@@ -149,27 +158,29 @@ public class SecurityConfig {
 //                .formLogin(AbstractHttpConfigurer::disable)
 //                .logout(Customizer.withDefaults());
 
-            .oauth2Login(oauth -> oauth
-//                .loginPage("/login")
-                .defaultSuccessUrl("/loginSuccess")
-                .failureUrl("/loginFailure")
-                .clientRegistrationRepository(clientRegistrationRepository))
-            .formLogin(AbstractHttpConfigurer::disable)
+//             .oauth2Login(oauth -> oauth
+// //                .loginPage("/login")
+//                 .defaultSuccessUrl("/loginSuccess")
+//                 .failureUrl("/loginFailure")
+//                 .clientRegistrationRepository(clientRegistrationRepository))
+            .oauth2Login(AbstractHttpConfigurer::disable) // OAuth2 로그인 비활성화
+            .formLogin(AbstractHttpConfigurer::disable)  // 폼 로그인 비활성화
 //        .formLogin(form -> form
 //            .loginPage("/login")
 //            .defaultSuccessUrl("/loginSuccess", true)  // 로그인 성공 시 리다이렉트될 URL
 //            .failureUrl("/loginFailure")  // 로그인 실패 시 리다이렉트될 URL
 //            .permitAll())
             .logout(logout -> logout
-                .logoutSuccessUrl("/"));  // 로그아웃 성공 시 리다이렉트될 URL
+            .logoutSuccessUrl("/login")
+            .deleteCookies("JSESSIONID")
+            .permitAll())
+            // JwtTokenFilter를 필터 체인에 추가합니다.
+            .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // JWT 필터 설정이 필요하다면 여기에 추가
-        http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+            return http.build();
+            }
 
-        return http.build();
-    }
-
-
+    // RestTemplate 빈을 생성합니다.
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();

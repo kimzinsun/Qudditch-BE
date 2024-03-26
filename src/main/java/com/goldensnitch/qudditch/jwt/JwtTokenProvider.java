@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
@@ -24,12 +25,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.goldensnitch.qudditch.config.ApplicationProperties;
-import com.goldensnitch.qudditch.dto.UserAdmin;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -68,29 +67,29 @@ public class JwtTokenProvider {
     }
 
 
-    
+    // 권한을 토큰에 포함시키는 메소드
     public String generateToken(Authentication authentication) {
-        Object principal = authentication.getPrincipal();
-        String userId = "";
+
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
-        if (principal instanceof UserCustomer) {
-        userId = String.valueOf(((UserCustomer) principal).getId());
-        } else if (principal instanceof UserStore) {
-            userId = String.valueOf(((UserStore) principal).getId());
-        } else if (principal instanceof UserAdmin) {
-            userId = String.valueOf(((UserAdmin) principal).getId());
-        }
+        // 'Authentication' 객체에서 'Principal'을 얻습니다.
+        String userId = ((UserDetails) authentication.getPrincipal()).getUsername();
 
-        
+        // 권한(역할)을 토큰에 포함시키기 위해 변경
+        String authorities = authentication.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .collect(Collectors.joining(","));
 
         return Jwts.builder()
-                .subject(userId) // 사용자 ID를 주체로 설정
+                .subject(userId) // 'subject'를 사용자 ID로 설정
+                .claim("roles", authorities)    // claim에 권한을 포함시킨다.
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(secretKey, Jwts.SIG.HS256)
                 .compact();
+
+    
     }
 
 
@@ -128,28 +127,40 @@ public class JwtTokenProvider {
     }
 
 
+    // 단일 권항을 가져오는 메서드
+    // public Collection<? extends GrantedAuthority> getAuthorities(String token) {
+    //     Claims claims = extractClaims(token);
+    //     List<GrantedAuthority> authorities = new ArrayList<>();
+
+    //     // 클레임에서 역할 정보 추출
+    //     String role = claims.get("role", String.class);
+
+    //     // 역할에 따라 GrantedAuthority 객체 생성 및 추가
+    //     if (role != null) {
+    //         switch (role) {
+    //             case "USER":
+    //                 authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+    //                 break;
+    //             case "STORE":
+    //                 authorities.add(new SimpleGrantedAuthority("ROLE_STORE"));
+    //                 break;
+    //             case "ADMIN":
+    //                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    //                 break;
+                
+    //             default:
+    //                 throw new IllegalArgumentException("Unknown role: " + role);
+    //         }
+    //     }
 
     public Collection<? extends GrantedAuthority> getAuthorities(String token) {
         Claims claims = extractClaims(token);
         List<GrantedAuthority> authorities = new ArrayList<>();
-
-        // 클레임에서 역할 정보 추출
-        String role = claims.get("role", String.class);
-
-        // 역할에 따라 GrantedAuthority 객체 생성 및 추가
-        if (role != null) {
-            switch (role) {
-                case "USER":
-                    authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-                    break;
-                case "STORE":
-                    authorities.add(new SimpleGrantedAuthority("ROLE_STORE"));
-                    break;
-                case "ADMIN":
-                    authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown role: " + role);
+    
+        String roles = claims.get("roles", String.class);
+        if (roles != null && !roles.isEmpty()) {
+            for (String role : roles.split(",")) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
             }
         }
 
