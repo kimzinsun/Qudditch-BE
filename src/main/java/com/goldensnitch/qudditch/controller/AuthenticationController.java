@@ -167,13 +167,12 @@ public class AuthenticationController {
     //     Object principal = authentication.getPrincipal();
     //     return ResponseEntity.ok(principal);
     // }
-        @GetMapping("/self")
+    @GetMapping("/self")
     public ResponseEntity<?> getSelf(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
-
-        // 사용자 정보 출력, 여기서는 예시로 authentication 객체를 직접 반환
+        // 사용자 정보를 반환합니다. 이 예제에서는 'authentication' 객체를 그대로 반환합니다.
         return ResponseEntity.ok(authentication);
     }
 

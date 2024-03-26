@@ -76,8 +76,10 @@
 package com.goldensnitch.qudditch.config;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -102,13 +104,13 @@ public class SecurityConfig {
     // UserDetailsService 및 ClientRegistrationRepository 주입
     private final CustomUserDetailsService userDetailsService;
 
-//    private final ClientRegistrationRepository clientRegistrationRepository;
-
+    @Autowired
+    @Lazy
     private final JwtTokenFilter jwtTokenFilter;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService, JwtTokenFilter jwtTokenFilter) {
         this.userDetailsService = userDetailsService;
-//        this.clientRegistrationRepository = clientRegistrationRepository;
+
         this.jwtTokenFilter = jwtTokenFilter;
     }
 

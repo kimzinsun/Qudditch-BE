@@ -30,6 +30,7 @@ public class UserService {
      //   this.emailService = emailService;
     }
 
+    // 회원가입 로직에서 예외를 던지는 부분 추가
     public void registerUserCustomer(UserCustomer userCustomer) {
         try {
             // 비밀번호 암호화
