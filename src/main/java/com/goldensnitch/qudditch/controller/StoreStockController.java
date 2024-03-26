@@ -29,28 +29,31 @@ public class StoreStockController {
     @GetMapping("/stock")
     public ResponseEntity<Map<String, Object>> getStockList(@RequestParam @Nullable Integer categoryId, PaginationParam paginationParam) {
         Map<String, Object> response = new HashMap<>();
-//        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Integer userStoreId = 2;
-        if (userStoreId == null) {
-            response.put("status", "fail");
-            response.put("message", "로그인이 필요합니다.");
-
-        } else {
-            int count = categoryId == null ? storeStockService.cntProductByUserStoreId(userStoreId) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
-            List<StoreStockRes> stockList = categoryId == null ? storeStockService.selectAllProductByUserStoreId(userStoreId, paginationParam) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam);
-            if (stockList.isEmpty()) {
+        try {
+            Integer userStoreId = 2;
+            if (userStoreId == null) {
                 response.put("status", "fail");
-                response.put("message", "상품이 존재하지 않습니다.");
+                response.put("message", "로그인이 필요합니다.");
             } else {
-                response.put("status", "success");
-                response.put("data", stockList);
-                response.put("pagination", new Pagination(count, paginationParam));
+                int count = categoryId == 0 ? storeStockService.cntProductByUserStoreId(userStoreId) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+                List<StoreStockRes> stockList = categoryId == 0 ? storeStockService.selectAllProductByUserStoreId(userStoreId, paginationParam) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam);
+                if (stockList.isEmpty()) {
+                    response.put("status", "fail");
+                    response.put("message", "상품이 존재하지 않습니다.");
+                } else {
+                    response.put("status", "success");
+                    response.put("data", stockList);
+                    response.put("pagination", new Pagination(count, paginationParam));
+                }
             }
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", "서버에서 오류가 발생했습니다.");
+            e.printStackTrace();
         }
         return ResponseEntity.ok(response);
-
     }
+
 
 
     @PostMapping("/stock/update")

@@ -50,9 +50,7 @@ public class StoreStockService {
         return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 
-    public List<StoreLocQty> getStoreByProductId(int productName, double currentWgs84X, double currentWgs84Y) {
-        return storeStockMapper.selectStoreByProductId(productName, currentWgs84X, currentWgs84Y);
-    }
+
 
     public int cntProductByUserStoreId(int userStoreId) {
         return storeStockMapper.cntProductByUserStoreId(userStoreId);
