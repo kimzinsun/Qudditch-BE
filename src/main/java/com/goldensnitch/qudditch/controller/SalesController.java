@@ -42,13 +42,14 @@ public class SalesController {
 
 
     @GetMapping("/MonthlySales")
-    public List<CustomerOrder> MonthlySales(@RequestParam(value = "month") String month,
+    public List<CustomerOrder> MonthlySales(@RequestParam(value = "yearMonth") String yearMonth,
                                             @RequestParam(value = "userStoreId")Integer userStoreId) {
 
         // String으로 받은 날짜데이터를 date타입으로 변환.
-        //Date date = Date.valueOf(month);
+        // Date date = Date.valueOf(month);
+        // String yearMonth = month + "-01"; // 해당 월의 1일로 설정
 
-        List<CustomerOrder> list = salesService.MonthlySales(userStoreId, month);
+        List<CustomerOrder> list = salesService.MonthlySales(yearMonth, userStoreId);
         log.info("list: {}", list);
         return list;
     }

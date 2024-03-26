@@ -14,9 +14,12 @@
     </select>
 
     <select id="MonthlySales" resultType="MonthSales" parameterType="map">
-        SELECT SUM(c.total_pay) AS Price
-        FROM customer_order c
-                 JOIN store s ON c.user_store_id = s.id
-        WHERE DATE_FORMAT(c.ordered_at, '%Y-%m') = #{month} AND c.user_store_id = #{userStoreId}
+        SELECT SUM(Price) AS Price
+        FROM (
+                SELECT SUM(c.total_pay) AS Price
+                FROM customer_order c
+                         JOIN store s ON c.user_store_id = s.id
+                WHERE DATE_FORMAT(c.ordered_at, '%Y-%m') = #{yearMonth} AND c.user_store_id = #{userStoreId}
+             ) AS subquery;
     </select>
 </mapper>
