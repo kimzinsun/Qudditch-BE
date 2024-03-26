@@ -144,7 +144,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 권한 설정 및 접근
                 .requestMatchers("/self").authenticated()
-                .requestMatchers("/test/register").permitAll()
                 .requestMatchers("/public/**", "/login", "/test/register").permitAll()
                 .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
                 .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능

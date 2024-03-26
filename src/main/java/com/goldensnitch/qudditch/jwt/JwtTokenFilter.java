@@ -52,6 +52,22 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
+//     @Override
+//     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+//             throws ServletException, IOException {
+
+//         String token = getTokenFromRequest(request);
+//         if (token != null && jwtTokenProvider.validateToken(token)) {
+//         Claims claims = jwtTokenProvider.extractClaims(token);
+//         Collection<? extends GrantedAuthority> authorities = jwtTokenProvider.getAuthorities(token);
+
+//         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+//             claims.getSubject(), null, authorities);
+//         SecurityContextHolder.getContext().setAuthentication(authentication);
+//     }
+// filterChain.doFilter(request, response);
+
+// }
 
     private boolean isLoginRequest(HttpServletRequest request) {
         String path = request.getServletPath();

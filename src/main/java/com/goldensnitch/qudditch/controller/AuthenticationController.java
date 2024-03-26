@@ -46,15 +46,7 @@ public class AuthenticationController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
-    // @GetMapping("/self")
-    // public ResponseEntity<?> getSelf(Authentication authentication) {
-    //     if (authentication == null || !authentication.isAuthenticated()) {
-    //         return ResponseEntity.status(401).body("Unauthorized");
-    //     }
-
-    //     log.info("Authenticated user: {}", authentication.getName());
-    //     return ResponseEntity.ok(authentication);
-    // }
+    
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -165,15 +157,24 @@ public class AuthenticationController {
     // public void getSelf() {
     //     log.info("ContextHolder {}",SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     // }
-    @GetMapping("/self")
-public ResponseEntity<?> getSelf(Authentication authentication) {
-    if (authentication == null || !authentication.isAuthenticated()) {
-        return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+    //     @GetMapping("/self")
+    // public ResponseEntity<?> getSelf(Authentication authentication) {
+    //     if (authentication == null || !authentication.isAuthenticated()) {
+    //         return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+    //     }
+
+    //     // 여기서는 사용자의 세부 정보를 반환합니다. 예를 들어:
+    //     Object principal = authentication.getPrincipal();
+    //     return ResponseEntity.ok(principal);
+    // }
+        @GetMapping("/self")
+    public ResponseEntity<?> getSelf(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+
+        // 사용자 정보 출력, 여기서는 예시로 authentication 객체를 직접 반환
+        return ResponseEntity.ok(authentication);
     }
 
-    // 여기서는 사용자의 세부 정보를 반환합니다. 예를 들어:
-    Object principal = authentication.getPrincipal();
-    return ResponseEntity.ok(principal);
-}
-    
 }

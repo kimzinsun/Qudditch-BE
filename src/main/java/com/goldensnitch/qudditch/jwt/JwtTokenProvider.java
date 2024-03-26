@@ -13,7 +13,6 @@ package com.goldensnitch.qudditch.jwt;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -153,9 +152,9 @@ public class JwtTokenProvider {
     //         }
     //     }
 
-    public Collection<? extends GrantedAuthority> getAuthorities(String token) {
+    public List<SimpleGrantedAuthority> getAuthorities(String token) {
         Claims claims = extractClaims(token);
-        List<GrantedAuthority> authorities = new ArrayList<>();
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
     
         String roles = claims.get("roles", String.class);
         if (roles != null && !roles.isEmpty()) {
@@ -163,7 +162,7 @@ public class JwtTokenProvider {
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
             }
         }
-
+    
         return authorities;
     }
 
