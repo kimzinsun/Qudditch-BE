@@ -4,22 +4,19 @@
 
 <mapper namespace="com.goldensnitch.qudditch.mapper.SalesMapper">
     <select id="DailySales" resultType="StoreDailySales" parameterType="map">
-        SELECT SUM(c.total_amount)AS totalAmount, c.ordered_at AS orderedAt, s.name
-        FROM customer_order c
-                 JOIN store s ON c.user_store_id = s.id
-        WHERE DATE(c.ordered_at) = #{date} and c.user_store_id = #{userStoreId}
-        GROUP BY
-            c.ordered_at
+        SELECT SUM(totalAmount) AS totalAmount
+        FROM (
+                 SELECT SUM(c.total_amount) AS totalAmount
+                 FROM customer_order c
+                          JOIN store s ON c.user_store_id = s.id
+                 WHERE DATE(c.ordered_at) = #{date} AND c.user_store_id = #{userStoreId}
+             ) AS subquery;
     </select>
 
-        <select id="MonthlySales" resultType="MonthSales" parameterType="CustomerOrder">
-        SELECT DATE_FORMAT(ordered_at, '%Y-%m') AS Month, SUM(total_pay) AS Price, s.name
+    <select id="MonthlySales" resultType="MonthSales" parameterType="map">
+        SELECT SUM(c.total_pay) AS Price
         FROM customer_order c
                  JOIN store s ON c.user_store_id = s.id
-        WHERE c.user_store_id = #{userStoreId}
-        GROUP BY
-            Month
-        ORDER BY
-            Month DESC
+        WHERE DATE_FORMAT(c.ordered_at, '%Y-%m') = #{month} AND c.user_store_id = #{userStoreId}
     </select>
 </mapper>

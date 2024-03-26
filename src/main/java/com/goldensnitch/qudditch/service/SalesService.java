@@ -24,9 +24,9 @@ public class SalesService {
         return salesMapper.DailySales(date,userStoreId);
     }
 
-    public List<CustomerOrder> MonthlySales(Integer userStoreId) {
+    public List<CustomerOrder> MonthlySales(Integer userStoreId, String month) {
 
-        return salesMapper.MonthlySales(userStoreId);
+        return salesMapper.MonthlySales(userStoreId, month);
     }
 
 }

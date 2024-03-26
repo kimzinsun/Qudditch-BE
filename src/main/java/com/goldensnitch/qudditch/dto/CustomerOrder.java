@@ -15,4 +15,5 @@ public class CustomerOrder {
     private Integer earnPoint;
     private Date orderedAt;
     private String tid;
+    private String month;
 }

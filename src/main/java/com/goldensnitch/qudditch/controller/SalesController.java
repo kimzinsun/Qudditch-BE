@@ -4,7 +4,10 @@ import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.service.SalesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.Date;
 import java.util.List;
@@ -39,9 +42,13 @@ public class SalesController {
 
 
     @GetMapping("/MonthlySales")
-    public List<CustomerOrder> MonthlySales(Integer userStoreId) {
+    public List<CustomerOrder> MonthlySales(@RequestParam(value = "month") String month,
+                                            @RequestParam(value = "userStoreId")Integer userStoreId) {
 
-        List<CustomerOrder> list = salesService.MonthlySales(userStoreId);
+        // String으로 받은 날짜데이터를 date타입으로 변환.
+        //Date date = Date.valueOf(month);
+
+        List<CustomerOrder> list = salesService.MonthlySales(userStoreId, month);
         log.info("list: {}", list);
         return list;
     }
