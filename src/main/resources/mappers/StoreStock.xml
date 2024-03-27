@@ -23,7 +23,7 @@
     <update id="updateStock" parameterType="StoreStock">
         UPDATE store_stock
         SET qty = #{qty}, position_id = #{positionId}
-        WHERE user_store_id = #{userStoreId} and product_id = #{productId}
+        WHERE user_store_id = #{userStoreId} and id = ${id}
     </update>
     <select id="selectProductByUserStoreIdAndCategoryId">
         SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice

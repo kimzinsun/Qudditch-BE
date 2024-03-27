@@ -57,30 +57,29 @@ public class StoreStockController {
 
 
     @PostMapping("/stock/update")
-    public ResponseEntity<Map<String, Object>> updateStock(@RequestBody List<StockUpdateReq> stockUpdateReq) {
+    public ResponseEntity<Map<String, Object>> updateStock(@RequestBody StockUpdateReq stockUpdateReq) {
         Map<String, Object> response = new HashMap<>();
-        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Integer userStoreId = null;
+//        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Integer userStoreId = 2;
         if (userStoreId == null) {
             response.put("status", "fail");
             response.put("message", "로그인이 필요합니다.");
             return ResponseEntity.ok(response);
         }
-        for (StockUpdateReq req : stockUpdateReq) {
-            StoreStock storeStock = storeStockService.selectProductByUserStoreIdAndProductId(userStoreId, req.getProductId());
-            if (req.getQuantity() != null) {
-                if (req.getQuantity() < 0) {
+            StoreStock storeStock = storeStockService.selectProductByUserStoreIdAndProductId(userStoreId, stockUpdateReq.getProductId());
+            if (stockUpdateReq.getQuantity() != null) {
+                if (stockUpdateReq.getQuantity() < 0) {
                     response.put("status", "fail");
                     response.put("message", "수량은 0 이상이어야 합니다.");
                     return ResponseEntity.ok(response);
                 }
-                storeStock.setQty(req.getQuantity());
+                storeStock.setQty(stockUpdateReq.getQuantity());
             }
-            if (req.getPositionId() != null) {
-                storeStock.setPositionId(req.getPositionId());
+            if (stockUpdateReq.getPositionId() != null) {
+                storeStock.setPositionId(stockUpdateReq.getPositionId());
             }
             storeStockService.updateStock(storeStock);
-        }
+
         response.put("status", "success");
         response.put("message", "재고가 수정되었습니다.");
         return ResponseEntity.ok(response);
