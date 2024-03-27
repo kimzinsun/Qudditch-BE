@@ -53,15 +53,27 @@ public class CartService { // 장바구니 기능 (추가, 조회, 수량변경,
             throw new RuntimeException("선택한 상품의 재고가 없습니다.");
         }
 
-        // CartItem 객체 생성 및 초기화
-        CartItem item = new CartItem();
-        item.setUserStoreId(userStoreId);
-        item.setName(product.getName());
-        item.setProductId(productId);
-        item.setQty(1); // 수량이 1개씩 증가, 수량변경: updateItemQty 메서드
-        item.setPrice(product.getPrice());
+        // 장바구니에서 동일한 상품 찾기
+        CartItem existingItem = cart.stream()
+                .filter(item -> item.getProductId().equals(productId))
+                .findFirst()
+                .orElse(null);
 
-        cart.add(item);
+        if(existingItem != null){
+            // 동일한 상품이 이미 장바구니에 있는 경우 수량을 1증가
+            existingItem.setQty(existingItem.getQty() + 1);
+        }
+        else {
+            // CartItem 객체 생성 및 초기화
+            CartItem item = new CartItem();
+            item.setUserStoreId(userStoreId);
+            item.setName(product.getName());
+            item.setProductId(productId);
+            item.setQty(1); // 수량이 1개씩 증가, 수량변경: updateItemQty 메서드
+            item.setPrice(product.getPrice());
+
+            cart.add(item);
+        }
 
         userCarts.put(userCustomerId, cart);
         return true;

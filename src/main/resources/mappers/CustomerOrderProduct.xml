@@ -62,8 +62,10 @@
         SELECT
             cop.customer_order_id,
             cop.product_id,
+            p.name as product_name,
             cop.qty
         FROM customer_order_product cop
+                 JOIN product p ON cop.product_id = p.id
         WHERE cop.customer_order_id = #{customerOrderId}
     </select>
 
