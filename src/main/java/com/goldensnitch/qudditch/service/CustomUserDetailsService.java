@@ -43,6 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService{
         UserAdmin userAdmin = userAdminRepository.findByEmail(email); // 관리자 조회 추가
 
         if (userCustomer != null) {
+            System.out.println("여기에 도달");
             return new org.springframework.security.core.userdetails.User(
                     userCustomer.getEmail(),
                     userCustomer.getPassword(),

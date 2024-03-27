@@ -33,6 +33,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 
@@ -42,7 +43,9 @@ public class JwtTokenProvider {
 
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
-    private final SecretKey secretKey;
+    // private final SecretKey secretKey;
+    private byte[] secretKey;
+    private final SecretKey sKey;
     private final long jwtExpirationInMs;
 
 
@@ -50,7 +53,9 @@ public class JwtTokenProvider {
     public JwtTokenProvider(ApplicationProperties properties) {
 
         byte[] keyBytes = properties.getJwtSecret().getBytes(StandardCharsets.UTF_8);
-        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+        this.sKey = Keys.hmacShaKeyFor(keyBytes);
+        // this.secretKey = Base64.getEncoder().encodeToString(keyBytes);
+        this.secretKey = keyBytes;
         this.jwtExpirationInMs = properties.getJwtExpirationInMs();
         checkKeyLength(keyBytes);
     }
@@ -85,7 +90,8 @@ public class JwtTokenProvider {
                 .claim("roles", authorities)    // claim에 권한을 포함시킨다.
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .signWith(secretKey, Jwts.SIG.HS256)
+                // .signWith(Jwts.SIG.HS256, secretKey)
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
 
     
@@ -96,7 +102,8 @@ public class JwtTokenProvider {
         try {
 
             Jwts.parser()
-                .verifyWith(secretKey)
+                // .verifyWith(secretKey)
+                .setSigningKey(secretKey)
                 .build()
                 .parseSignedClaims(authToken);
             return true;
@@ -119,7 +126,8 @@ public class JwtTokenProvider {
     }
     public Claims extractClaims(String token) {
         return Jwts.parser()
-                .decryptWith(secretKey)
+                // .setSigningKey(secretKey)
+                .decryptWith(sKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
