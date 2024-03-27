@@ -35,7 +35,7 @@ public interface StoreStockMapper {
 
 
     void insertStoreStock(int userStoreId, int productId, int positionId, int qty, String expiredAt);
-    void updateConfirmInput(int storeInputId, int productId);
+    void updateConfirmInput(int storeInputId, int productId, int positionId);
     void insertInputLog(InputRepoReq inputRepoReq);
     Date getInputDate(int storeInputId);
 

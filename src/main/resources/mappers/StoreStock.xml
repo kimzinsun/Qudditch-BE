@@ -5,7 +5,7 @@
         SELECT COUNT(*) FROM store_stock WHERE user_store_id = #{userStoreId}
     </select>
     <select id="selectAllProductByUserStoreId">
-        SELECT s.*,ps.name as position, c.name AS categoryName, p.name AS productName, p.brand AS brand, p.image AS productImage, p.price AS productPrice,
+        SELECT s.*,ps.name as positioned, c.name AS categoryName, p.name AS productName, p.brand AS brand, p.image AS productImage, p.price AS productPrice,
                CASE
                    WHEN DATEDIFF(s.expired_at, CURDATE()) <![CDATA[ <= ]]> 7 THEN 0
                    ELSE 1
@@ -93,7 +93,7 @@
             #{recordSize} OFFSET #{offset};
     </select>
     <select id="getOrderDetailByStoreInputId">
-        select p.id as productId, p.brand, p.name, p.price, sip.qty, sip.state, sip.exp_date as expDate
+        select p.id as productId, p.brand, p.name, p.price, sip.qty, sip.state, sip.exp_date as expDate, sip.locate
         from product p, store_input si, store_input_product sip
         where p.id = sip.product_id and si.id = sip.store_input_id and si.id = ${storeInputId}
     </select>
@@ -103,7 +103,7 @@
     </insert>
     <update id="updateConfirmInput">
         update store_input_product
-        set state = '검수완료'
+        set state = '검수완료', locate = #{positionId}
         where store_input_id = ${storeInputId} and product_id = ${productId}
     </update>
     <insert id="insertInputLog">
