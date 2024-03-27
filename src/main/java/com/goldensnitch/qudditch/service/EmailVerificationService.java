@@ -19,7 +19,7 @@
 
 //     // application.properties에서 설정한 네이버 클라이언트 시크릿
 //     @Value("${naver.api.client-secret}")
-//     private String naverClientSecret; 
+//     private String naverClientSecret;
 
 //     public void sendVerificationEmail(String userEmail, String verificationCode) {
 //         String apiUrl = "https://api.naver.com/email/send"; // 네이버 이메일 발송 API URL

@@ -1,14 +1,15 @@
 package com.goldensnitch.qudditch.jwt;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.goldensnitch.qudditch.service.CustomUserDetailsService;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -20,6 +21,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+    
+    @Autowired
+private CustomUserDetailsService customUserDetailsService;
 
     // 토큰에서 권한을 추출하여 Security Context에 저장하는 메소드
     // @Override
@@ -55,10 +59,17 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String token = getTokenFromRequest(request);
         if (token != null && jwtTokenProvider.validateToken(token)) {
         Claims claims = jwtTokenProvider.extractClaims(token);
-        Collection<? extends GrantedAuthority> authorities = jwtTokenProvider.getAuthorities(token);
+        //토큰으로부터 이메일 추출
+        String email = claims.getSubject();
+        //Collection<? extends GrantedAuthority> authorities = jwtTokenProvider.getAuthorities(token);
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            claims.getSubject(), null, authorities);
+        // UserDetailsService를 사용하여 ExtendedUserDetails를 로드한다.
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        
+        // UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+        //     claims.getSubject(), null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 filterChain.doFilter(request, response);

@@ -1,6 +1,9 @@
 package com.goldensnitch.qudditch.controller;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goldensnitch.qudditch.dto.AuthResponse;
 import com.goldensnitch.qudditch.dto.LoginRequest;
 import com.goldensnitch.qudditch.dto.SocialLoginDto;
+import com.goldensnitch.qudditch.dto.UserAdmin;
 import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
 import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
 import com.goldensnitch.qudditch.repository.UserCustomerRepository;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+import com.goldensnitch.qudditch.service.UserService;
 
 @RestController
 public class AuthenticationController {
@@ -38,8 +45,8 @@ public class AuthenticationController {
     @Autowired
     private UserCustomerRepository userCustomerRepository;
 
-    // @Autowired
-    // private UserService userService;
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -154,26 +161,53 @@ public class AuthenticationController {
     }
 
     // @GetMapping("/self")
-    // public void getSelf() {
-    //     log.info("ContextHolder {}",SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-    // }
-    //     @GetMapping("/self")
     // public ResponseEntity<?> getSelf(Authentication authentication) {
     //     if (authentication == null || !authentication.isAuthenticated()) {
     //         return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
     //     }
-
-    //     // 여기서는 사용자의 세부 정보를 반환합니다. 예를 들어:
-    //     Object principal = authentication.getPrincipal();
-    //     return ResponseEntity.ok(principal);
+    //     System.out.println(SecurityContextHolder.getContext().getAuthentication());
+    //     // 사용자 정보를 반환합니다. 이 예제에서는 'authentication' 객체를 그대로 반환합니다.
+    //     return ResponseEntity.ok(authentication);
     // }
     @GetMapping("/self")
-    public ResponseEntity<?> getSelf(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+public ResponseEntity<?> getSelf(Authentication authentication) {
+    if (authentication != null && authentication.isAuthenticated()) {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof ExtendedUserDetails) {
+            ExtendedUserDetails userDetails = (ExtendedUserDetails) principal;
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", userDetails.getId());
+            userInfo.put("name", userDetails.getName());
+            userInfo.put("email", userDetails.getEmail());
+            // 기타 상세 정보 추가...
+            return ResponseEntity.ok(userInfo);
+        } else {
+            // 여기서 principal의 실제 클래스 타입을 로깅하여 더 많은 정보를 얻을 수 있습니다.
+            log.error("Expected principal to be an instance of ExtendedUserDetails but found: {}", principal.getClass().getName());
+            // 'principal'이 'ExtendedUserDetails'의 인스턴스가 아닌 경우 처리
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User details not found");
         }
-        // 사용자 정보를 반환합니다. 이 예제에서는 'authentication' 객체를 그대로 반환합니다.
-        return ResponseEntity.ok(authentication);
+    } else {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+    }
     }
 
+
+    @PostMapping("/register/customer")
+    public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
+        log.info("Registering customer with email: {}", userCustomer.getEmail());
+        return userService.registerUserCustomer(userCustomer);
+    }
+
+    @PostMapping("/register/store")
+    public ResponseEntity<?> registerStore(@RequestBody UserStore userStore) {
+        // 사용자 정보 저장 로직 (점주)
+        return userService.registerUserStore(userStore);
+    }
+
+    @PostMapping("/register/admin")
+    public ResponseEntity<?> registerAdmin(@RequestBody UserAdmin userAdmin) {
+        // 사용자 정보 저장 로직 (관리자)
+        return userService.registerUserAdmin(userAdmin);
+}
 }

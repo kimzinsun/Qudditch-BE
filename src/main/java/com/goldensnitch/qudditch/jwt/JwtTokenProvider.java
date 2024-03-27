@@ -126,8 +126,8 @@ public class JwtTokenProvider {
     }
     public Claims extractClaims(String token) {
         return Jwts.parser()
-                // .setSigningKey(secretKey)
-                .decryptWith(sKey)
+                .setSigningKey(secretKey)
+                // v.decryptWith(sKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

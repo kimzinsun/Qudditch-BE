@@ -42,22 +42,46 @@ public class CustomUserDetailsService implements UserDetailsService{
         UserStore userStore = userStoreRepository.findByEmail(email);
         UserAdmin userAdmin = userAdminRepository.findByEmail(email); // 관리자 조회 추가
 
+        // if (userCustomer != null) {
+        //     System.out.println("여기에 도달");
+        //     return new org.springframework.security.core.userdetails.User(
+        //             userCustomer.getEmail(),
+        //             userCustomer.getPassword(),
+        //             AuthorityUtils.createAuthorityList("ROLE_CUSTOMER"));
+        // }
+        // else if (userStore != null) {
+        //     return new org.springframework.security.core.userdetails.User(
+        //             userStore.getEmail(),
+        //             userStore.getPassword(),
+        //             AuthorityUtils.createAuthorityList("ROLE_STORE"));
+        // } else if (userAdmin != null) {
+        //     return new org.springframework.security.core.userdetails.User(
+        //             userAdmin.getEmail(),
+        //             userAdmin.getPassword(),
+        //             AuthorityUtils.createAuthorityList("ROLE_ADMIN")); // 관리자 권한 추가
+        // }
+
         if (userCustomer != null) {
-            System.out.println("여기에 도달");
-            return new org.springframework.security.core.userdetails.User(
-                    userCustomer.getEmail(),
-                    userCustomer.getPassword(),
-                    AuthorityUtils.createAuthorityList("ROLE_CUSTOMER"));
+            return new ExtendedUserDetails(
+                userCustomer.getEmail(),
+                userCustomer.getPassword(),
+                AuthorityUtils.createAuthorityList("ROLE_CUSTOMER"),
+                userCustomer.getId(),
+                userCustomer.getName(), email);
         } else if (userStore != null) {
-            return new org.springframework.security.core.userdetails.User(
-                    userStore.getEmail(),
-                    userStore.getPassword(),
-                    AuthorityUtils.createAuthorityList("ROLE_STORE"));
+            return new ExtendedUserDetails(
+                userStore.getEmail(),
+                userStore.getPassword(),
+                AuthorityUtils.createAuthorityList("ROLE_STORE"),
+                userStore.getId(),
+                userStore.getName(), email);
         } else if (userAdmin != null) {
-            return new org.springframework.security.core.userdetails.User(
-                    userAdmin.getEmail(),
-                    userAdmin.getPassword(),
-                    AuthorityUtils.createAuthorityList("ROLE_ADMIN")); // 관리자 권한 추가
+            return new ExtendedUserDetails(
+                userAdmin.getEmail(),
+                userAdmin.getPassword(),
+                AuthorityUtils.createAuthorityList("ROLE_ADMIN"),
+                userAdmin.getId(),
+                userAdmin.getName(), email);
         }
 
         throw new UsernameNotFoundException("User not found with email: " + email);
