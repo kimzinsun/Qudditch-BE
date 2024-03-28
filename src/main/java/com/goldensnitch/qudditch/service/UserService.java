@@ -71,53 +71,30 @@ public class UserService {
     // 점주 회원가입 로직
 
     public ResponseEntity<String> registerUserStore(UserStore userStore) {
-        // 필수 필드에 대한 유효성 검사
-    if (userStore.getStoreId() == null) {
-        log.error("Store ID는 필수 항목입니다.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Store ID는 필수 항목입니다.");
+        try {
+            // 이메일 중복 검사
+            if (userStoreRepository.findByEmail(userStore.getEmail()) != null) {
+                log.error("이미 존재하는 이메일입니다: {}", userStore.getEmail());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
+            }
+
+            // 비밀번호 암호화 및 계정 정보 설정
+            String encodedPassword = passwordEncoder.encode(userStore.getPassword());
+            userStore.setPassword(encodedPassword);
+            userStore.setState(0); // 미인증 상태로 설정
+
+            // 계정 정보를 데이터베이스에 저장
+            userStoreRepository.insertUserStore(userStore);
+            log.info("점포 등록에 성공했습니다: {}", userStore.getEmail());
+            return ResponseEntity.ok("점포 등록에 성공했습니다.");
+        } catch (DataAccessException e) {
+            log.error("데이터베이스 접근 중 오류가 발생했습니다.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 접근 중 오류가 발생했습니다.");
+        } catch (Exception e) {
+            log.error("점포 등록 중 알 수 없는 오류가 발생했습니다.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("점포 등록 중 알 수 없는 문제가 발생했습니다.");
+        }
     }
-    if (userStore.getEmail() == null || userStore.getEmail().isEmpty()) {
-        log.error("이메일은 필수 항목입니다.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일은 필수 항목입니다.");
-    }
-    if (userStore.getPassword() == null || userStore.getPassword().isEmpty()) {
-        log.error("비밀번호는 필수 항목입니다.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호는 필수 항목입니다.");
-    }
-    if (userStore.getName() == null || userStore.getName().isEmpty()) {
-        log.error("이름은 필수 항목입니다.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이름은 필수 항목입니다.");
-    }
-    if (userStore.getStoreId() == null) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Store ID는 필수 항목입니다.");
-    }
-    if (userStore.getBnNumber() == null) {
-        log.error("사업자 번호는 필수 항목입니다.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사업자 번호는 필수 항목입니다.");
-    }
-    // 이메일 중복 검사
-    if (userStoreRepository.findByEmail(userStore.getEmail()) != null) {
-        log.error("이미 존재하는 이메일입니다: {}", userStore.getEmail());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
-    }
-    
-    // 계정 정보 설정 및 저장
-    try {
-        String encodedPassword = passwordEncoder.encode(userStore.getPassword());
-        userStore.setPassword(encodedPassword);
-        // 상태(state) 기본값 설정 (미인증 상태로 가정)
-        userStore.setState(0); // 미인증 상태
-        userStoreRepository.insertUserStore(userStore);
-        log.info("점포 등록에 성공했습니다: {}", userStore.getEmail());
-        return ResponseEntity.ok("점포 등록에 성공했습니다.");
-    } catch (DataAccessException e) {
-        log.error("데이터베이스 접근 중 오류가 발생했습니다.", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 접근 중 오류가 발생했습니다.");
-    } catch (Exception e) {
-        log.error("점포 등록 중 알 수 없는 오류가 발생했습니다.", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("점포 등록 중 알 수 없는 문제가 발생했습니다.");
-    }
-}
     // 관리자 회원가입 로직
 
         public ResponseEntity<String> registerUserAdmin(UserAdmin userAdmin) {
