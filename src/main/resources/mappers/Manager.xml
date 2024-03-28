@@ -15,7 +15,7 @@
                                                      )
                            ELSE GROUP_CONCAT(p.name ORDER BY p.id ASC SEPARATOR ', ')
                            END
-               ) AS items, so.state
+               ) AS orderItems, so.state
         FROM store s,product p
                          INNER JOIN
         store_order_product sop ON sop.product_id = p.id
