@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -25,10 +26,21 @@ public class BestProductController {
     }
 
     @GetMapping("/BestProduct")
-    public List<StoreStockReport> BestProduct(Integer storeId) {
+    public Map<String,Object> BestProduct(Integer storeId) {
 
         List<StoreStockReport> list = bestProductService.BestProduct(storeId);
         log.info("list: {}", list);
-        return list;
+
+        /*// StoreStockReport 배열 생성
+        StoreStockReport[] array = new StoreStockReport[list.size()];
+
+        // 리스트의 요소를 배열로 복사
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }*/
+
+        return Map.of(
+                "bestProducts", list
+        );
     }
 }
