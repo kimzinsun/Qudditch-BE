@@ -1,10 +1,10 @@
 package com.goldensnitch.qudditch.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
 public class LoginRequest {
     private String email;
     private String password;

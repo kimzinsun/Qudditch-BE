@@ -5,22 +5,19 @@
     <!-- 새로운 가게유저 추가 -->
     <insert id="insertUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">
         INSERT INTO user_store (
-            store_id, email, password, name, bn_number,
-            state, created_at, modified_at
+            email, password, name, bn_number, state
         ) VALUES (
-            #{storeId}, #{email}, #{password}, #{name}, #{bnNumber},
-            #{state}, #{createdAt}, #{modifiedAt}
+            #{email}, #{password}, #{name}, #{bnNumber}, #{state}
         )
     </insert>
-    
+
+    <!-- 이메일로 점주 검색 -->
+    <select id="findByEmail" parameterType="String" resultType="com.goldensnitch.qudditch.dto.UserStore">
+        SELECT * FROM user_store WHERE email = #{email}
+    </select>
     <!-- 가게유저 검색 -->
     <select id="selectUserStoreById" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserStore">
         SELECT * FROM user_store WHERE id = #{id}
-    </select>
-    <select id="findByEmail" resultType="com.goldensnitch.qudditch.dto.UserStore">
-        SELECT *
-        FROM user_store
-        WHERE email = #{email}
     </select>
 
     <!-- 가게유저 수정 -->

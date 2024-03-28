@@ -192,19 +192,22 @@ public ResponseEntity<?> getSelf(Authentication authentication) {
     }
     }
 
-
+    // 일반 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/customer")
     public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
         log.info("Registering customer with email: {}", userCustomer.getEmail());
+        // UserService의 회원가입 로직을 호출하여 처리결과를 반환한다.
         return userService.registerUserCustomer(userCustomer);
     }
 
+    // 점주 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/store")
     public ResponseEntity<?> registerStore(@RequestBody UserStore userStore) {
         // 사용자 정보 저장 로직 (점주)
         return userService.registerUserStore(userStore);
     }
 
+    // 관리자 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/admin")
     public ResponseEntity<?> registerAdmin(@RequestBody UserAdmin userAdmin) {
         // 사용자 정보 저장 로직 (관리자)

@@ -2,9 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.goldensnitch.qudditch.repository.UserAdminRepository">
 
-    <select id="findByEmail" resultType="com.goldensnitch.qudditch.dto.UserAdmin">
-        SELECT *
-        FROM user_admin
-        WHERE email = #{email}
-    </select>
+    <!-- 이메일로 관리자 검색 -->
+<select id="findByEmail" parameterType="String" resultType="com.goldensnitch.qudditch.dto.UserAdmin">
+    SELECT * FROM user_admin WHERE email = #{email}
+</select>
 </mapper>
