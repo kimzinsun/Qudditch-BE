@@ -1,17 +1,16 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.repository.UserCustomerRepository;
 
 @Service
 public class SignUpService {
 
     @Autowired
-    private UserCustomerRepository userCustomerRepository;
+    private UserCustomerMapper userCustomerMapper;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -25,6 +24,6 @@ public class SignUpService {
         user.setState(0);
         
         // 저장된 사용자 객체를 반환합니다.
-        return userCustomerRepository.insertUserCustomer(user);
+        return userCustomerMapper.insertUserCustomer(user);
     }
 }
