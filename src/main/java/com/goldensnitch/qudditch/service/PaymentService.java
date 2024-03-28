@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Date;
@@ -163,15 +161,16 @@ public class PaymentService {
     public PaymentResponse cancelPayment(String tid, String cancelAmount, String cancelTaxFreeAmount) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", kakaoPayAuthorization);
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-        parameters.add("cid", cid); // 가맹점 코드
-        parameters.add("tid", tid); // 결제 고유 번호
-        parameters.add("cancel_amount", cancelAmount); // 취소 금액
-        parameters.add("cancel_tax_free_amount", cancelTaxFreeAmount); // 비과세 금액
+        // 요청 본문을 JSON 객체로 생성
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("cid", cid);
+        requestBody.put("tid", tid);
+        requestBody.put("cancel_amount", Integer.parseInt(cancelAmount));
+        requestBody.put("cancel_tax_free_amount", Integer.parseInt(cancelTaxFreeAmount));
 
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         ResponseEntity<PaymentResponse> response = restTemplate.exchange(
                 kakaoPayCancelUrl, HttpMethod.POST, entity, PaymentResponse.class);
@@ -179,6 +178,7 @@ public class PaymentService {
         return response.getBody();
     }
 
+    // 결제 정보 조회 메서드
     public PaymentResponse getOrderInfo(String tid) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", kakaoPayAuthorization);
