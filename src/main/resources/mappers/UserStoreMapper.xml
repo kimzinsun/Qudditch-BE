@@ -4,7 +4,8 @@
     
     <!-- 새로운 가게유저 추가 -->
     <insert id="insertUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">
-        INSERT INTO user_store (email, password, name, bn_number, state) VALUES (#{email}, #{password}, #{name}, #{bnNumber}, #{state})
+        INSERT INTO user_store (store_id, email, password, name, bn_number, state)
+        VALUES (#{storeId}, #{email}, #{password}, #{name}, #{bnNumber}, #{state})
     </insert>
 
     <!-- 이메일로 점주 검색 -->
@@ -14,6 +15,10 @@
     <!-- 가게유저 검색 -->
     <select id="selectUserStoreById" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserStore">
         SELECT * FROM user_store WHERE id = #{id}
+    </select>
+    <!-- 현재 최대 store_id 값을 찾는 쿼리 -->
+    <select id="findMaxStoreId" resultType="Integer">
+        SELECT MAX(store_id) FROM user_store
     </select>
 
     <!-- 가게유저 수정 -->

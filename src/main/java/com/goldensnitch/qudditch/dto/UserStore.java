@@ -15,7 +15,7 @@ public class UserStore {
     // @Id
     // @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id; // 순번
-  //  private Integer storeId; // 매장 식별자
+    private Integer storeId; // 매장 식별자
     private String email; // 이메일 주소
     private String password; // 비밀번호
     private String name; // 사용자 이름

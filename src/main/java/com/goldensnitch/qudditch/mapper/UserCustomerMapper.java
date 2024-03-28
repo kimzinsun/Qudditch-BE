@@ -2,8 +2,9 @@
 
 package com.goldensnitch.qudditch.mapper;
 
-import com.goldensnitch.qudditch.dto.UserCustomer;
 import org.apache.ibatis.annotations.Mapper;
+
+import com.goldensnitch.qudditch.dto.UserCustomer;
 
 @Mapper // Mybatis 사용 시 @Mapper 어노테이션 사용
 public interface UserCustomerMapper {
