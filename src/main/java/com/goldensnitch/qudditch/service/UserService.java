@@ -153,14 +153,17 @@ public class UserService {
     // 관리자 회원가입 로직
     public ResponseEntity<String> registerUserAdmin(UserAdmin userAdmin) {
         try {
+            // 이메일 중복 검사
             if (userAdminMapper.findByEmail(userAdmin.getEmail()) != null) {
                 log.error("이미 존재하는 이메일입니다: {}", userAdmin.getEmail());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
             }
 
+            // 비밀번호 암호화
             userAdmin.setPassword(passwordEncoder.encode(userAdmin.getPassword()));
-            // Here you can add any additional properties you need to set for the admin
+            // 추가적으로 설정해야 할 관리자 속성이 있다면 여기에 코드 추가
 
+            // 관리자 정보 데이터베이스에 저장
             userAdminMapper.insertUserAdmin(userAdmin);
             log.info("관리자 등록에 성공했습니다: {}", userAdmin.getEmail());
             return ResponseEntity.ok("관리자 등록에 성공했습니다.");
