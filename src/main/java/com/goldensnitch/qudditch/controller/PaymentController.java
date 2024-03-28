@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/payment")
@@ -57,5 +58,24 @@ public class PaymentController {
         }
     }
 
+    @PostMapping("/orderInfo")
+    public ResponseEntity<?> getOrderInfo(@RequestBody Map<String, String> payload) {
+        try {
+            // payload에서 tid 추출
+            String tid = payload.get("tid");
+            if (tid == null || tid.trim().isEmpty()) {
+                throw new IllegalArgumentException("Transaction ID (tid) is required.");
+            }
+
+            // PaymentService를 사용하여 주문 정보를 조회
+            PaymentResponse paymentResponse = paymentService.getOrderInfo(tid);
+
+            // 성공적으로 정보를 가져온 경우, PaymentResponse 객체를 반환
+            return ResponseEntity.ok(paymentResponse);
+        } catch (Exception e) {
+            // 예외가 발생한 경우, 에러 메시지와 함께 클라이언트에게 응답
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
 }

@@ -179,6 +179,35 @@ public class PaymentService {
         return response.getBody();
     }
 
+    public PaymentResponse getOrderInfo(String tid) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", kakaoPayAuthorization);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 요청 본문에 포함할 정보를 구성합니다.
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("cid", this.cid); // 가맹점 코드
+        requestBody.put("tid", tid);      // 결제 고유 번호
+
+        // HTTP 요청을 구성합니다.
+        HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
+
+        // 카카오페이 주문 조회 API에 요청을 보냅니다.
+        ResponseEntity<PaymentResponse> responseEntity = restTemplate.exchange(
+                "https://open-api.kakaopay.com/online/v1/payment/order",
+                HttpMethod.POST,
+                entity,
+                PaymentResponse.class
+        );
+
+        // 응답을 처리합니다.
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            return responseEntity.getBody();
+        } else {
+            throw new Exception("Failed to retrieve order information");
+        }
+    }
+
     private int calculateTotalAmount(List<CartItem> cartItems) {
         return cartItems.stream()
                 .mapToInt(item -> item.getPrice() * item.getQty())
