@@ -4,11 +4,7 @@
     
     <!-- 새로운 가게유저 추가 -->
     <insert id="insertUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">
-        INSERT INTO user_store (
-            email, password, name, bn_number, state
-        ) VALUES (
-            #{email}, #{password}, #{name}, #{bnNumber}, #{state}
-        )
+        INSERT INTO user_store (email, password, name, bn_number, state) VALUES (#{email}, #{password}, #{name}, #{bnNumber}, #{state})
     </insert>
 
     <!-- 이메일로 점주 검색 -->
@@ -21,7 +17,7 @@
     </select>
 
     <!-- 가게유저 수정 -->
-    <update id="updateUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">
+    <!-- <update id="updateUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">
         UPDATE user_store SET
             store_id = #{storeId},
             email = #{email},
@@ -32,7 +28,7 @@
             created_at = #{createdAt},
             modified_at = #{modifiedAt}
         WHERE id = #{id}
-    </update>
+    </update> -->
 
     <!-- 가제유저 삭제 -->
     <delete id="deleteUserStore" parameterType="int">
