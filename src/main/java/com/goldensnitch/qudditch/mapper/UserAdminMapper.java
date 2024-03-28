@@ -1,11 +1,10 @@
-package com.goldensnitch.qudditch.repository;
-
-import org.apache.ibatis.annotations.Mapper;
+package com.goldensnitch.qudditch.mapper;
 
 import com.goldensnitch.qudditch.dto.UserAdmin;
+import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface UserAdminRepository {
+public interface UserAdminMapper {
 
     UserAdmin findByEmail(String email);
 

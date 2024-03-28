@@ -1,7 +1,11 @@
 package com.goldensnitch.qudditch.service;
 
-import java.util.UUID;
-
+import com.goldensnitch.qudditch.dto.UserAdmin;
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
+import com.goldensnitch.qudditch.mapper.UserAdminMapper;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.mapper.UserStoreMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,32 +15,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.goldensnitch.qudditch.dto.UserAdmin;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
-import com.goldensnitch.qudditch.repository.UserAdminRepository;
-import com.goldensnitch.qudditch.repository.UserCustomerRepository;
-import com.goldensnitch.qudditch.repository.UserStoreRepository;
+import java.util.UUID;
+
 @Service
 public class UserService {
 
-    private final UserCustomerRepository userCustomerRepository;
-    private final UserStoreRepository userStoreRepository;
-    private final UserAdminRepository userAdminRepository;
+    private final UserCustomerMapper userCustomerMapper;
+    private final UserStoreMapper userStoreMapper;
+    private final UserAdminMapper userAdminMapper;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
-    public UserService(UserCustomerRepository userCustomerRepository,
-                    UserStoreRepository userStoreRepository,
-                    UserAdminRepository userAdminRepository,
-                    PasswordEncoder passwordEncoder,
-                    EmailService emailService) {
-                    this.userCustomerRepository = userCustomerRepository;
-                    this.userStoreRepository = userStoreRepository;
-                    this.userAdminRepository = userAdminRepository;
+    public UserService(UserCustomerMapper userCustomerMapper,
+                       UserStoreMapper userStoreMapper,
+                       UserAdminMapper userAdminMapper,
+                       PasswordEncoder passwordEncoder,
+                       EmailService emailService) {
+        this.userCustomerMapper = userCustomerMapper;
+        this.userStoreMapper = userStoreMapper;
+        this.userAdminMapper = userAdminMapper;
                     this.passwordEncoder = passwordEncoder;
                     this.emailService = emailService;
     }
@@ -45,7 +45,7 @@ public class UserService {
     public ResponseEntity<String> registerUserCustomer(UserCustomer userCustomer) {
         try {
             // 입력된 이메일이 이미 사용중인지 검사합니다.
-            if (userCustomerRepository.findByEmail(userCustomer.getEmail()) != null) {
+            if (userCustomerMapper.findByEmail(userCustomer.getEmail()) != null) {
                 log.error("이미 존재하는 이메일입니다: {}", userCustomer.getEmail());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
             }
@@ -56,7 +56,7 @@ public class UserService {
             userCustomer.setVerificationCode(UUID.randomUUID().toString()); // 인증 코드를 생성합니다.
 
             // 사용자 정보를 데이터베이스에 저장합니다.
-            userCustomerRepository.insertUserCustomer(userCustomer);
+            userCustomerMapper.insertUserCustomer(userCustomer);
             log.info("고객 등록이 성공적으로 완료되었습니다: {}", userCustomer.getEmail());
             return ResponseEntity.ok("고객 등록이 성공적으로 완료되었습니다.");
         } catch (DataAccessException e) {
@@ -73,7 +73,7 @@ public class UserService {
     public ResponseEntity<String> registerUserStore(UserStore userStore) {
         try {
             // 이메일 중복 검사
-            if (userStoreRepository.findByEmail(userStore.getEmail()) != null) {
+            if (userStoreMapper.findByEmail(userStore.getEmail()) != null) {
                 log.error("이미 존재하는 이메일입니다: {}", userStore.getEmail());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
             }
@@ -84,7 +84,7 @@ public class UserService {
             userStore.setState(0); // 미인증 상태로 설정
 
             // 계정 정보를 데이터베이스에 저장
-            userStoreRepository.insertUserStore(userStore);
+            userStoreMapper.insertUserStore(userStore);
             log.info("점포 등록에 성공했습니다: {}", userStore.getEmail());
             return ResponseEntity.ok("점포 등록에 성공했습니다.");
         } catch (DataAccessException e) {
@@ -98,7 +98,7 @@ public class UserService {
     // 관리자 회원가입 로직
 
         public ResponseEntity<String> registerUserAdmin(UserAdmin userAdmin) {
-            if (userAdminRepository.findByEmail(userAdmin.getEmail()) != null) {
+            if (userAdminMapper.findByEmail(userAdmin.getEmail()) != null) {
                 log.error("이미 존재하는 이메일입니다: {}", userAdmin.getEmail());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
             }
@@ -106,7 +106,7 @@ public class UserService {
             String encodedPassword = passwordEncoder.encode(userAdmin.getPassword());
             userAdmin.setPassword(encodedPassword);
             // 여기에 관리자 특화 등록 로직을 추가할 수 있습니다.
-            userAdminRepository.insertUserAdmin(userAdmin);
+            userAdminMapper.insertUserAdmin(userAdmin);
             log.info("관리자 등록에 성공했습니다: {}", userAdmin.getEmail());
             return ResponseEntity.ok("관리자 등록에 성공했습니다.");
         } catch (Exception e) {
@@ -138,7 +138,7 @@ public class UserService {
             userCustomer.setState(0);
 
             // 사용자 정보 저장
-            userCustomerRepository.insertUserCustomer(userCustomer);
+            userCustomerMapper.insertUserCustomer(userCustomer);
 
             // 인증 이메일 전송
             emailService.sendVerificationEmail(userCustomer.getEmail(), verificationCode);

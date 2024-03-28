@@ -1,9 +1,11 @@
 package com.goldensnitch.qudditch.controller;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+import com.goldensnitch.qudditch.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,22 +18,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.goldensnitch.qudditch.dto.AuthResponse;
-import com.goldensnitch.qudditch.dto.LoginRequest;
-import com.goldensnitch.qudditch.dto.SocialLoginDto;
-import com.goldensnitch.qudditch.dto.UserAdmin;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
-import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
-import com.goldensnitch.qudditch.repository.UserCustomerRepository;
-import com.goldensnitch.qudditch.service.ExtendedUserDetails;
-import com.goldensnitch.qudditch.service.UserService;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class AuthenticationController {
@@ -43,7 +33,7 @@ public class AuthenticationController {
     private JwtTokenProvider jwtTokenProvider; // JWT 토큰 제공자 의존성 주입
 
     @Autowired
-    private UserCustomerRepository userCustomerRepository;
+    private UserCustomerMapper userCustomerMapper;
 
     @Autowired
     private UserService userService;
@@ -60,7 +50,7 @@ public class AuthenticationController {
         log.info("Attempting to authenticate user with email: " + loginRequest.getEmail());
 
         // 회원 여부 확인 로직
-        UserCustomer user = userCustomerRepository.findByEmail(loginRequest.getEmail());
+        UserCustomer user = userCustomerMapper.findByEmail(loginRequest.getEmail());
         if (user == null) {
             return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
@@ -146,7 +136,7 @@ public class AuthenticationController {
 
     @GetMapping("/verify")
     public ResponseEntity<String> verifyUser(@RequestParam("code") String code) {
-        UserCustomer user = userCustomerRepository.findByVerificationCode(code);
+        UserCustomer user = userCustomerMapper.findByVerificationCode(code);
 
         if (user == null) {
             return ResponseEntity.badRequest().body("Invalid verification code.");
@@ -155,7 +145,7 @@ public class AuthenticationController {
         // 사용자 상태를 '일반'(1)으로 업데이트
         user.setState(1);
         user.setVerificationCode(null); // 인증 코드 사용 후 초기화
-        userCustomerRepository.updateUserCustomer(user);
+        userCustomerMapper.updateUserCustomer(user);
 
         return ResponseEntity.ok("Account verified successfully.");
     }
@@ -173,8 +163,7 @@ public class AuthenticationController {
 public ResponseEntity<?> getSelf(Authentication authentication) {
     if (authentication != null && authentication.isAuthenticated()) {
         Object principal = authentication.getPrincipal();
-        if (principal instanceof ExtendedUserDetails) {
-            ExtendedUserDetails userDetails = (ExtendedUserDetails) principal;
+        if (principal instanceof ExtendedUserDetails userDetails) {
             Map<String, Object> userInfo = new HashMap<>();
             userInfo.put("id", userDetails.getId());
             userInfo.put("name", userDetails.getName());
