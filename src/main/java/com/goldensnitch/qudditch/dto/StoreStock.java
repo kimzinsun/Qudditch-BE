@@ -13,5 +13,5 @@ public class StoreStock {
     private Date receiptAt;
     private Date expiredAt;
     private Integer qty;
-    private String position;
+    private String positioned;
 }

@@ -29,55 +29,57 @@ public class StoreStockController {
     @GetMapping("/stock")
     public ResponseEntity<Map<String, Object>> getStockList(@RequestParam @Nullable Integer categoryId, PaginationParam paginationParam) {
         Map<String, Object> response = new HashMap<>();
-//        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Integer userStoreId = 2;
-        if (userStoreId == null) {
-            response.put("status", "fail");
-            response.put("message", "로그인이 필요합니다.");
-
-        } else {
-            int count = categoryId == null ? storeStockService.cntProductByUserStoreId(userStoreId) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
-            List<StoreStockRes> stockList = categoryId == null ? storeStockService.selectAllProductByUserStoreId(userStoreId, paginationParam) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam);
-            if (stockList.isEmpty()) {
+        try {
+            Integer userStoreId = 2;
+            if (userStoreId == null) {
                 response.put("status", "fail");
-                response.put("message", "상품이 존재하지 않습니다.");
+                response.put("message", "로그인이 필요합니다.");
             } else {
-                response.put("status", "success");
-                response.put("data", stockList);
-                response.put("pagination", new Pagination(count, paginationParam));
+                int count = categoryId == 0 ? storeStockService.cntProductByUserStoreId(userStoreId) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+                List<StoreStockRes> stockList = categoryId == 0 ? storeStockService.selectAllProductByUserStoreId(userStoreId, paginationParam) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam);
+                if (stockList.isEmpty()) {
+                    response.put("status", "fail");
+                    response.put("message", "상품이 존재하지 않습니다.");
+                } else {
+                    response.put("status", "success");
+                    response.put("data", stockList);
+                    response.put("pagination", new Pagination(count, paginationParam));
+                }
             }
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", "서버에서 오류가 발생했습니다.");
+            e.printStackTrace();
         }
         return ResponseEntity.ok(response);
-
     }
 
 
+
     @PostMapping("/stock/update")
-    public ResponseEntity<Map<String, Object>> updateStock(@RequestBody List<StockUpdateReq> stockUpdateReq) {
+    public ResponseEntity<Map<String, Object>> updateStock(@RequestBody StockUpdateReq stockUpdateReq) {
         Map<String, Object> response = new HashMap<>();
-        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Integer userStoreId = null;
+//        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Integer userStoreId = 2;
         if (userStoreId == null) {
             response.put("status", "fail");
             response.put("message", "로그인이 필요합니다.");
             return ResponseEntity.ok(response);
         }
-        for (StockUpdateReq req : stockUpdateReq) {
-            StoreStock storeStock = storeStockService.selectProductByUserStoreIdAndProductId(userStoreId, req.getProductId());
-            if (req.getQuantity() != null) {
-                if (req.getQuantity() < 0) {
+            StoreStock storeStock = storeStockService.selectProductByUserStoreIdAndProductId(userStoreId, stockUpdateReq.getProductId());
+            if (stockUpdateReq.getQuantity() != null) {
+                if (stockUpdateReq.getQuantity() < 0) {
                     response.put("status", "fail");
                     response.put("message", "수량은 0 이상이어야 합니다.");
                     return ResponseEntity.ok(response);
                 }
-                storeStock.setQty(req.getQuantity());
+                storeStock.setQty(stockUpdateReq.getQuantity());
             }
-            if (req.getPositionId() != null) {
-                storeStock.setPositionId(req.getPositionId());
+            if (stockUpdateReq.getPositionId() != null) {
+                storeStock.setPositionId(stockUpdateReq.getPositionId());
             }
             storeStockService.updateStock(storeStock);
-        }
+
         response.put("status", "success");
         response.put("message", "재고가 수정되었습니다.");
         return ResponseEntity.ok(response);
@@ -169,7 +171,7 @@ public class StoreStockController {
     @GetMapping("/stock/input/download/{inputId}")
     public ResponseEntity<Map<String, Object>> downloadInputList(@PathVariable Integer inputId) throws IOException {
         Map<String, Object> response = new HashMap<>();
-        Integer userstoreId = 2;
+        Integer userstoreId = 6;
         // Integer userstoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (storeStockService.getOrderDetailByStoreInputId(inputId).isEmpty() || storeStockService.getUserStoreIdByInputId(inputId) != userstoreId) {

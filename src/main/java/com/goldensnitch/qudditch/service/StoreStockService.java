@@ -50,9 +50,7 @@ public class StoreStockService {
         return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 
-    public List<StoreLocQty> getStoreByProductId(int productName, double currentWgs84X, double currentWgs84Y) {
-        return storeStockMapper.selectStoreByProductId(productName, currentWgs84X, currentWgs84Y);
-    }
+
 
     public int cntProductByUserStoreId(int userStoreId) {
         return storeStockMapper.cntProductByUserStoreId(userStoreId);
@@ -88,16 +86,8 @@ public class StoreStockService {
     }
 
     public void insertStoreStock(int userStoreId, StockInputReq req, int storeInputId) {
-        InputRepoReq inputRepoReq = new InputRepoReq();
-        inputRepoReq.setUserStoreId(userStoreId);
-        inputRepoReq.setProductId(req.getProductId());
-        inputRepoReq.setYmd(storeStockMapper.getInputDate(storeInputId));
-        inputRepoReq.setInQty(req.getQty());
-        storeStockMapper.insertInputLog(inputRepoReq);
-
-        storeStockMapper.updateConfirmInput(storeInputId, req.getProductId());
+        storeStockMapper.updateConfirmInput(storeInputId, req.getProductId(), req.getPositionId());
         storeStockMapper.insertStoreStock(userStoreId, req.getProductId(), req.getPositionId(), req.getQty(), String.valueOf(req.getExpiredAt()));
-
         if (storeStockMapper.cntState(storeInputId) == 0) {
             storeStockMapper.updateState(storeInputId);
         }
@@ -113,6 +103,13 @@ public class StoreStockService {
 
             System.out.println(fcmNotificationService.sendNotificationByToken(fcmNotificationRequestDto));
         }
+        InputRepoReq inputRepoReq = new InputRepoReq();
+        inputRepoReq.setUserStoreId(userStoreId);
+        inputRepoReq.setProductId(req.getProductId());
+        inputRepoReq.setYmd(storeStockMapper.getInputDate(storeInputId));
+        inputRepoReq.setInQty(req.getQty());
+        storeStockMapper.insertInputLog(inputRepoReq);
+
 
     }
 
