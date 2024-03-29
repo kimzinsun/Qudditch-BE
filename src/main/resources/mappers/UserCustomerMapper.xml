@@ -14,7 +14,7 @@
         SELECT *
         FROM user_customer
         WHERE email = #{email}
-          AND password = #{password}
+        AND password = #{password}
     </select>
     <!-- ID로 특정 사용자 조회 -->
     <select id="selectUserById" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserCustomer">

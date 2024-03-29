@@ -14,7 +14,6 @@ public class CustomerOrder {
     private Integer usedPoint;
     private Integer totalPay;
     private Integer earnPoint;
-    // private Date orderedAt;
     private LocalDateTime orderedAt;
     private String tid; // 결제 고유번호
     private String cid;
