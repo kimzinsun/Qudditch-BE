@@ -19,4 +19,10 @@
         where user_customer_id = #{userCustomerId} and store_id = #{storeId}
     </delete>
 
+    <select id="bookmarkList">
+        select *
+        from customer_bookmark_store
+        where user_customer_id = #{userCustomerId}
+    </select>
+
 </mapper>

@@ -1,8 +1,11 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.CustomerBookmarkStore;
 import com.goldensnitch.qudditch.mapper.StoreBookMarkMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class StoreBookMarkService {
@@ -22,6 +25,10 @@ public class StoreBookMarkService {
             storeBookmarkMapper.deleteStoreBookmark(userCustomerId, storeId);
             return "관심 스토어 설정 해제 !";
         }
+    }
+
+    public List<CustomerBookmarkStore> bookmarkList(Integer userCustomerId) {
+        return storeBookmarkMapper.bookmarkList(userCustomerId);
     }
 
 

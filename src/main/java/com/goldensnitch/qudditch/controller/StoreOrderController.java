@@ -15,7 +15,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -45,7 +44,7 @@ public class StoreOrderController {
     @GetMapping("")
     public Map<String, Object> orderList(PaginationParam paginationParam) {
 
-        int userStoreId = 6;
+        int userStoreId = 2;
         // 제품리스트
         List<StoreOrder> orderList = storeOrderService.orderList(userStoreId,paginationParam);
         // 총 수
@@ -63,11 +62,12 @@ public class StoreOrderController {
             map.put("message", "발주리스트 불러오기 성공!");
         }
         return map;
-
     }
 
-    @PostMapping("/{storeId}")
-    public ResponseEntity<String> insertOrder(@PathVariable Integer storeId, @RequestBody List<ProductWithQty> products) {
+    @PostMapping("")
+    public ResponseEntity<String> insertOrder(@RequestBody List<ProductWithQty> products) {
+        int storeId = 2;
+
         try {
             StoreOrder storeOrder = new StoreOrder();
             storeOrder.setUserStoreId(storeId);
@@ -116,8 +116,8 @@ public class StoreOrderController {
     }
 
     // 생성된 엑셀 파일을 저장할 경로 지정
-    @Value("${excel.file.directory}")
-    private String excelFileDirectory;
+//    @Value("${excel.file.directory}")
+//    private String excelFileDirectory;
 
     @GetMapping("/download/{id}")
     public ResponseEntity<ByteArrayResource> downloadOrderDataAsExcel(@PathVariable int id) {
@@ -128,14 +128,14 @@ public class StoreOrderController {
             byte[] excelBytes = createExcelFile(storeOrder, productWithDetailQty);
 
             // 생성된 엑셀 파일을 서버 파일 시스템의 특정 위치에 저장
-            String fileName = "Product order from " + id + ".xlsx";
-            String filePath = excelFileDirectory + File.separator + fileName;
-            saveExcelFile(excelBytes, filePath);
+//            String fileName = "Product order from " + id + ".xlsx";
+//            String filePath = excelFileDirectory + File.separator + fileName;
+//            saveExcelFile(excelBytes, filePath);
 
             // 다운로드를 위해 파일을 준비
             ByteArrayResource resource = new ByteArrayResource(excelBytes);
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=");
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
             return ResponseEntity.ok()
@@ -190,7 +190,7 @@ public class StoreOrderController {
     }
 
 
-    @GetMapping("/detail/update/{id}")
+    @PostMapping("/detail/update/{id}")
     public ResponseEntity<String> updateOrderProducts(@PathVariable int id, @RequestBody List<ProductWithQty> updateProducts) {
 
         // 기존 주문 정보
