@@ -26,7 +26,6 @@ public class TestController {
         String test = testService.test();
         log.info("TestController.test: {}", test);
         emailService.sendSingleEmail("kdt@dawoony.com");
-
         return test;
     }
 }
