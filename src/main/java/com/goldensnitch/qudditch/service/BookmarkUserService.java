@@ -24,4 +24,8 @@ public class BookmarkUserService {
     public  boolean deleteProduct(CustomerBookmarkProduct dto){
         return mapper.deleteProduct(dto) > 0;
     }
+
+    public boolean isDuplicateProduct(CustomerBookmarkProduct dto){
+        return mapper.countProduct(dto) > 0;
+    }
 }
