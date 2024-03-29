@@ -11,14 +11,8 @@
 // 성을 검증합니다. 토큰이 유효하면 요청이 처리되고, 유효하지 않으면 에러를 반환합니다.
 package com.goldensnitch.qudditch.jwt;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.crypto.SecretKey;
-
+import com.goldensnitch.qudditch.config.ApplicationProperties;
+import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -27,33 +21,25 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.goldensnitch.qudditch.config.ApplicationProperties;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Component
 public class JwtTokenProvider {
-
-
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
-    // private final SecretKey secretKey;
-    private byte[] secretKey;
-    private final SecretKey sKey;
+    private final byte[] secretKey;
+    //    private final SecretKey sKey;
     private final long jwtExpirationInMs;
-
 
 
     public JwtTokenProvider(ApplicationProperties properties) {
 
         byte[] keyBytes = properties.getJwtSecret().getBytes(StandardCharsets.UTF_8);
-        this.sKey = Keys.hmacShaKeyFor(keyBytes);
+//        this.sKey = Keys.hmacShaKeyFor(keyBytes);
         // this.secretKey = Base64.getEncoder().encodeToString(keyBytes);
         this.secretKey = keyBytes;
         this.jwtExpirationInMs = properties.getJwtExpirationInMs();
@@ -65,15 +51,10 @@ public class JwtTokenProvider {
             logger.error("Key length is less than 256 bits.");
             throw new IllegalArgumentException("Key length must be at least 256 bits.");
         }
-
-
-
     }
-
 
     // 권한을 토큰에 포함시키는 메소드
     public String generateToken(Authentication authentication) {
-
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
@@ -81,31 +62,20 @@ public class JwtTokenProvider {
         String userId = ((UserDetails) authentication.getPrincipal()).getUsername();
 
         // 권한(역할)을 토큰에 포함시키기 위해 변경
-        String authorities = authentication.getAuthorities().stream()
-                            .map(GrantedAuthority::getAuthority)
-                            .collect(Collectors.joining(","));
+        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
-        return Jwts.builder()
-                .subject(userId) // 'subject'를 사용자 ID로 설정
-                .claim("roles", authorities)    // claim에 권한을 포함시킨다.
-                .issuedAt(now)
-                .expiration(expiryDate)
-                // .signWith(Jwts.SIG.HS256, secretKey)
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
-
-    
+        return Jwts.builder().subject(userId) // 'subject'를 사용자 ID로 설정
+            .claim("roles", authorities)    // claim에 권한을 포함시킨다.
+            .issuedAt(now).expiration(expiryDate)
+            // .signWith(Jwts.SIG.HS256, secretKey)
+            .signWith(SignatureAlgorithm.HS256, secretKey).compact();
     }
-
 
     public boolean validateToken(String authToken) {
         try {
-
             Jwts.parser()
                 // .verifyWith(secretKey)
-                .setSigningKey(secretKey)
-                .build()
-                .parseSignedClaims(authToken);
+                .setSigningKey(secretKey).build().parseSignedClaims(authToken);
             return true;
         } catch (ExpiredJwtException e) {
             logger.error("Expired JWT token.", e);
@@ -120,19 +90,13 @@ public class JwtTokenProvider {
         }
 
         return false;
-    
-    
-
     }
+
     public Claims extractClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(secretKey)
-                // v.decryptWith(sKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        return Jwts.parser().setSigningKey(secretKey)
+            // v.decryptWith(sKey)
+            .build().parseSignedClaims(token).getPayload();
     }
-
 
     // 단일 권항을 가져오는 메서드
     // public Collection<? extends GrantedAuthority> getAuthorities(String token) {
@@ -154,7 +118,7 @@ public class JwtTokenProvider {
     //             case "ADMIN":
     //                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
     //                 break;
-                
+
     //             default:
     //                 throw new IllegalArgumentException("Unknown role: " + role);
     //         }
@@ -163,16 +127,14 @@ public class JwtTokenProvider {
     public List<SimpleGrantedAuthority> getAuthorities(String token) {
         Claims claims = extractClaims(token);
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-    
+
         String roles = claims.get("roles", String.class);
         if (roles != null && !roles.isEmpty()) {
             for (String role : roles.split(",")) {
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
             }
         }
-    
+
         return authorities;
     }
-
-    
 }

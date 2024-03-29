@@ -2,9 +2,8 @@
 
 package com.goldensnitch.qudditch.mapper;
 
-import org.apache.ibatis.annotations.Mapper;
-
 import com.goldensnitch.qudditch.dto.UserCustomer;
+import org.apache.ibatis.annotations.Mapper;
 
 @Mapper // Mybatis 사용 시 @Mapper 어노테이션 사용
 public interface UserCustomerMapper {
@@ -13,7 +12,8 @@ public interface UserCustomerMapper {
     Integer insertUserCustomer(UserCustomer user);
 
     UserCustomer findByEmail(String email); // 이메일을 기반으로 사용자를 찾는 메소드 추가
+
     UserCustomer findByVerificationCode(String verificationCode);
 
-    void updateUserCustomer(UserCustomer userCustomer);
+    UserCustomer updateUserCustomer(UserCustomer user);
 }

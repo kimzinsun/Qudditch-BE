@@ -76,6 +76,8 @@
 package com.goldensnitch.qudditch.config;
 
 
+import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
+import com.goldensnitch.qudditch.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -92,24 +94,15 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
 
-import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
-import com.goldensnitch.qudditch.service.CustomUserDetailsService;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    private final CustomUserDetailsService userDetailsService;
+    private final JwtTokenFilter jwtTokenFilter;
 
-
-    
     @Autowired
-    private CustomUserDetailsService userDetailsService;
-    //@LAZY
-    @Autowired
-    private JwtTokenFilter jwtTokenFilter;
-
     public SecurityConfig(CustomUserDetailsService userDetailsService, JwtTokenFilter jwtTokenFilter) {
         this.userDetailsService = userDetailsService;
-
         this.jwtTokenFilter = jwtTokenFilter;
     }
 
@@ -124,7 +117,7 @@ public class SecurityConfig {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService)
             .passwordEncoder(passwordEncoder());
-            // 기존 록지 + jwttokenfilter추가
+        // 기존 록지 + jwttokenfilter추가
 
     }
 
@@ -133,7 +126,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-
 
     // SecurityFilterChain 빈 정의
     @Bean
@@ -171,14 +163,14 @@ public class SecurityConfig {
 //            .failureUrl("/loginFailure")  // 로그인 실패 시 리다이렉트될 URL
 //            .permitAll())
             .logout(logout -> logout
-            .logoutSuccessUrl("/login")
-            .deleteCookies("JSESSIONID")
-            .permitAll())
+                .logoutSuccessUrl("/login")
+                .deleteCookies("JSESSIONID")
+                .permitAll())
             // JwtTokenFilter를 필터 체인에 추가합니다.
             .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
-            return http.build();
-            }
+        return http.build();
+    }
 
     // RestTemplate 빈을 생성합니다.
     @Bean
