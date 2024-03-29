@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -26,7 +25,9 @@ public class RecommendOrderController {
         this.recommendOrderService = recommendOrderService;
     }
     @GetMapping("")
-    public Map<String, Object> selectProductByQty(@RequestParam int userStoreId, PaginationParam paginationParam){
+    public Map<String, Object> selectProductByQty(PaginationParam paginationParam){
+
+        int userStoreId = 2;
 
         int count = recommendOrderService.cntSelectProductByQty(userStoreId);
 

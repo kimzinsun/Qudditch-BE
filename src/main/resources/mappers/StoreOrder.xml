@@ -6,9 +6,10 @@
 
     <!--발주리스트-->
     <select id="orderList" resultType="StoreOrder">
-        select id, user_store_id, state, total_amount
+        select id, user_store_id, state, total_amount, ordered_at
         from store_order
         where user_store_id = #{userStoreId}
+        order by id desc
         limit #{recordSize} offset #{offset}
     </select>
     <!--발주 수-->
