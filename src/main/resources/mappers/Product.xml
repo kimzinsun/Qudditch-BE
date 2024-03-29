@@ -1,9 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.goldensnitch.qudditch.mapper.ProductMapper">
-    <insert id="insertProduct" parameterType="Product">
+    <insert id="insertProduct" parameterType="com.goldensnitch.qudditch.dto.Product">
         INSERT INTO product (category_id, brand, name, description, image, price, unit_price, expiration_date)
         VALUES (#{categoryId}, #{brand}, #{name}, #{description}, #{image}, #{price}, #{unitPrice}, #{expirationDate})
     </insert>
+    <select id="selectProductById" resultType="ProductExt">
+        SELECT p.*, IF(EXISTS(select * from customer_bookmark_product cbp where cbp.product_id = p.id and cbp.user_customer_id = #{userId}), true, false) as is_bookmark
+        FROM product p
+        WHERE p.id = #{productId}
+    </select>
+    <select id="selectProductNameByID">
+        select name
+        from product
+        where id = #{productId}
+    </select>
+    <select id="selectProductByName">
+        select *
+        from product
+        where name like concat('%','${name}','%')
+    </select>
+    <select id="selectStoreStockByProductId" resultType="StoreQtyRes">
+        select s.id, s.name as name, s.address as address, s.wgs84_x, s.wgs84_y, ss.qty
+        from store_stock ss, store s, user_store us
+        where product_id = #{productId} and ss.user_store_id = us.id and us.store_id = s.id
+        ORDER BY (6371
+            *ACOS(COS(RADIANS(${currentWgs84X}))
+                      *COS(RADIANS(s.wgs84_x))
+                      *COS(radians(s.wgs84_y)-RADIANS(${currentWgs84Y}))
+                +SIN(RADIANS(${currentWgs84X}))*SIN(RADIANS(wgs84_x))))
+        limit #{recordSize} OFFSET #{offset};
+    </select>
+    <select id="cntStoreStockByProductId">
+        select count(*)
+        from store_stock ss, store s, user_store us
+        where product_id = #{productId} and ss.user_store_id = us.id and us.store_id = s.id
+    </select>
+    <select id="selectProductIdByName">
+        select id
+        from product
+        where name like concat('%','${name}','%')
+    </select>
 
 </mapper>
