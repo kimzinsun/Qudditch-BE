@@ -3,7 +3,9 @@ package com.goldensnitch.qudditch.controller;
 import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,9 +30,12 @@ public class CustomerOrderProductController {
         }
     }
 
+    // getId 변경 - 03.29
     @GetMapping("/history")
-    public ResponseEntity<List<?>> getMonthlyOrderHistory(@RequestParam Integer userCustomerId, @RequestParam String monthYear){
+    public ResponseEntity<List<?>> getMonthlyOrderHistory(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam String monthYear){
         try {
+            int userCustomerId = userDetails.getId();
+
             List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(userCustomerId, monthYear);
             return ResponseEntity.ok(history);
         } catch (RuntimeException e) {
@@ -39,8 +44,10 @@ public class CustomerOrderProductController {
     }
 
     @GetMapping("/history/point/{userCustomerId}")
-    public ResponseEntity<List<CustomerOrder>> getPointHistoryByCustomerId(@PathVariable Integer userCustomerId) {
+    public ResponseEntity<List<CustomerOrder>> getPointHistoryByCustomerId(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
         try {
+            int userCustomerId = userDetails.getId();
+
             List<CustomerOrder> pointHistory = customerOrderProductService.getPointHistoryByCustomerId(userCustomerId);
             return ResponseEntity.ok(pointHistory);
         } catch (Exception e) {

@@ -2,9 +2,11 @@ package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.payment.CartItem;
 import com.goldensnitch.qudditch.dto.payment.PaymentResponse;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,9 +23,12 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
+    // getId 변경 - 03.29
     @PostMapping("/initiate")
-    public ResponseEntity<?> initiatePayment(@RequestBody List<CartItem> cartItems, @RequestParam Integer userCustomerId) {
+    public ResponseEntity<?> initiatePayment(@RequestBody List<CartItem> cartItems, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         try {
+            int userCustomerId = userDetails.getId();
+
             String redirectUrl = paymentService.initiatePayment(cartItems, userCustomerId); if (!"Error".equals(redirectUrl)) {
                 return ResponseEntity.ok().body(redirectUrl);
             }

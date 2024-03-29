@@ -2,7 +2,9 @@ package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.payment.CartItem;
 import com.goldensnitch.qudditch.service.CartService;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,21 +38,28 @@ public class CartController {
         }
     }
 
+    // getId 변경 - 03.29
     @GetMapping("")
-    public ResponseEntity<?> getCartItems(@RequestParam("userCustomerId") Integer userCustomerId) {
+    public ResponseEntity<?> getCartItems(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
+        int userCustomerId = userDetails.getId();
+
         List<CartItem> cartItems = cartService.getCartItem(userCustomerId);
         return ResponseEntity.ok(cartItems);
     }
 
     @PutMapping("")
-    public ResponseEntity<?> updateItemQty(@RequestParam Integer userCustomerId, @RequestBody CartItem cartItem){
+    public ResponseEntity<?> updateItemQty(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestBody CartItem cartItem){
+        int userCustomerId = userDetails.getId();
+
         cartService.updateItemQty(userCustomerId, cartItem);
         return ResponseEntity.ok().body("Cart item updated successfully.");
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<?> removeItemFromCart(@PathVariable Integer productId, @RequestParam("userCustomerId") Integer userCustomerId) {
-        boolean isRemoved = cartService.removeItemFromCart(userCustomerId, productId);
+    public ResponseEntity<?> removeItemFromCart(@PathVariable Integer productId, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
+        int userCustomerId = userDetails.getId();
+
+        boolean isRemoved = cartService.removeItemFromCart(productId, userCustomerId);
         if (isRemoved) {
             return ResponseEntity.ok().body("Item removed from cart successfully.");
         } else {
@@ -59,7 +68,9 @@ public class CartController {
     }
 
     @DeleteMapping("/clear")
-    public ResponseEntity<?> clearCart(@RequestParam("userCustomerId") Integer userCustomerId){
+    public ResponseEntity<?> clearCart(@AuthenticationPrincipal ExtendedUserDetails userDetails){
+        int userCustomerId = userDetails.getId();
+
         cartService.clearCart(userCustomerId);
         return ResponseEntity.ok().body("Cart cleared successfully.");
     }
