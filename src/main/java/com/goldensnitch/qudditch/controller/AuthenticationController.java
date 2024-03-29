@@ -25,25 +25,28 @@ import java.util.Map;
 
 @RestController
 public class AuthenticationController {
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider; // JWT 토큰 제공자 의존성 주입
-
-    @Autowired
-    private UserCustomerMapper userCustomerMapper;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider; // JWT 토큰 제공자 의존성 주입
+    private final UserCustomerMapper userCustomerMapper;
+    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
     private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
-    
+    @Autowired
+    public AuthenticationController(
+        AuthenticationManager authenticationManager,
+        JwtTokenProvider jwtTokenProvider,
+        UserCustomerMapper userCustomerMapper,
+        UserService userService,
+        PasswordEncoder passwordEncoder
+    ) {
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userCustomerMapper = userCustomerMapper;
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -52,32 +55,20 @@ public class AuthenticationController {
         // 회원 여부 확인 로직
         UserCustomer user = userCustomerMapper.findByEmail(loginRequest.getEmail());
         if (user == null) {
-            return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body("회원가입이 필요합니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("회원가입이 필요합니다.");
         }
 
         // 비밀번호 검증 로직 (입력된 비밀번호와 데이터베이스에 저장된 해시를 비교)
-    if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀렸습니다.");
-    }
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀렸습니다.");
+        }
 
         // 인증 로직 (비밀번호 검증이 성공하면 토큰을 생성)
-    Authentication authentication = new UsernamePasswordAuthenticationToken(
-        loginRequest.getEmail(),
-        loginRequest.getPassword()
-    );
+        Authentication authentication =
+            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
 
-    authentication = authenticationManager.authenticate(authentication);
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // // 인증 로직
-        // Authentication authentication = authenticationManager.authenticate(
-        //     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-
-        
-        // // SecurityContext에 인증 정보를 저장
-        // SecurityContextHolder.getContext().setAuthentication(authentication);
+        authentication = authenticationManager.authenticate(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // JWT 토큰 생성
         String token = jwtTokenProvider.generateToken(authentication);
@@ -90,21 +81,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(authResponse);
     }
 
-    // @PostMapping("/test/register")
-    // public ResponseEntity<String> registerUser() {
-    //     UserCustomer userCustomer = new UserCustomer();
-    //     userCustomer.setEmail("ttt@test.com");
-    //     userCustomer.setPassword("1234");
-    //     userCustomer.setName("test");
-    //     return userService.registerUserCustomerTest(userCustomer);
-    // }
-
-
     @PostMapping("/store/login")
     public ResponseEntity<?> authenticateStore(@RequestBody LoginRequest loginRequest) {
         log.info("Attempting to authenticate store with email: " + loginRequest.getEmail());
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        Authentication authentication = authenticationManager
+            .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // 토큰 생성 및 반환
         String token = jwtTokenProvider.generateToken(authentication);
@@ -150,35 +131,26 @@ public class AuthenticationController {
         return ResponseEntity.ok("Account verified successfully.");
     }
 
-    // @GetMapping("/self")
-    // public ResponseEntity<?> getSelf(Authentication authentication) {
-    //     if (authentication == null || !authentication.isAuthenticated()) {
-    //         return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-    //     }
-    //     System.out.println(SecurityContextHolder.getContext().getAuthentication());
-    //     // 사용자 정보를 반환합니다. 이 예제에서는 'authentication' 객체를 그대로 반환합니다.
-    //     return ResponseEntity.ok(authentication);
-    // }
     @GetMapping("/self")
-public ResponseEntity<?> getSelf(Authentication authentication) {
-    if (authentication != null && authentication.isAuthenticated()) {
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof ExtendedUserDetails userDetails) {
-            Map<String, Object> userInfo = new HashMap<>();
-            userInfo.put("id", userDetails.getId());
-            userInfo.put("name", userDetails.getName());
-            userInfo.put("email", userDetails.getEmail());
-            // 기타 상세 정보 추가...
-            return ResponseEntity.ok(userInfo);
+    public ResponseEntity<?> getSelf(Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof ExtendedUserDetails userDetails) {
+                Map<String, Object> userInfo = new HashMap<>();
+                userInfo.put("id", userDetails.getId());
+                userInfo.put("name", userDetails.getName());
+                userInfo.put("email", userDetails.getEmail());
+                // 기타 상세 정보 추가...
+                return ResponseEntity.ok(userInfo);
+            } else {
+                // 여기서 principal의 실제 클래스 타입을 로깅하여 더 많은 정보를 얻을 수 있습니다.
+                log.error("Expected principal to be an instance of ExtendedUserDetails but found: {}", principal.getClass().getName());
+                // 'principal'이 'ExtendedUserDetails'의 인스턴스가 아닌 경우 처리
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User details not found");
+            }
         } else {
-            // 여기서 principal의 실제 클래스 타입을 로깅하여 더 많은 정보를 얻을 수 있습니다.
-            log.error("Expected principal to be an instance of ExtendedUserDetails but found: {}", principal.getClass().getName());
-            // 'principal'이 'ExtendedUserDetails'의 인스턴스가 아닌 경우 처리
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User details not found");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
-    } else {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-    }
     }
 
     // 일반 유저 회원가입을 위한 엔드포인트
@@ -201,5 +173,5 @@ public ResponseEntity<?> getSelf(Authentication authentication) {
     public ResponseEntity<?> registerAdmin(@RequestBody UserAdmin userAdmin) {
         // 사용자 정보 저장 로직 (관리자)
         return userService.registerUserAdmin(userAdmin);
-}
+    }
 }

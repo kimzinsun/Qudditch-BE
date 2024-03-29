@@ -3,73 +3,81 @@
 <mapper namespace="com.goldensnitch.qudditch.mapper.UserCustomerMapper">
 
     <insert id="insertUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
-        INSERT INTO user_customer (email, password, name, state
-        ) VALUES (#{email}, #{password}, #{name}, #{state}
-        )
+        INSERT INTO user_customer (email, password, name, state)
+        VALUES (#{email}, #{password}, #{name}, #{state})
     </insert>
 
-    
+
     <!-- select쿼리 -->
     <!-- login 처리 -->
     <select id="login" parameterType="map" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
         SELECT *
         FROM user_customer
-        WHERE email = #{email} AND password = #{password}
+        WHERE email = #{email}
+          AND password = #{password}
     </select>
     <!-- ID로 특정 사용자 조회 -->
     <select id="selectUserById" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
-        select * from user_customer where id = #{id}
+        select *
+        from user_customer
+        where id = #{id}
     </select>
     <!-- 이메일로 특정 사용자 조회 -->
     <select id="selectUserByEmail" parameterType="String" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
-        select * from user_customer where email = #{email}
+        select *
+        from user_customer
+        where email = #{email}
     </select>
 
     <!-- 이메일 인증 코드로 사용자 조회-->
     <select id="findByVerificationCode" parameterType="String" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
-        SELECT * FROM user_customer WHERE verificationCode = #{verificationCode}
+        SELECT *
+        FROM user_customer
     </select>
 
     <!-- 전체 사용자 조회 -->
     <select id="selectAllUsers" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
-        select * from user_customer
+        select *
+        from user_customer
     </select>
 
     <!-- update쿼리 -->
     <!-- 사용자 정보 업데이트 -->
-    <update id="updateUser" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
-        update user_customer set
-            email = #{email},
+    <update id="updateUserCustomer">
+        update user_customer
+        set email = #{email},
             password = #{password},
-            name = #{name},
-            state = #{state},
-            verificationCode = #{verificationCode},
-            collectionArn = #{collectionArn},
-            modifiedAt = #{modifiedAt}
+            name  = #{name},
+            state = #{state}
         where id = #{id}
     </update>
 
     <!-- delete쿼리 -->
     <!-- 사용자 삭제 -->
     <delete id="deleteUser" parameterType="int">
-        delete from user_customer where id = #{id}
+        delete
+        from user_customer
+        where id = #{id}
     </delete>
 
     <!-- 조건부 검색: 상태(state)에 따른 사용자 조회-->
     <select id="selectUsersByState" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
-        SELECT * FROM user_customer WHERE state = #{state}
+        SELECT *
+        FROM user_customer
+        WHERE state = #{state}
     </select>
 
     <!-- 집계 함수: 전체 사용자 수 계산 -->
     <select id="countAllUsers" resultType="int">
-        SELECT COUNT(*) FROM user_customer
+        SELECT COUNT(*)
+        FROM user_customer
     </select>
 
     <!-- JOIN연산: user_customer와 user_store 테이블 조인하여 상세 정보 조회 -->
     <select id="selectUserCustomerWithStore" resultType="map">
         SELECT uc.*, us.store_id, us.bn_number
         FROM user_customer uc
-        JOIN user_store us ON uc.id = us.id
+                 JOIN user_store us ON uc.id = us.id
         WHERE uc.id = #{id}
     </select>
     <select id="findByEmail" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
