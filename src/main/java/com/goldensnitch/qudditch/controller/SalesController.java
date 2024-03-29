@@ -1,9 +1,11 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.CustomerOrder;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.SalesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,7 +30,8 @@ public class SalesController {
 
     @GetMapping("/DailySales")
     public List<CustomerOrder> DailySales(@RequestParam(value = "orderedAt") String orderedAt,
-                                          @RequestParam(value = "userStoreId")Integer userStoreId) {
+                                          @AuthenticationPrincipal ExtendedUserDetails userDetails) {
+        int userStoreId = userDetails.getId();
 
         // String으로 받은 날짜데이터를 date타입으로 변환.
         Date date = Date.valueOf(orderedAt);
@@ -43,14 +46,12 @@ public class SalesController {
 
     @GetMapping("/MonthlySales")
     public List<CustomerOrder> MonthlySales(@RequestParam(value = "yearMonth") String yearMonth,
-                                            @RequestParam(value = "userStoreId")Integer userStoreId) {
+                                            @AuthenticationPrincipal ExtendedUserDetails userDetails) {
 
-        // String으로 받은 날짜데이터를 date타입으로 변환.
-        // Date date = Date.valueOf(month);
-        // String yearMonth = month + "-01"; // 해당 월의 1일로 설정
+        int userStoreId = userDetails.getId();
 
         List<CustomerOrder> list = salesService.MonthlySales(yearMonth, userStoreId);
-        log.info("list: {}", list);
+
         return list;
     }
 }
