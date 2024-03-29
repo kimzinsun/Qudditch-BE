@@ -171,7 +171,7 @@ public class StoreStockController {
     @GetMapping("/stock/input/download/{inputId}")
     public ResponseEntity<Map<String, Object>> downloadInputList(@PathVariable Integer inputId) throws IOException {
         Map<String, Object> response = new HashMap<>();
-        Integer userstoreId = 2;
+        Integer userstoreId = 6;
         // Integer userstoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (storeStockService.getOrderDetailByStoreInputId(inputId).isEmpty() || storeStockService.getUserStoreIdByInputId(inputId) != userstoreId) {
