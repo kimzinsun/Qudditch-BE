@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goldensnitch.qudditch.mapper.BookmarkUserMapper">
+
+    <select id="selectProducts" parameterType="Integer" resultType="com.goldensnitch.qudditch.dto.CustomerBookmarkProduct">
+        SELECT id, user_customer_id AS userCustomerId, product_id AS productId
+        FROM customer_bookmark_product
+        WHERE user_customer_id = #{userCustomerId}
+    </select>
+
+    <insert id="insertProduct" parameterType="com.goldensnitch.qudditch.dto.CustomerBookmarkProduct">
+        INSERT customer_bookmark_product(user_customer_id, product_id)
+        VALUES (#{userCustomerId}, #{productId});
+    </insert>
+
+    <delete id="deleteProduct" parameterType="com.goldensnitch.qudditch.dto.CustomerBookmarkProduct">
+        DELETE FROM customer_bookmark_product
+        WHERE user_customer_id = #{userCustomerId}
+            AND product_id = #{productId}
+    </delete>
+
+</mapper>

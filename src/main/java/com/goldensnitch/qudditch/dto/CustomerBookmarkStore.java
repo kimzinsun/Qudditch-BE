@@ -6,5 +6,8 @@ import lombok.Data;
 public class CustomerBookmarkStore {
     private Integer id;
     private Integer userCustomerId;
-    private Integer userStoreId;
+    private Integer storeId;
+
+
+
 }
