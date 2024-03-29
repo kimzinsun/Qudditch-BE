@@ -29,15 +29,6 @@ public class BestProductController {
     public Map<String,Object> BestProduct(Integer storeId) {
 
         List<StoreStockReport> list = bestProductService.BestProduct(storeId);
-        log.info("list: {}", list);
-
-        /*// StoreStockReport 배열 생성
-        StoreStockReport[] array = new StoreStockReport[list.size()];
-
-        // 리스트의 요소를 배열로 복사
-        for (int i = 0; i < list.size(); i++) {
-            array[i] = list.get(i);
-        }*/
 
         return Map.of(
                 "bestProducts", list
