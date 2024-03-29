@@ -11,7 +11,7 @@
                  JOIN product p ON s.product_id = p.id
         WHERE s.user_store_id = #{storeId}
         ORDER BY s.out_qty DESC
-        LIMIT 10;
+        LIMIT 5;
     </select>
 
 </mapper>

@@ -11,5 +11,5 @@ public interface SalesMapper {
 
     List<CustomerOrder> DailySales(Date date , Integer userStoreId);
 
-    List<CustomerOrder> MonthlySales(Integer userStoreId);
+    List<CustomerOrder> MonthlySales(String yearMonth, Integer userStoreId);
 }
