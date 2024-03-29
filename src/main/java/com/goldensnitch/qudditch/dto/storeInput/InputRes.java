@@ -9,4 +9,5 @@ public class InputRes {
     private int storeInputId;
     private String items;
     private Date inputAt;
+    private String state;
 }

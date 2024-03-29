@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Mapper
 public interface ManageMapper {
-    List<OrderRes> getOrderList();
+    List<OrderRes> getOrderList(int recordSize, int offset);
     List<OrderDetailRes> getOrderDetail(int orderStoreId);
     void updateOrderState(int orderStoreId);
     void insertStoreInput(Map<String, Object> map);
@@ -18,4 +18,5 @@ public interface ManageMapper {
     int getUserStoreIdByOrderId(int orderStoreId);
 
 
+    int getOrderCount();
 }

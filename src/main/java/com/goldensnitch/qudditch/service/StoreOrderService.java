@@ -1,7 +1,7 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.StoreOder.ProductWithDetailQty;
-import com.goldensnitch.qudditch.dto.StoreOder.StoreOrderParam;
 import com.goldensnitch.qudditch.dto.StoreOrder;
 import com.goldensnitch.qudditch.dto.StoreOrderProduct;
 import com.goldensnitch.qudditch.mapper.StoreOrderMapper;
@@ -19,11 +19,11 @@ public class StoreOrderService {
         this.storeOrderMapper = storeOrderMapper;
     }
 
-    public List<StoreOrder> orderList(StoreOrderParam param, int currentPage) {
-        return storeOrderMapper.orderList(param);
+    public List<StoreOrder> orderList(int userStoreId,PaginationParam paginationParam) {
+        return storeOrderMapper.orderList(userStoreId,paginationParam.getRecordSize(), paginationParam.getOffset());
     }
-    public int getallList(StoreOrderParam param) {
-        return storeOrderMapper.getallList(param);
+    public int cntOrderList(int userStoreId) {
+        return storeOrderMapper.cntOrderList(userStoreId);
     }
 
     public int insertOrder(StoreOrder order) {
@@ -37,12 +37,21 @@ public class StoreOrderService {
         return storeOrderMapper.getStoreOrderById(id);
     }
 
-    public ProductWithDetailQty getProductWithQty(Integer id) {
+    public List<ProductWithDetailQty> getProductWithQty(Integer id) {
         return storeOrderMapper.getProductWithQty(id);
     }
 
     public int updateOrderProducts(StoreOrderProduct product) {
         return storeOrderMapper.updateOrderProducts(product);}
+
+    public void removeProduct(int productId, int orderStoreId) {
+        storeOrderMapper.removeProduct(productId, orderStoreId);
+    }
+
+    public int cntProductByStoreOrder(int orderStoreId, int productId) {
+        return storeOrderMapper.cntProductByStoreOrder(orderStoreId, productId);
+    }
+
 
 
 }

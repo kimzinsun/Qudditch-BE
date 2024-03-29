@@ -6,7 +6,7 @@ import com.goldensnitch.qudditch.dto.storeInput.InputRepoReq;
 import com.goldensnitch.qudditch.dto.storeInput.InputRes;
 import org.apache.ibatis.annotations.Mapper;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 @Mapper
@@ -17,9 +17,9 @@ public interface StoreStockMapper {
 
     void updateStock(StoreStock storeStock);
 
-    List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId);
+    List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId,int recordSize, int offset);
 
-    List<StoreLocQty> selectStoreByProductId(Integer productId, double currentWgs84X, double currentWgs84Y);
+    List<StoreLocQty> selectStoreByProductId(int productName, double currentWgs84X, double currentWgs84Y);
 
     int cntProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId);
 
@@ -27,22 +27,24 @@ public interface StoreStockMapper {
 
     int getDisposeLogCount(int userStoreId);
 
-    List<DisposeLog> getDisposeLog(int userStoreId);
-    List<InputRes> getOrderListByUserStoreId(int userStoreId);
+    List<DisposeLog> getDisposeLog(int userStoreId, int recordSize, int offset);
+    List<InputRes> getOrderListByUserStoreId(int userStoreId, int recordSize, int offset);
+    int cntOrderListByUserStoreId(int userStoreId);
 
     List<InputDetailRes> getOrderDetailByStoreInputId(int storeInputId);
 
 
     void insertStoreStock(int userStoreId, int productId, int positionId, int qty, String expiredAt);
-    void updateConfirmInput(int storeInputId, int productId);
+    void updateConfirmInput(int storeInputId, int productId, int positionId);
     void insertInputLog(InputRepoReq inputRepoReq);
     Date getInputDate(int storeInputId);
 
-    void insertStoreStockReport(int userStoreId, int productId, java.sql.Date ymd, int outQty);
+    List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, int recordSize, int offset);
+    int cntState(int storeInputId);
 
-    Integer selectStockQtyByProductIdAndUserStoreId(int productId, int userStoreId);
+    void updateState(int storeInputId);
 
-    void updateStockQtyByProductIdAndUserStoreId(Integer productId, Integer userStoreId, Integer newStoreStock);
+    List<Integer> getTargetAlertUserByProductIdAndStoreId(int productId, int userStoreId);
 
-    int updateStoreStockReportOutQty(Integer userStoreId, Integer productId, Date date, Integer outQty);
+    int getUserStoreIdByInputId(int storeInputId);
 }
