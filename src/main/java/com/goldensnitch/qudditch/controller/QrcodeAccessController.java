@@ -2,12 +2,16 @@ package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.QrAccessReq;
 import com.goldensnitch.qudditch.dto.StoreVisitorLog;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.QrcodeAccessService;
 import com.goldensnitch.qudditch.service.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -22,21 +26,17 @@ public class QrcodeAccessController {
 
 
     @PostMapping("/request")
-    public String requestQrAccess(){
-        // TODO : 로그인한 사용자 정보(customer)를 가져와서 request에 넣어줘야함
+    public String requestQrAccess(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
         QrAccessReq request = new QrAccessReq();
-        request.setUserId(1);
-//        request.setUserId(Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName()));
+        request.setUserId(userDetails.getId());
         return qrcodeAccessService.requestQrAccess(request);
 
     }
 
     @GetMapping("/confirm")
-    public String confirm(String uuid) {
-        // TODO : 로그인한 사용자(store) 정보를 가져와서 request에 넣어줘야함
+    public String confirm(String uuid, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         StoreVisitorLog storeVisitorLog = new StoreVisitorLog();
-//        storeVisitorLog.setUserStoreId((Integer) SecurityContextHolder.getContext().getAuthentication().getCredentials());
-        storeVisitorLog.setUserStoreId(2);
+        storeVisitorLog.setUserStoreId(userDetails.getId());
         return qrcodeAccessService.confirmQrAccess(uuid, storeVisitorLog);
 
     }
