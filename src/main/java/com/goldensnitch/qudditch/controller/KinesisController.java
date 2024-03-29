@@ -1,9 +1,11 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.KinesisService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -20,10 +22,12 @@ public class KinesisController {
     }
 
     @PostMapping("/stream")
-    public ResponseEntity<Map<String, Object>> createStream(@RequestParam Boolean mediaStorageEnabled) {
-        Integer userStoreId = 2;
+    public ResponseEntity<Map<String, Object>> createStream(
+        @AuthenticationPrincipal ExtendedUserDetails userDetails,
+        @RequestParam Boolean mediaStorageEnabled
+    ) {
         try {
-            Integer rs = kinesisService.createStream(userStoreId, mediaStorageEnabled);
+            Integer rs = kinesisService.createStream(userDetails.getId(), mediaStorageEnabled);
             return ResponseEntity.ok(Map.of("storeStreamId", rs));
         } catch (Exception e) {
             log.error("Error creating stream", e);
@@ -32,10 +36,11 @@ public class KinesisController {
     }
 
     @DeleteMapping("/stream")
-    public ResponseEntity<Map<String, Object>> deleteStream() {
-        Integer userStoreId = 2;
+    public ResponseEntity<Map<String, Object>> deleteStream(
+        @AuthenticationPrincipal ExtendedUserDetails userDetails
+    ) {
         try {
-            Integer rs = kinesisService.deleteStream(userStoreId);
+            Integer rs = kinesisService.deleteStream(userDetails.getId());
             return ResponseEntity.ok(Map.of("storeStreamId", rs));
         } catch (Exception e) {
             log.error("Error deleting stream", e);

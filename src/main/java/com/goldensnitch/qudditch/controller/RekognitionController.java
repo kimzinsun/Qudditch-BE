@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.amazonaws.services.rekognition.model.*;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.RekognitionService;
 import com.goldensnitch.qudditch.service.StreamManagerService;
 import com.goldensnitch.qudditch.util.AwsUtil;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,17 +48,21 @@ public class RekognitionController {
     }
 
     @GetMapping("/liveness-session/{sessionId}")
-    public ResponseEntity<Map<String, Object>> getSessionResult(@PathVariable String sessionId, @RequestParam Integer userId) {
+    public ResponseEntity<Map<String, Object>> getSessionResult(
+        @AuthenticationPrincipal ExtendedUserDetails userDetails,
+        @PathVariable String sessionId
+    ) {
         try {
             GetFaceLivenessSessionResultsResult flsrr = rekognitionService.getSessionResult(sessionId);
             List<IndexFacesResult> indexFacesResults = rekognitionService.addFacesCollection(
                 REKOGNITION_COLLECTION_ID,
                 flsrr
             );
-            rekognitionService.createUserInCollection(REKOGNITION_COLLECTION_ID, String.valueOf(userId));
+            String userId = String.valueOf(userDetails.getId());
+            rekognitionService.createUserInCollection(REKOGNITION_COLLECTION_ID, userId);
             rekognitionService.associateFaces(
                 REKOGNITION_COLLECTION_ID,
-                String.valueOf(userId),
+                userId,
                 indexFacesResults
             );
             return ResponseEntity.status(HttpStatus.OK).body(Map.of("result", flsrr));
