@@ -76,8 +76,6 @@
 package com.goldensnitch.qudditch.config;
 
 
-import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
-import com.goldensnitch.qudditch.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -93,6 +91,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+
+import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
+import com.goldensnitch.qudditch.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -137,7 +138,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 권한 설정 및 접근
                 .requestMatchers("/self").authenticated()
-                .requestMatchers("/public/**", "/login", "/test/register", "/register/customer", "/register/store", "/register/admin").permitAll()
+                .requestMatchers("/public/**", "/login", "/store/login","/admin/login", "/test/register", "/register/customer", "/register/store", "/register/admin").permitAll()
                 .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
                 .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능
                 .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
