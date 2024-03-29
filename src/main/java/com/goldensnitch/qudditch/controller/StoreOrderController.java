@@ -1,6 +1,5 @@
 package com.goldensnitch.qudditch.controller;
 
-
 import com.goldensnitch.qudditch.dto.Pagination;
 import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.StoreOder.OrderDetailWithProducts;
@@ -8,6 +7,7 @@ import com.goldensnitch.qudditch.dto.StoreOder.ProductWithDetailQty;
 import com.goldensnitch.qudditch.dto.StoreOder.ProductWithQty;
 import com.goldensnitch.qudditch.dto.StoreOrder;
 import com.goldensnitch.qudditch.dto.StoreOrderProduct;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.StoreOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
@@ -19,6 +19,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
@@ -42,9 +43,9 @@ public class StoreOrderController {
     }
 
     @GetMapping("")
-    public Map<String, Object> orderList(PaginationParam paginationParam) {
+    public Map<String, Object> orderList(@AuthenticationPrincipal ExtendedUserDetails userDetails, PaginationParam paginationParam) {
 
-        int userStoreId = 2;
+        int userStoreId = userDetails.getId();
         // 제품리스트
         List<StoreOrder> orderList = storeOrderService.orderList(userStoreId,paginationParam);
         // 총 수
@@ -65,8 +66,8 @@ public class StoreOrderController {
     }
 
     @PostMapping("")
-    public ResponseEntity<String> insertOrder(@RequestBody List<ProductWithQty> products) {
-        int storeId = 2;
+    public ResponseEntity<String> insertOrder(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestBody List<ProductWithQty> products) {
+        int storeId = userDetails.getId();
 
         try {
             StoreOrder storeOrder = new StoreOrder();

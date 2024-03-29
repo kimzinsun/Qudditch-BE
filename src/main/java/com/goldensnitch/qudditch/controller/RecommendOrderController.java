@@ -3,9 +3,11 @@ package com.goldensnitch.qudditch.controller;
 import com.goldensnitch.qudditch.dto.Pagination;
 import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.RecommendOrder.RecommendOrderReq;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.RecommendOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,9 +27,9 @@ public class RecommendOrderController {
         this.recommendOrderService = recommendOrderService;
     }
     @GetMapping("")
-    public Map<String, Object> selectProductByQty(PaginationParam paginationParam){
+    public Map<String, Object> selectProductByQty(@AuthenticationPrincipal ExtendedUserDetails userDetails, PaginationParam paginationParam){
 
-        int userStoreId = 2;
+        int userStoreId = userDetails.getId();
 
         int count = recommendOrderService.cntSelectProductByQty(userStoreId);
 
