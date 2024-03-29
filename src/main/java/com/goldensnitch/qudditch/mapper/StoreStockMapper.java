@@ -47,4 +47,12 @@ public interface StoreStockMapper {
     List<Integer> getTargetAlertUserByProductIdAndStoreId(int productId, int userStoreId);
 
     int getUserStoreIdByInputId(int storeInputId);
+
+    void insertStoreStockReport(int userStoreId, int productId, java.sql.Date ymd, int outQty);
+
+    Integer selectStockQtyByProductIdAndUserStoreId(int productId, int userStoreId);
+
+    void updateStockQtyByProductIdAndUserStoreId(Integer productId, Integer userStoreId, Integer newStoreStock);
+
+    int updateStoreStockReportOutQty(Integer userStoreId, Integer productId, Date date, Integer outQty);
 }
