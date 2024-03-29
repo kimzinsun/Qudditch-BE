@@ -76,6 +76,8 @@
 package com.goldensnitch.qudditch.config;
 
 
+import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
+import com.goldensnitch.qudditch.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -91,9 +93,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
-
-import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
-import com.goldensnitch.qudditch.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -137,12 +136,12 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // 권한 설정 및 접근
-                .requestMatchers("/self").authenticated()
-                .requestMatchers("/public/**", "/login", "/store/login","/admin/login", "/test/register", "/register/customer", "/register/store", "/register/admin").permitAll()
-                .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
-                .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능
-                .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
-                .anyRequest().authenticated())  // 나머지 경로는 인증된 사용자만 접근 가능
+//                .requestMatchers("/self").authenticated()
+//                .requestMatchers("/public/**", "/login", "/store/login","/admin/login", "/test/register", "/register/customer", "/register/store", "/register/admin").permitAll()
+//                .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
+//                .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능
+//                .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
+                .anyRequest().permitAll())  // 나머지 경로는 인증된 사용자만 접근 가능
             // 4. 사용자 권한에 따른 UI 구성
             // 일반 유저: 기본적인 서비스 화면.
             // 점주: 매출 그래프, 매장 관리 탭 추가. (데이터베이스 또는 서비스 레이어에서 권한에 따른 데이터 접근 로직을 구현 EX.점주는 자신의 매장에 대한정보만 조회할 수 있어야한다.)
