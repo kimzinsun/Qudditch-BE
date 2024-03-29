@@ -1,9 +1,39 @@
 {
   "properties": [
     {
-      "name": "aws.region",
+      "name": "app.jwtSecret",
       "type": "java.lang.String",
-      "description": "AWS 리전을 설정합니다."
+      "description": "A description for 'app.jwtSecret'."
+    },
+    {
+      "name": "app.refreshTokenExpirationInMsWeb",
+      "type": "java.lang.String",
+      "description": "A description for 'app.refreshTokenExpirationInMsWeb'."
+    },
+    {
+      "name": "twilio.sendgrid.from-email",
+      "type": "java.lang.String",
+      "description": "A description for 'twilio.sendgrid.from-email'."
+    },
+    {
+      "name": "naver.api.client-secret",
+      "type": "java.lang.String",
+      "description": "A description for 'naver.api.client-secret'."
+    },
+    {
+      "name": "naver.api.client-id",
+      "type": "java.lang.String",
+      "description": "A description for 'naver.api.client-id'."
+    },
+    {
+      "name": "naver.api.mail-url",
+      "type": "java.lang.String",
+      "description": "A description for 'naver.api.mail-url'."
+    },
+    {
+    "name": "aws.region",
+    "type": "java.lang.String",
+    "description": "AWS 리전을 설정합니다."
     },
     {
       "name": "aws.profile",
