@@ -41,5 +41,15 @@
         from product
         where name like concat('%','${name}','%')
     </select>
+<!--    <select id="selectProductById" parameterType="int" resultType="Product">-->
+<!--        SELECT *-->
+<!--        FROM product-->
+<!--        WHERE id = #{id}-->
+<!--    </select>-->
+    <select id="findByProductId" resultType="com.goldensnitch.qudditch.dto.Product">
+        SELECT *
+        FROM product
+        WHERE id = #{id}
+    </select>
 
 </mapper>

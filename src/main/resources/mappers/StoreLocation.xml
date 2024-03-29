@@ -10,9 +10,12 @@
         FROM store
         ORDER BY (6371
             *ACOS(COS(RADIANS(#{currentWgs84X}))
-                      *COS(RADIANS(store.wgs84_x))
-                      *COS(radians(store.wgs84_y)-RADIANS(#{currentWgs84Y}))
+                      *COS(RADIANS(wgs84_x))
+                      *COS(radians(wgs84_y)-RADIANS(#{currentWgs84Y}))
                 +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(wgs84_x))))
+        <if test = "limit != null">
+            limit #{limit}
+        </if>
         <if test = "limit != null">
             limit #{limit}
         </if>

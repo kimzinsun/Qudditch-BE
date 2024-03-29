@@ -48,6 +48,7 @@
                 +SIN(RADIANS(${currentWgs84X}))*SIN(RADIANS(wgs84_x))))
         LIMIT 10;
     </select>
+
     <insert id="insertDisposeLog">
         INSERT INTO store_stock_disuse (user_store_id, product_id, qty)
         VALUES (#{userStoreId}, #{productId}, #{qty})
@@ -128,5 +129,46 @@
     </select>
     <select id="getUserStoreIdByInputId">
         select user_store_id from store_input where id = ${storeInputId}
+    </select>
+
+    <!-- 판매 수량 기록 로그 -->
+    <insert id="insertStoreStockReport">
+        INSERT INTO store_stock_report (user_store_id, product_id, ymd, out_qty)
+        VALUES (#{userStoreId}, #{productId}, #{ymd}, #{outQty})
+    </insert>
+
+    <!-- userStoreId와 productId로 가게의 상품재고 수 확인 -->
+    <select id="selectStockQtyByProductIdAndUserStoreId" resultType="Integer">
+        SELECT ss.qty
+        FROM store_stock ss
+        WHERE ss.product_id = #{productId} AND ss.user_store_id = #{userStoreId}
+    </select>
+
+    <!-- 재고 수량 업데이트 메서드 -->
+    <update id="updateStockQtyByProductIdAndUserStoreId" parameterType="map">
+        UPDATE store_stock
+        SET qty = #{newStoreStock}
+        WHERE product_id = #{productId} AND user_store_id = #{userStoreId}
+    </update>
+
+    <update id="updateStoreStockReportOutQty" parameterType="map">
+        UPDATE store_stock_report
+        SET out_qty = #{outQty}
+        WHERE user_store_id = #{userStoreId}
+          AND product_id = #{productId}
+          AND ymd = #{date}
+    </update>
+
+    <!-- 주문 ID로 주문된 상품 정보 조회 -->
+    <select id="findOrderProductsByOrderId" parameterType="int" resultType="CustomerOrderProduct">
+        SELECT
+            cop.id,
+            cop.customer_order_id,
+            cop.product_id,
+            cop.qty
+        FROM
+            customer_order_product cop
+        WHERE
+            cop.customer_order_id = #{customerOrderId}
     </select>
 </mapper>

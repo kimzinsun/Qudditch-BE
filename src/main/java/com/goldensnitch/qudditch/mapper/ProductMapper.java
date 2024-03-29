@@ -19,4 +19,8 @@ public interface ProductMapper {
     int cntStoreStockByProductId(Integer productId);
     String selectProductNameByID(Integer productId);
 
+
+    // 제품 조회
+    Product findByProductId(Integer productId);
+    Product selectProductById(Integer id);
 }
