@@ -13,7 +13,9 @@
                       *COS(RADIANS(store.wgs84_x))
                       *COS(radians(store.wgs84_y)-RADIANS(#{currentWgs84Y}))
                 +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(wgs84_x))))
-        LIMIT 5
+        <if test = "limit != null">
+            limit #{limit}
+        </if>
     </select>
 
     <!--userStore에 등록된 스토어만 들고오기 위해-->
@@ -27,6 +29,14 @@
         SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
         FROM store_stock s , product p, category c
         WHERE user_store_id = #{userStoreId} and  s.product_id = p.id and p.category_id = c.id
+        limit #{recordSize} offset #{offset}
     </select>
+    <!--리스트 수-->
+    <select id="cntStoreStockList" resultType="Integer">
+        SELECT count(*)
+        FROM store_stock s , product p, category c
+        WHERE user_store_id = #{userStoreId} and  s.product_id = p.id and p.category_id = c.id
+    </select>
+
 
 </mapper>

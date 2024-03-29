@@ -5,26 +5,18 @@
 <mapper namespace="com.goldensnitch.qudditch.mapper.StoreOrderMapper">
 
     <!--발주리스트-->
-    <select id="orderList" parameterType="StoreOrderParam" resultType="StoreOrder">
-        select id, user_store_id, state, total_amount
+    <select id="orderList" resultType="StoreOrder">
+        select id, user_store_id, state, total_amount, ordered_at
         from store_order
-        <if test="choice !=null and choice != '' and search != null and search != ''">
-        <if test="choice == 'state'">
-        where state like concat('%', #{search},'%')
-        </if>
-        </if>
+        where user_store_id = #{userStoreId}
         order by id desc
-        limit ${(pageNumber * 10)}, 10
+        limit #{recordSize} offset #{offset}
     </select>
     <!--발주 수-->
-    <select id="getallList" parameterType="storeOrderParam" resultType="Integer">
+    <select id="cntOrderList" parameterType="StoreOrder" resultType="Integer">
         select count(*)
         from store_order
-        <if test="choice != null and choice != '' and search != null and search != '' ">
-        <if test="choice == 'state'">
-        where state like concat('%', #{search}, '%')
-        </if>
-        </if>
+        where user_store_id = #{userStoreId}
     </select>
     <!--발주오더생성-->
     <insert id="insertOrder" parameterType="StoreOrder">
@@ -52,13 +44,23 @@
         from product p, store_order_product sop
         where p.id = sop.product_id and sop.order_store_id = ${id}
     </select>
-
     <!--제품수정-->
     <update id="updateOrderProducts" parameterType="storeOrderProduct">
         update store_order_product
         set qty = ${qty}
         where order_store_id=${orderStoreId} and product_id=${productId};
     </update>
+    <!--제품삭제-->
+    <delete id="removeProduct">
+        delete from store_order_product
+        where product_id = ${productId} and order_store_id=${orderStoreId}
+    </delete>
+    <!--update부분에서 제품 insert-->
+    <select id="cntProductByStoreOrder" parameterType="Integer" resultType="Integer">
+        select count(*)
+        from store_order_product
+        where order_store_id=${orderStoreId} and product_id=${productId}
+    </select>
 
 
 
