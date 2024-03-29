@@ -3,9 +3,11 @@ package com.goldensnitch.qudditch.controller;
 import com.goldensnitch.qudditch.dto.Pagination;
 import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.manage.InputReq;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.ManageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,11 +25,9 @@ public class ManageController {
     }
 
     @GetMapping("/order")
-    public ResponseEntity<Map<String, Object>> getOrderList(PaginationParam paginationParam) {
+    public ResponseEntity<Map<String, Object>> getOrderList(PaginationParam paginationParam, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
-        String status;
-        Integer userStoreId = 2;
-        // Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Integer userStoreId = userDetails.getId();
 
         if (userStoreId != 2) {
             response.put("status", "fail");
@@ -52,7 +52,6 @@ public class ManageController {
     @GetMapping("/order/detail/{orderStoreId}")
     public ResponseEntity<Map<String, Object>> getOrderDetail(@PathVariable int orderStoreId) {
         Map<String, Object> response = new HashMap<>();
-        String status;
 
         if (manageService.getOrderDetail(orderStoreId).isEmpty()) {
             response.put("status", "fail");
@@ -68,7 +67,6 @@ public class ManageController {
     @PostMapping("/order/detail/{orderStoreId}")
     public ResponseEntity<Map<String, Object>> confirmOrder(@PathVariable int orderStoreId, @RequestBody List<InputReq> list) {
         Map<String, Object> response = new HashMap<>();
-        String status;
         manageService.confirmOrder(orderStoreId, list);
 
         response.put("status", "success");
