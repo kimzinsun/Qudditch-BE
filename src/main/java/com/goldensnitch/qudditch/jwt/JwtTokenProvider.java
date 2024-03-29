@@ -11,17 +11,16 @@
 // 성을 검증합니다. 토큰이 유효하면 요청이 처리되고, 유효하지 않으면 에러를 반환합니다.
 package com.goldensnitch.qudditch.jwt;
 
-import com.goldensnitch.qudditch.config.ApplicationProperties;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,32 +30,31 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
-    private final byte[] secretKey;
-    //    private final SecretKey sKey;
-    private final long jwtExpirationInMs;
+    @Value("${jwt.secret}")
+    private String JWT_SECRET;
 
+    @Value("${jwt.expirationInMs}")
+    private int JWT_EXPIRATION_IN_MS;
 
-    public JwtTokenProvider(ApplicationProperties properties) {
-
-        byte[] keyBytes = properties.getJwtSecret().getBytes(StandardCharsets.UTF_8);
-//        this.sKey = Keys.hmacShaKeyFor(keyBytes);
-        // this.secretKey = Base64.getEncoder().encodeToString(keyBytes);
-        this.secretKey = keyBytes;
-        this.jwtExpirationInMs = properties.getJwtExpirationInMs();
-        checkKeyLength(keyBytes);
-    }
-
-    private void checkKeyLength(byte[] keyBytes) {
-        if (keyBytes.length * 8 < 256) {
-            logger.error("Key length is less than 256 bits.");
-            throw new IllegalArgumentException("Key length must be at least 256 bits.");
-        }
-    }
+//    public JwtTokenProvider() {
+//        byte[] keyBytes =jwtSecret.getBytes(StandardCharsets.UTF_8);
+////        this.sKey = Keys.hmacShaKeyFor(keyBytes);
+//        // this.secretKey = Base64.getEncoder().encodeToString(keyBytes);
+//        this.secretKey = keyBytes;
+//        checkKeyLength(keyBytes);
+//    }
+//
+//    private void checkKeyLength(byte[] keyBytes) {
+//        if (keyBytes.length * 8 < 256) {
+//            logger.error("Key length is less than 256 bits.");
+//            throw new IllegalArgumentException("Key length must be at least 256 bits.");
+//        }
+//    }
 
     // 권한을 토큰에 포함시키는 메소드
     public String generateToken(Authentication authentication) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_IN_MS);
 
         // 'Authentication' 객체에서 'Principal'을 얻습니다.
         String userId = ((UserDetails) authentication.getPrincipal()).getUsername();
@@ -68,14 +66,14 @@ public class JwtTokenProvider {
             .claim("roles", authorities)    // claim에 권한을 포함시킨다.
             .issuedAt(now).expiration(expiryDate)
             // .signWith(Jwts.SIG.HS256, secretKey)
-            .signWith(SignatureAlgorithm.HS256, secretKey).compact();
+            .signWith(SignatureAlgorithm.HS256, JWT_SECRET).compact();
     }
 
     public boolean validateToken(String authToken) {
         try {
             Jwts.parser()
                 // .verifyWith(secretKey)
-                .setSigningKey(secretKey).build().parseSignedClaims(authToken);
+                .setSigningKey(JWT_SECRET).build().parseSignedClaims(authToken);
             return true;
         } catch (ExpiredJwtException e) {
             logger.error("Expired JWT token.", e);
@@ -93,7 +91,7 @@ public class JwtTokenProvider {
     }
 
     public Claims extractClaims(String token) {
-        return Jwts.parser().setSigningKey(secretKey)
+        return Jwts.parser().setSigningKey(JWT_SECRET)
             // v.decryptWith(sKey)
             .build().parseSignedClaims(token).getPayload();
     }

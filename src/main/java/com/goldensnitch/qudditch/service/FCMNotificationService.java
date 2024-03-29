@@ -10,11 +10,13 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class FCMNotificationService {
@@ -70,7 +72,7 @@ public class FCMNotificationService {
 
                     return "알림을 성공적으로 전송했습니다. targetUserId=" + requestDto.getTargetUserId();
                 } catch (FirebaseMessagingException e) {
-                    e.printStackTrace();
+                    log.error("알림 보내기를 실패하였습니다 {}",e.getMessage());
                     return "알림 보내기를 실패하였습니다. targetUserId=" + requestDto.getTargetUserId();
                 }
             } else {

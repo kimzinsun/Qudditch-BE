@@ -19,4 +19,10 @@
             AND product_id = #{productId}
     </delete>
 
+    <select id="countProduct" parameterType="com.goldensnitch.qudditch.dto.CustomerBookmarkProduct" resultType="Integer">
+        SELECT count(*)
+        FROM customer_bookmark_product
+        WHERE user_customer_id = #{userCustomerId}
+            AND product_id = #{productId};
+    </select>
 </mapper>
