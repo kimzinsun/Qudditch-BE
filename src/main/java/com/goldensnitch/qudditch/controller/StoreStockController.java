@@ -4,10 +4,11 @@ import com.goldensnitch.qudditch.dto.*;
 import com.goldensnitch.qudditch.dto.storeInput.InputDetailRes;
 import com.goldensnitch.qudditch.dto.storeInput.InputRes;
 import com.goldensnitch.qudditch.dto.storeInput.StockInputReq;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.StoreStockService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
@@ -27,15 +28,15 @@ public class StoreStockController {
     }
 
     @GetMapping("/stock")
-    public ResponseEntity<Map<String, Object>> getStockList(@RequestParam @Nullable Integer categoryId, PaginationParam paginationParam) {
+    public ResponseEntity<Map<String, Object>> getStockList(@RequestParam @Nullable Integer categoryId, PaginationParam paginationParam, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Integer userStoreId = 2;
+            Integer userStoreId = userDetails.getId();
             if (userStoreId == null) {
                 response.put("status", "fail");
                 response.put("message", "로그인이 필요합니다.");
             } else {
-                int count = categoryId == 0 ? storeStockService.cntProductByUserStoreId(userStoreId) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+                Integer count = categoryId == 0 ? storeStockService.cntProductByUserStoreId(userStoreId) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
                 List<StoreStockRes> stockList = categoryId == 0 ? storeStockService.selectAllProductByUserStoreId(userStoreId, paginationParam) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam);
                 if (stockList.isEmpty()) {
                     response.put("status", "fail");
@@ -57,10 +58,9 @@ public class StoreStockController {
 
 
     @PostMapping("/stock/update")
-    public ResponseEntity<Map<String, Object>> updateStock(@RequestBody StockUpdateReq stockUpdateReq) {
+    public ResponseEntity<Map<String, Object>> updateStock(@RequestBody StockUpdateReq stockUpdateReq, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
-//        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Integer userStoreId = 2;
+        Integer userStoreId = userDetails.getId();
         if (userStoreId == null) {
             response.put("status", "fail");
             response.put("message", "로그인이 필요합니다.");
@@ -86,11 +86,10 @@ public class StoreStockController {
     }
 
     @PostMapping("/stock/dispose")
-    public ResponseEntity<Map<String, Object>> disposeProduct(@RequestBody List<DisposeReq> list) {
+    public ResponseEntity<Map<String, Object>> disposeProduct(@RequestBody List<DisposeReq> list, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
 
-//        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Integer userStoreId = 2;
+        Integer userStoreId = userDetails.getId();
 
         if (userStoreId == null) {
             response.put("status", "fail");
@@ -122,11 +121,9 @@ public class StoreStockController {
     }
 
     @GetMapping("/stock/dispose")
-    public ResponseEntity<Map<String, Object>> getDisposeLog(PaginationParam paginationParam) {
+    public ResponseEntity<Map<String, Object>> getDisposeLog(PaginationParam paginationParam, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
-
-//        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Integer userStoreId = 2;
+        Integer userStoreId = userDetails.getId();
 
         if (userStoreId == null) {
             response.put("status", "fail");
@@ -143,10 +140,9 @@ public class StoreStockController {
     }
 
     @GetMapping("/stock/input") // 입고 리스트 확인
-    public ResponseEntity<Map<String, Object>> inputList(PaginationParam paginationParam) {
+    public ResponseEntity<Map<String, Object>> inputList(PaginationParam paginationParam, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
-//        Integer userStoreId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Integer userStoreId = 6;
+        Integer userStoreId = userDetails.getId();
         if (userStoreId == null) {
             response.put("status", "fail");
             response.put("message", "로그인이 필요합니다.");
@@ -169,11 +165,9 @@ public class StoreStockController {
     }
 
     @GetMapping("/stock/input/download/{inputId}")
-    public ResponseEntity<Map<String, Object>> downloadInputList(@PathVariable Integer inputId) throws IOException {
+    public ResponseEntity<Map<String, Object>> downloadInputList(@PathVariable Integer inputId, @AuthenticationPrincipal ExtendedUserDetails userDetails) throws IOException {
         Map<String, Object> response = new HashMap<>();
-        Integer userstoreId = 6;
-        // Integer userstoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+        Integer userstoreId = userDetails.getId();
         if (storeStockService.getOrderDetailByStoreInputId(inputId).isEmpty() || storeStockService.getUserStoreIdByInputId(inputId) != userstoreId) {
             response.put("status", "fail");
             response.put("message", "잘못된 접근입니다.");
@@ -188,10 +182,9 @@ public class StoreStockController {
     }
 
     @GetMapping("/stock/input/{inputId}")
-    public ResponseEntity<Map<String, Object>> getInputDetail(@PathVariable Integer inputId) {
+    public ResponseEntity<Map<String, Object>> getInputDetail(@PathVariable Integer inputId, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
-//        Integer userStoreId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Integer userStoreId = 6;
+        Integer userStoreId = userDetails.getId();
 
         if (userStoreId == null || storeStockService.getUserStoreIdByInputId(inputId) != userStoreId) {
             response.put("status", "fail");
@@ -205,10 +198,9 @@ public class StoreStockController {
     }
 
     @PostMapping("/stock/input/{inputId}")
-    public ResponseEntity<Map<String, Object>> insertStoreStock(@PathVariable int inputId, @RequestBody StockInputReq req) {
+    public ResponseEntity<Map<String, Object>> insertStoreStock(@PathVariable int inputId, @RequestBody StockInputReq req, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
-//        int userStoreId = (int) SecurityContextHolder.getContet().getAuthentication().getPrincipal();
-        int userStoreId = 6;
+        int userStoreId = userDetails.getId();
 
         if (userStoreId == 0 || storeStockService.getUserStoreIdByInputId(inputId) != userStoreId) {
             response.put("status", "fail");
