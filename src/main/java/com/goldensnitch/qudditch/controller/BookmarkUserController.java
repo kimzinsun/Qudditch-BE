@@ -2,9 +2,11 @@ package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.CustomerBookmarkProduct;
 import com.goldensnitch.qudditch.service.BookmarkUserService;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,8 +22,9 @@ public class BookmarkUserController {
     BookmarkUserService service;
 
     @GetMapping("/products")
-    public ResponseEntity<Map<String, Object>> getProduct(int userCustomerId){
+    public ResponseEntity<Map<String, Object>> getProduct(@AuthenticationPrincipal ExtendedUserDetails userDetails){
         Map<String, Object> map = new HashMap<>();
+        int userCustomerId = userDetails.getId();
 
         log.info("BookmarkUserController.getProduct: userCustomerId {}", userCustomerId);
 
@@ -39,7 +42,9 @@ public class BookmarkUserController {
     }
 
     @PostMapping("/product")
-    public ResponseEntity<String> createProduct(@RequestBody CustomerBookmarkProduct dto) {
+    public ResponseEntity<String> createProduct(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestBody CustomerBookmarkProduct dto) {
+        dto.setUserCustomerId(userDetails.getId());
+
         log.info("BookmarkUserController.createProduct: CustomerBookmarkProduct {}", dto);
 
         String message = "FAIL";
@@ -55,7 +60,9 @@ public class BookmarkUserController {
     }
 
     @DeleteMapping("/product")
-    public ResponseEntity<String> removeProduct(CustomerBookmarkProduct dto) {
+    public ResponseEntity<String> removeProduct(@AuthenticationPrincipal ExtendedUserDetails userDetails, CustomerBookmarkProduct dto) {
+        dto.setUserCustomerId(userDetails.getId());
+
         log.info("BookmarkUserController.removeProduct: CustomerBookmarkProduct {}", dto);
 
         String message = "FAIL";
