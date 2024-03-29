@@ -5,10 +5,12 @@ import com.goldensnitch.qudditch.dto.ChatbotDto;
 import com.goldensnitch.qudditch.dto.Store;
 import com.goldensnitch.qudditch.naver.NaverCloud;
 import com.goldensnitch.qudditch.service.ChatbotService;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
@@ -95,9 +97,9 @@ public class ChatbotController {
 
     /*기본 챗봇연동 및 질문 분류*/
     @GetMapping("/chatbot")
-    public String chatbot(ChatbotDto dto){
+    public String chatbot(@AuthenticationPrincipal ExtendedUserDetails userDetails, ChatbotDto dto){
         String returnValue = "";
-        String rtnStr = NaverCloud.ChatBot(dto.getMsg());
+        String rtnStr = NaverCloud.ChatBot(dto.getMsg(), userDetails.getId());
         JSONObject jsonObject = new JSONObject(rtnStr);
         String rtnMsg = (String)jsonObject.getJSONArray("bubbles")
                 .getJSONObject(0)

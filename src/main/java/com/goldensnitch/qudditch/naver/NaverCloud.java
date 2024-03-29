@@ -14,7 +14,7 @@ import java.net.URL;
 import java.util.Date;
 public class NaverCloud {
 
-    public static String ChatBot(String voiceMessage) {
+    public static String ChatBot(String voiceMessage, int userId) {
         String chatbotMessage = "";
         String apiURL = "https://loio4l5awk.apigw.ntruss.com/custom/v1/13824/4bfbaf3798b33b9fb793a31e9ebd58c3bd56c6eafc91e64f302a04c0ec2bdd56";
         String secretKey = "eFBmYU1HVm5hRXFJc3ROU1R3UnpGdG1TcGRvcFJCaEc=";
@@ -24,7 +24,7 @@ public class NaverCloud {
 
             URL url = new URL(apiURL);
 
-            String message = getReqMessage(voiceMessage);
+            String message = getReqMessage(voiceMessage, userId);
             System.out.println("##" + message);
 
             String encodeBase64String = makeSignature(message, secretKey);
@@ -93,7 +93,7 @@ public class NaverCloud {
 
     }
 
-    public static String getReqMessage(String voiceMessage) {
+    public static String getReqMessage(String voiceMessage, int userId) {
 
         String requestBody = "";
 
@@ -106,7 +106,7 @@ public class NaverCloud {
             System.out.println("##"+timestamp);
 
             obj.put("version", "v2");
-            obj.put("userId", "1232");
+            obj.put("userId", String.valueOf(userId));
             //=> userId is a unique code for each chat user, not a fixed value, recommend use UUID. use different id for each user could help you to split chat history for users.
 
             obj.put("timestamp", timestamp);
