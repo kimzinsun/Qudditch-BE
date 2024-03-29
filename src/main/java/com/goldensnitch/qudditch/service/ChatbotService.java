@@ -38,11 +38,6 @@ public class ChatbotService {
         return chatbotMapper.random();
     }
 
-   /* public List<ChatbotStore> store(String name) {
-
-        return chatbotMapper.store(name);
-    }*/
-
     public List<Store> getNearStoreList(double currentWgs84X, double currentWgs84Y){
         return chatbotMapper.selectNearStores(currentWgs84X, currentWgs84Y);
     }

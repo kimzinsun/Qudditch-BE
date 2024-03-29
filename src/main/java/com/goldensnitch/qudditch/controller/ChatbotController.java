@@ -58,7 +58,6 @@ public class ChatbotController {
         ArrayList<Map<String, Object>> ls = new ArrayList<>();
         Map<String, Object> list= new HashMap<>();
         list.put("variableName","list");
-//        list.put("value", searchList.toString());
 
         StringBuilder sb = new StringBuilder();
         for (Chatbot product : searchList) {
@@ -72,36 +71,6 @@ public class ChatbotController {
         return rs;
     }
 
-    /* // 특정 상품이 있는 가게 리스트 출력
-    @PostMapping(path = "/store", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public Map<String, Object> store(@Nullable @RequestBody Map<String, Object> body) {
-
-        log.info("body {}", body);
-
-        Map<String, Object> userinfo =  (Map<String, Object>)body.get("userInfo");
-        Map<String, Object> entities = (Map<String, Object>)userinfo.get("entities");
-        String storeName =  (String)entities.get("`@SYSTEM_ANY");
-
-        List<ChatbotStore> storeSearchList = chatbotService.store(storeName);
-
-        log.info("storeSearchList: {}", storeSearchList);
-
-        Map<String, Object> sr= new HashMap<>();
-        ArrayList<Map<String, Object>> ls = new ArrayList<>();
-        Map<String, Object> list = new HashMap<>();
-        list.put("variableName","list");
-
-        StringBuilder sb = new StringBuilder();
-        for (ChatbotStore name : storeSearchList) {
-            sb.append(name.getName()).append("\n");
-        }
-
-        list.put("value", sb.toString());
-        ls.add(list);
-        sr.put("data", ls);
-        return sr;
-    }*/
 
     /*검색한 상품이 있는 사용자의 근처 편의점 추출*/
     @PostMapping("/store")
@@ -110,8 +79,6 @@ public class ChatbotController {
         Map<String, Object> userinfoMap =  (Map<String, Object>)body.get("userInfo");
         Map<String, Object> entities = (Map<String, Object>)userinfoMap.get("entities");
         String productName =  (String)entities.get("`@SYSTEM_ANY");
-
-        // System.out.println("productName:" + productName);
 
         Map<String,Object>rs=new HashMap<>();
         Map<String,Object>productNameMap=new HashMap<>();
@@ -147,7 +114,7 @@ public class ChatbotController {
             // 일치하는 부분을 찾습니다.
             if (msgRex.find()) {
                 String msgCode = msgRex.group(1); // 첫 번째 그룹을 가져와서 결과로 출력합니다.
-                System.out.println(msgCode);
+                log.info(msgCode);
 
                 if(msgCode.equals("select_001")){
 
@@ -157,7 +124,7 @@ public class ChatbotController {
 
                     if (productNameRex.find()) {
                         String productName = productNameRex.group(1); // 첫 번째 그룹을 가져와서 결과로 출력합니다.
-                        System.out.println(productName);
+                        log.info(productName);
 
                         List<String> similarProductNames = chatbotService.getSimilarProductNameList(productName);
 
@@ -195,7 +162,7 @@ public class ChatbotController {
                 }
 
             } else {
-                System.out.println("일치하는 패턴을 찾을 수 없습니다.");
+                log.info("일치하는 패턴을 찾을 수 없습니다.");
                 returnValue = "Fail";
             }
         }else {
@@ -205,10 +172,6 @@ public class ChatbotController {
         return returnValue;
     }
 
-    /*@GetMapping("/chatbot")
-    public String chatbot(String msg) {
-        return NaverCloud.ChatBot(msg);
-    }*/
 
     /*랜덤으로 상품추천해주는 액션메소드*/
     @PostMapping(path = "/random", produces = MediaType.APPLICATION_JSON_VALUE)
