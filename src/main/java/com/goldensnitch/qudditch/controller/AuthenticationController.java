@@ -1,11 +1,9 @@
 package com.goldensnitch.qudditch.controller;
 
 
-import com.goldensnitch.qudditch.dto.*;
-import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
-import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
-import com.goldensnitch.qudditch.service.ExtendedUserDetails;
-import com.goldensnitch.qudditch.service.UserService;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +16,23 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.goldensnitch.qudditch.dto.AuthResponse;
+import com.goldensnitch.qudditch.dto.LoginRequest;
+import com.goldensnitch.qudditch.dto.SocialLoginDto;
+import com.goldensnitch.qudditch.dto.UserAdmin;
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
+import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
+import com.goldensnitch.qudditch.mapper.UserAdminMapper;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+import com.goldensnitch.qudditch.service.UserService;
 
 @RestController
 public class AuthenticationController {
@@ -30,6 +41,7 @@ public class AuthenticationController {
     private final UserCustomerMapper userCustomerMapper;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final UserAdminMapper userAdminMapper; // 생성자 주입 추가
     private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
     @Autowired
@@ -38,13 +50,15 @@ public class AuthenticationController {
         JwtTokenProvider jwtTokenProvider,
         UserCustomerMapper userCustomerMapper,
         UserService userService,
-        PasswordEncoder passwordEncoder
+        PasswordEncoder passwordEncoder,
+        UserAdminMapper userAdminMapper // 생성자 주입 추가
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.userCustomerMapper = userCustomerMapper;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.userAdminMapper = userAdminMapper; // 초기화 추가
     }
 
 
@@ -174,4 +188,34 @@ public class AuthenticationController {
         // 사용자 정보 저장 로직 (관리자)
         return userService.registerUserAdmin(userAdmin);
     }
+
+    @PostMapping("/admin/login")
+public ResponseEntity<?> authenticateAdmin(@RequestBody LoginRequest loginRequest) {
+    log.info("Attempting to authenticate admin with email: {}", loginRequest.getEmail());
+
+    // 관리자 여부 확인 로직
+    UserAdmin admin = userAdminMapper.findByEmail(loginRequest.getEmail());
+    if (admin == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("관리자 계정이 존재하지 않습니다.");
+    }
+
+    // 비밀번호 검증 로직
+    if (!passwordEncoder.matches(loginRequest.getPassword(), admin.getPassword())) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀렸습니다.");
+    }
+
+    // 인증 로직
+    Authentication authentication =
+        new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+    authentication = authenticationManager.authenticate(authentication);
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    // JWT 토큰 생성
+    String token = jwtTokenProvider.generateToken(authentication);
+    AuthResponse authResponse = new AuthResponse(token);
+
+    log.info("Admin authenticated successfully: {}", authResponse);
+    return ResponseEntity.ok(authResponse);
+}
+    
 }
