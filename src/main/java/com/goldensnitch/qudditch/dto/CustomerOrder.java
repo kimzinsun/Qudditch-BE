@@ -9,7 +9,7 @@ public class CustomerOrder {
     private Integer id;
     private Integer partnerOrderId;
     private Integer userCustomerId;
-    private Integer userStoreId; // 가맹점 코드
+    private Integer userStoreId;
     private Integer totalAmount;
     private Integer usedPoint;
     private Integer totalPay;

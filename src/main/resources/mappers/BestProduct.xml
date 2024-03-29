@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goldensnitch.qudditch.mapper.BestProductMapper">
+
+    <!-- 가게별 베스트 판매상품 TOP10 -->
+    <select id="BestProduct" resultType="BestProduct" parameterType="Integer">
+        SELECT p.name, s.out_qty
+        FROM store_stock_report s
+                 JOIN product p ON s.product_id = p.id
+        WHERE s.user_store_id = #{storeId}
+        ORDER BY s.out_qty DESC
+        LIMIT 5;
+    </select>
+
+</mapper>
