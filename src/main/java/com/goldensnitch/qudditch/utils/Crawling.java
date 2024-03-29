@@ -15,6 +15,7 @@ import java.util.List;
 
 @Component
 public class Crawling {
+    @SuppressWarnings("unused")
     public static List<Product> Crawling(String url) {
         Connection conn = Jsoup.connect(url);
         List<Product> list = new ArrayList<>();

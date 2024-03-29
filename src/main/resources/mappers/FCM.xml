@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goldensnitch.qudditch.mapper.FCMMapper">
+    <select id="selectCustomerDevice" parameterType="Integer" resultType="com.goldensnitch.qudditch.dto.CustomerDevice">
+        SELECT id, user_customer_id AS userCustomerId, token, refreshed_at AS refreshedAt
+        FROM customer_device
+        WHERE user_customer_id = #{userCustomerId}
+    </select>
+
+    <select id="countCustomerDevice" parameterType="Integer" resultType="Integer">
+        SELECT COUNT(*)
+        FROM customer_device
+        WHERE user_customer_id = #{userCustomerId}
+    </select>
+
+    <insert id="insertCustomerDevice" parameterType="com.goldensnitch.qudditch.dto.CustomerDevice">
+        INSERT INTO customer_device(user_customer_id, token, refreshed_at)
+        VALUES(#{userCustomerId}, #{token}, NOW())
+    </insert>
+
+    <update id="updateCustomerDeviceToken" parameterType="com.goldensnitch.qudditch.dto.CustomerDevice">
+        UPDATE customer_device
+        SET token = #{token}, refreshed_at = NOW()
+        WHERE user_customer_id = #{userCustomerId}
+    </update>
+
+    <select id="selectCustomerAlertLogs" parameterType="Integer" resultType="com.goldensnitch.qudditch.dto.CustomerAlertLog">
+        SELECT id, user_customer_id AS userCustomerId, title, body, created_at AS createdAt
+        FROM customer_alert_log
+        WHERE user_customer_id = #{userCustomerId}
+    </select>
+
+    <insert id="insertCustomerAlertLog" parameterType="com.goldensnitch.qudditch.dto.CustomerAlertLog">
+        INSERT INTO customer_alert_log(user_customer_id, title, body, created_at)
+        VALUES(#{userCustomerId}, #{title}, #{body}, NOW())
+    </insert>
+
+    <select id="selectUserCustomerByEmail" parameterType="String" resultType="UserCustomer">
+        SELECT id, email, name, password, state, collection_arn AS collectionArn, user_customer.created_at AS createdAt, user_customer.modified_at AS modifiedAt
+        FROM user_customer
+        WHERE email = #{email}
+    </select>
+
+    <delete id="deleteCustomerDevice" parameterType="Integer">
+        DELETE FROM customer_device
+        WHERE user_customer_id = #{userCustomerId}
+    </delete>
+
+</mapper>
