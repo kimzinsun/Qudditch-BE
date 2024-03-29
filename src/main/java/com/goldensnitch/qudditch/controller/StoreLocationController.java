@@ -4,9 +4,11 @@ import com.goldensnitch.qudditch.dto.Pagination;
 import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.Store;
 import com.goldensnitch.qudditch.dto.StoreStockRes;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.StoreLocationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,7 +42,8 @@ public class StoreLocationController {
 
     // storeId를 받고 난 userStoreId들의 재고 리스트
     @GetMapping("/stock")
-    public Map<String, Object> storeStockList(@RequestParam int userStoreId, PaginationParam paginationParam){
+    public Map<String, Object> storeStockList(@AuthenticationPrincipal ExtendedUserDetails userDetails , PaginationParam paginationParam){
+        int userStoreId = userDetails.getId();
        int storeId = storeLocationService.getUserstoreIdBystoreId(userStoreId);
        int count = storeLocationService.cntStoreStockList(userStoreId);
 
