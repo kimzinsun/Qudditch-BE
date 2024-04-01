@@ -4,7 +4,7 @@
 
 <mapper namespace="com.goldensnitch.qudditch.mapper.BestProductMapper">
 
-    <!-- 가게별 베스트 판매상품 TOP10 -->
+    <!-- 가게별 베스트 판매상품 TOP5 -->
     <select id="BestProduct" resultType="BestProduct" parameterType="Integer">
         SELECT p.name, s.out_qty
         FROM store_stock_report s
