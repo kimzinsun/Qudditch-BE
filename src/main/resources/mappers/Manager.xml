@@ -22,8 +22,16 @@
                          INNER JOIN
         store_order so ON so.id = sop.order_store_id
         where s.id = so.user_store_id
-        GROUP BY so.id, so.ordered_at
-        LIMIT ${recordSize} OFFSET ${offset}
+        GROUP BY
+            so.id, so.ordered_at, s.name, so.state
+        ORDER BY
+            CASE
+                WHEN so.state = '대기' THEN 0
+                ELSE 1
+                END,
+            so.ordered_at DESC
+        LIMIT
+            ${recordSize} OFFSET ${offset};
     </select>
     <select id="getOrderCount">
         select count(*)
