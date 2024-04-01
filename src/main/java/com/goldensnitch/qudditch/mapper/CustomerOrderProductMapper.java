@@ -15,7 +15,9 @@ public interface CustomerOrderProductMapper  {
 
     // CustomerOrder findById(int id);
 
-    List<CustomerOrder> findByUserCustomerId(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear);
+    List<CustomerOrder> findByUserCustomerId(String monthYear);
+
+    List<CustomerOrder> findByMonthYear(String monthYear);
 
      CustomerOrder findById(int customerOrderId);
 
@@ -26,6 +28,8 @@ public interface CustomerOrderProductMapper  {
     CustomerOrder findByTid(String tid);
 
     List<CustomerOrderProduct> findOrderProductsByOrderId(int customerOrderId);
+
+    List<CustomerOrderProduct> findOrderProductsByPartnerOrderId(String partnerOrderId);
 
     // 사용자 ID로 포인트 사용 및 적립 내역 조회
     List<CustomerOrder> findPointHistoryByCustomerId(@Param("userCustomerId") Integer userCustomerId);

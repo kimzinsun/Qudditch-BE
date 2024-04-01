@@ -246,21 +246,21 @@ public class PaymentService {
         return paymentRequest;
     }
 
-    private void decrementStockAndUpdateReport(int customerOrderId) {
+    private void decrementStockAndUpdateReport(int partnerOrderId) {
         try {
             // 주문 정보 조회
-            CustomerOrder order = customerOrderProductMapper.findById(customerOrderId);
+            CustomerOrder order = customerOrderProductMapper.findById(partnerOrderId);
             if (order == null) {
-                throw new RuntimeException("Order not found with ID: " + customerOrderId);
+                throw new RuntimeException("Order not found with ID: " + partnerOrderId);
             }
 
             Integer userStoreId = order.getUserStoreId();
             LocalDate ymd = order.getOrderedAt().toLocalDate();
 
             // 주문된 상품 정보 조회
-            List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(customerOrderId);
+            List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(partnerOrderId);
             if (orderProducts.isEmpty()) {
-                throw new RuntimeException("No products found for order ID: " + customerOrderId);
+                throw new RuntimeException("No products found for order ID: " + partnerOrderId);
             }
 
             for (CustomerOrderProduct orderProduct : orderProducts) {

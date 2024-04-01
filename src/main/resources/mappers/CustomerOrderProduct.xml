@@ -59,6 +59,14 @@
         <!-- 필요한 경우 날짜 범위 조건을 추가 -->
     </select>
 
+    <!-- 점주가 월별 주문 내역 조회 -->
+    <select id="findByMonthYear" parameterType="map" resultMap="customerOrderResultMap">
+        SELECT *
+        FROM customer_order
+        WHERE DATE_FORMAT(ordered_at, '%Y-%m') = #{monthYear}
+        <!-- 필요한 경우 날짜 범위 조건을 추가 -->
+    </select>
+
     <!-- 주문 ID로 주문 상품 정보 조회 -->
     <select id="findOrderProductsByOrderId" parameterType="java.lang.Integer" resultMap="customerOrderProductResultMap">
         SELECT
@@ -70,6 +78,15 @@
         FROM customer_order_product cop
                  JOIN product p ON cop.product_id = p.id
         WHERE cop.customer_order_id = #{customerOrderId}
+    </select>
+
+    <!-- partner_order_id로 주문 상품 정보 조회 -->
+    <select id="findOrderProductsByPartnerOrderId" parameterType="java.lang.String" resultMap="customerOrderProductResultMap">
+        SELECT cop.*, p.name, p.price
+        FROM customer_order_product cop
+                 JOIN customer_order co ON co.id = cop.customer_order_id
+                 JOIN product p ON cop.product_id = p.id
+        WHERE co.partner_order_id = #{partnerOrderId}
     </select>
 
     <update id="update" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder">
