@@ -1,21 +1,25 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.UserAdmin;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
-import com.goldensnitch.qudditch.mapper.UserAdminMapper;
-import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
-import com.goldensnitch.qudditch.mapper.UserStoreMapper;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import com.goldensnitch.qudditch.dto.SocialLoginDto;
+import com.goldensnitch.qudditch.dto.UserAdmin;
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
+import com.goldensnitch.qudditch.mapper.UserAdminMapper;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.mapper.UserStoreMapper;
 
 @Service
 public class UserService {
@@ -112,4 +116,49 @@ public class UserService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("관리자 등록에 실패했습니다");
         }
     }
+
+    public UserDetails processUserIntegration(String provider, SocialLoginDto socialLoginDto) {
+        String email = socialLoginDto.getEmail();
+        UserCustomer userCustomer = userCustomerMapper.findByEmail(email);
+        ExtendedUserDetails userDetails;
+
+        if (userCustomer != null) {
+            log.info("기존 사용자와 소셜 계정 통합: {}", email);
+            // 여기에 기존 사용자에 대한 업데이트 로직을 추가합니다. 예를 들면:
+            // userCustomer.setSomeField(socialLoginDto.getSomeField());
+            userCustomerMapper.updateUserCustomer(userCustomer); // 데이터베이스 업데이트
+            userDetails = new ExtendedUserDetails(
+                userCustomer.getEmail(),
+                userCustomer.getPassword(),
+                AuthorityUtils.createAuthorityList("ROLE_USER"),
+                userCustomer.getId(),
+                userCustomer.getName(),
+                userCustomer.getEmail(),
+                true, true, true, userCustomer.getState() != 2
+            );
+        } else {
+            log.info("새 소셜 사용자 등록: {}", email);
+            UserCustomer newUserCustomer = new UserCustomer();
+            // socialLoginDto에서 받은 정보로 newUserCustomer 객체 설정
+            newUserCustomer.setEmail(email);
+            // ... [다른 필드 설정] ...
+            userCustomerMapper.insertUserCustomer(newUserCustomer); // 데이터베이스에 삽입
+            userDetails = new ExtendedUserDetails(
+                newUserCustomer.getEmail(),
+                newUserCustomer.getPassword(),
+                AuthorityUtils.createAuthorityList("ROLE_USER"),
+                newUserCustomer.getId(),
+                newUserCustomer.getName(),
+                newUserCustomer.getEmail(),
+                true, true, true, newUserCustomer.getState() != 2
+            );
+        }
+
+        return userDetails; // 처리된 UserDetails 객체 반환
+    }
+    
+    // ... 기타 메서드들 ...
+
+
+
 }

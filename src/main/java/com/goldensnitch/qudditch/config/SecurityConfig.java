@@ -88,6 +88,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
@@ -137,32 +141,24 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // 권한 설정 및 접근
+                
+            // 4. 사용자 권한에 따른 UI 구성
+            // 일반 유저: 기본적인 서비스 화면.
+            // 점주: 매출 그래프, 매장 관리 탭 추가. (데이터베이스 또는 서비스 레이어에서 권한에 따른 데이터 접근 로직을 구현 EX.점주는 자신의 매장에 대한정보만 조회할 수 있어야한다.)
+            // 관리자: 발주 관리, 시스템 관리 탭 추가.
                 .requestMatchers("/self").authenticated()
                 .requestMatchers("/public/**", "/login", "/store/login","/admin/login", "/test/register", "/register/customer", "/register/store", "/register/admin").permitAll()
                 .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
                 .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능
                 .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
                 .anyRequest().authenticated())  // 나머지 경로는 인증된 사용자만 접근 가능
-            // 4. 사용자 권한에 따른 UI 구성
-            // 일반 유저: 기본적인 서비스 화면.
-            // 점주: 매출 그래프, 매장 관리 탭 추가. (데이터베이스 또는 서비스 레이어에서 권한에 따른 데이터 접근 로직을 구현 EX.점주는 자신의 매장에 대한정보만 조회할 수 있어야한다.)
-            // 관리자: 발주 관리, 시스템 관리 탭 추가.
-//                .oauth2Login(Customizer.withDefaults())
-//                .formLogin(AbstractHttpConfigurer::disable)
-//                .logout(Customizer.withDefaults());
-
-//             .oauth2Login(oauth -> oauth
-// //                .loginPage("/login")
-//                 .defaultSuccessUrl("/loginSuccess")
-//                 .failureUrl("/loginFailure")
-//                 .clientRegistrationRepository(clientRegistrationRepository))
-            .oauth2Login(AbstractHttpConfigurer::disable) // OAuth2 로그인 비활성화
-            .formLogin(AbstractHttpConfigurer::disable)  // 폼 로그인 비활성화
-//        .formLogin(form -> form
-//            .loginPage("/login")
-//            .defaultSuccessUrl("/loginSuccess", true)  // 로그인 성공 시 리다이렉트될 URL
-//            .failureUrl("/loginFailure")  // 로그인 실패 시 리다이렉트될 URL
-//            .permitAll())
+                // SecurityConfig.java에서 oauth2Login 설정 부분
+                .oauth2Login(oauth2 -> oauth2
+                    .redirectionEndpoint(redirection -> redirection
+                    .   baseUri("/oauth2/callback/*"))
+                    .userInfoEndpoint(userInfo -> userInfo
+                        .userService(oauth2UserService())) // 이 메서드는 oauth2UserService를 참조합니다
+            )
             .logout(logout -> logout
                 .logoutSuccessUrl("/login")
                 .deleteCookies("JSESSIONID")
@@ -171,6 +167,20 @@ public class SecurityConfig {
             .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
+        DefaultOAuth2UserService defaultService = new DefaultOAuth2UserService();
+        return userRequest -> {
+            // DefaultOAuth2UserService를 통해 user 정보를 가져옵니다.
+            OAuth2User oAuth2User = defaultService.loadUser(userRequest);
+            
+            // 필요한 경우 OAuth2User에 대한 추가 처리를 수행하고 반환합니다.
+            // 예를 들어, 가져온 사용자 정보를 기반으로 데이터베이스에서 사용자를 찾거나 생성할 수 있습니다.
+
+            return oAuth2User;
+        };
     }
 
     // RestTemplate 빈을 생성합니다.

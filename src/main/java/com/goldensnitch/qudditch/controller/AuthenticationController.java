@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -107,14 +108,28 @@ public class AuthenticationController {
     }
 
     // 소셜 로그인 및 이메일 인증 통합을 위한 컨트롤러 메소드 추가
-    @PostMapping("/social-login/naver")
-    public ResponseEntity<?> socialLogin(@RequestBody SocialLoginDto socialLoginDto) {
-        // 네이버 소셜 로그인 후 받은 정보를 처리하는 로직을 구현
-        // 이 때, 필요한 정보를 DTO로부터 받아오고 처리 결과를 반환합니다.
-        // 예시로 AuthResponse를 사용하여 토큰과 함께 응답
-        String token = "가상의 토큰"; // 이 부분은 실제 로직에 따라 생성된 토큰으로 대체해야 합니다.
-        return ResponseEntity.ok(new AuthResponse(token));
-    }
+    // @PostMapping("/social-login/naver")
+    // public ResponseEntity<?> socialLogin(@RequestBody SocialLoginDto socialLoginDto) {
+    //     // 네이버 소셜 로그인 후 받은 정보를 처리하는 로직을 구현
+    //     // 이 때, 필요한 정보를 DTO로부터 받아오고 처리 결과를 반환합니다.
+    //     // 예시로 AuthResponse를 사용하여 토큰과 함께 응답
+    //     String token = "가상의 토큰"; // 이 부분은 실제 로직에 따라 생성된 토큰으로 대체해야 합니다.
+    //     return ResponseEntity.ok(new AuthResponse(token));
+    // }
+        @PostMapping("/social-login/{provider}")
+        public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto) {
+            // UserService의 계정 통합 로직 호출
+            ExtendedUserDetails  user = (ExtendedUserDetails) userService.processUserIntegration(provider, socialLoginDto);
+        
+            if (user != null) {
+                // 계정 통합 또는 생성 후 성공적으로 처리된 경우, JWT 토큰 발급 및 반환
+                String token = jwtTokenProvider.generateToken(new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities()));
+                return ResponseEntity.ok(new AuthResponse(token));
+            } else {
+                // 처리 중 오류 발생 시
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계정 처리 중 오류 발생");
+            }
+        }
 
     @GetMapping("/loginSuccess")
     public String loginSuccess(@AuthenticationPrincipal OAuth2User user) {
