@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.amazonaws.services.kinesisvideo.model.ResourceEndpointListItem;
+import com.amazonaws.services.kinesisvideosignalingchannels.model.GetIceServerConfigResult;
 import com.amazonaws.services.kinesisvideosignalingchannels.model.IceServer;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.KinesisService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 @Slf4j
@@ -52,29 +54,25 @@ public class KinesisController {
         }
     }
 
-    @GetMapping("/signaling-channel-endpoint")
-    public ResponseEntity<Map<String, Object>> getSignalingChannelEndpoint(
+    @GetMapping("/web-rtc")
+    public ResponseEntity<Map<String, Object>> getWebRTC(
         @AuthenticationPrincipal ExtendedUserDetails userDetails
     ) {
         try {
             List<ResourceEndpointListItem> resourceEndpointListItems =
                 kinesisService.getSignalingChannelEndpoint(userDetails.getId()).getResourceEndpointList();
-            return ResponseEntity.ok(Map.of("signalingChannelEndpoints", resourceEndpointListItems));
+            GetIceServerConfigResult iceServerConfigResult = kinesisService.getIceServerConfig(
+                userDetails.getId(),
+                Objects.requireNonNull(
+                    resourceEndpointListItems.stream().filter(e ->
+                        e.getProtocol().equals("HTTPS")).findFirst().orElse(null)).getResourceEndpoint()
+            );
+            return ResponseEntity.ok(Map.of(
+                "signalingChannelEndpoints", resourceEndpointListItems,
+                "iceServers", iceServerConfigResult.getIceServerList().stream().map(IceServer::getUris).toList()
+            ));
         } catch (Exception e) {
-            log.error("Error getting signaling channel endpoint", e);
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @GetMapping("/ice-server")
-    public ResponseEntity<Map<String, Object>> getIceServerConfig(
-        @AuthenticationPrincipal ExtendedUserDetails userDetails
-    ) {
-        try {
-            List<IceServer> iceServers = kinesisService.getIceServerConfig(userDetails.getId()).getIceServerList();
-            return ResponseEntity.ok(Map.of("iceServers", iceServers));
-        } catch (Exception e) {
-            log.error("Error getting ice server config", e);
+            log.error("Error getting WebRTC", e);
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
