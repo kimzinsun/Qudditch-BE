@@ -112,7 +112,6 @@ public class StoreStockController {
     @PostMapping("/stock/dispose")
     public ResponseEntity<Map<String, Object>> disposeProduct(@RequestBody DisposeReq disposeReq, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Integer productId = disposeReq.getProductId();
-        System.out.println(productId);
         Map<String, Object> response = new HashMap<>();
         Integer userStoreId = userDetails.getId();
         if (userStoreId == null) {
@@ -124,7 +123,8 @@ public class StoreStockController {
                 response.put("status", "fail");
                 response.put("message", "폐기 상품이 존재하지 않습니다.");
             } else {
-                storeStockService.updateDispose(productId, userStoreId);
+
+                storeStockService.updateDispose(disposalItem.getId(), userStoreId);
                 storeStockService.insertDisposeLog(userStoreId, productId, 1);
                 response.put("status", "success");
                 response.put("message", "폐기가 완료되었습니다.");

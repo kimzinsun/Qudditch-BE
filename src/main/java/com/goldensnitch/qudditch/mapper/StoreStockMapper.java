@@ -63,5 +63,5 @@ public interface StoreStockMapper {
 
     DisposalItem getDisposeItemByStoreStockId(Integer productId, Integer userStoreId);
 
-    void updateDispose(Integer productId, Integer userStoreId);
+    void updateDispose(Integer storeStockId, Integer userStoreId);
 }

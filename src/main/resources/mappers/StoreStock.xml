@@ -74,10 +74,10 @@
     <update id="updateDispose">
         update store_stock
         set qty = qty - 1
-        where user_store_id = ${userStoreId} and product_id = ${productId}
+        where user_store_id = ${userStoreId} and id=${storeStockId}
     </update>
     <select id="getDisposeItemByStoreStockId">
-        SELECT * FROM store_stock WHERE product_id = ${productId} and user_store_id = ${userStoreId} and expired_at <![CDATA[ <= ]]> now()
+        SELECT * FROM store_stock WHERE product_id = ${productId} and user_store_id = ${userStoreId} and expired_at <![CDATA[ <= ]]> now() and qty > 0
     </select>
     <select id="getDisposeLog" parameterType="int" resultType="DisposeLog">
         SELECT * FROM store_stock_disuse WHERE user_store_id = #{userStoreId} limit #{recordSize} offset #{offset}

@@ -163,7 +163,7 @@ public class StoreStockService {
         return storeStockMapper.getDisposeItemByStoreStockId(productId, userStoreId);
     }
 
-    public void updateDispose(Integer productId, Integer userStoreId) {
-        storeStockMapper.updateDispose(productId, userStoreId);
+    public void updateDispose(Integer storeStockId, Integer userStoreId) {
+        storeStockMapper.updateDispose(storeStockId, userStoreId);
     }
 }
