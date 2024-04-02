@@ -85,7 +85,7 @@ public class PaymentService {
                 // 객체 생성 및 필요한 정보 설정
                 CustomerOrder order = new CustomerOrder();
                 order.setPartnerOrderId(Integer.valueOf(request.getPartner_order_id()));
-                order.setUserCustomerId(5);
+                order.setUserCustomerId(userCustomerId);
                 order.setUserStoreId(Integer.valueOf(request.getPartner_user_id())); // 가맹점
                 order.setTotalAmount(request.getTotal_amount());
                 order.setUsedPoint(request.getUsedPoint() != null ? request.getUsedPoint() : 0);
@@ -174,6 +174,24 @@ public class PaymentService {
 
         ResponseEntity<PaymentResponse> response = restTemplate.exchange(
                 kakaoPayCancelUrl, HttpMethod.POST, entity, PaymentResponse.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            // 결제 취소 성공 시, 재고 복구 로직 실행
+            CustomerOrder order = customerOrderProductMapper.findByTid(tid);
+            if (order != null) {
+                List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());
+                for (CustomerOrderProduct orderProduct : orderProducts) {
+                    // 해당 상품의 현재 재고량 조회
+                    Integer currentStock = storeStockMapper.selectStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), order.getUserStoreId());
+                    // 재고량 복구
+                    storeStockMapper.updateStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), order.getUserStoreId(), currentStock + orderProduct.getQty());
+
+                    // 판매 정보 업데이트: 취소된 수량만큼 out_qty를 감소
+                    LocalDate ymd = order.getOrderedAt().toLocalDate();
+                    storeStockMapper.updateStoreStockReportOutQty(order.getUserStoreId(), orderProduct.getProductId(), Date.valueOf(ymd), -orderProduct.getQty());
+                }
+            }
+        }
 
         return response.getBody();
     }

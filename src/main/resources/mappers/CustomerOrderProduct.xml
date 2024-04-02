@@ -27,8 +27,8 @@
     <!-- localdate를 사용해서 바꿔야하는지 확인: #{orderedAt, jdbcType=DATE} -->
     <insert id="insertCustomerOrder" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder"
         useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO customer_order (partner_order_id, user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid, cid)
-        VALUES (#{partnerOrderId}, #{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid}, #{cid})
+        INSERT INTO customer_order (partner_order_id, user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid, cid, status)
+        VALUES (#{partnerOrderId}, #{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid}, #{cid}, 1)
     </insert>
 
     <!-- CustomerOrderProduct에 추가 -->
@@ -117,4 +117,11 @@
         WHERE user_customer_id = #{userCustomerId}
         ORDER BY ordered_at DESC
     </select>
+
+    <!-- customerOrderMapper.xml -->
+    <update id="updateOrderStatus" parameterType="map">
+        UPDATE customer_order
+        SET status = #{status}
+        WHERE tid = #{tid}
+    </update>
 </mapper>

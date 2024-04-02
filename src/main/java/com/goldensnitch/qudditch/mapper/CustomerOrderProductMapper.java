@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface CustomerOrderProductMapper  {
@@ -33,4 +34,6 @@ public interface CustomerOrderProductMapper  {
 
     // 사용자 ID로 포인트 사용 및 적립 내역 조회
     List<CustomerOrder> findPointHistoryByCustomerId(@Param("userCustomerId") Integer userCustomerId);
+
+    void updateOrderStatus(Map<String, Object> params);
 }
