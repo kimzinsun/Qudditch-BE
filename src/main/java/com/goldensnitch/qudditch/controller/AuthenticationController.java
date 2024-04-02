@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,14 +26,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.goldensnitch.qudditch.dto.AuthResponse;
 import com.goldensnitch.qudditch.dto.LoginRequest;
+import com.goldensnitch.qudditch.dto.RegisterStoreRequest;
 import com.goldensnitch.qudditch.dto.SocialLoginDto;
 import com.goldensnitch.qudditch.dto.UserAdmin;
 import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
 import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
 import com.goldensnitch.qudditch.mapper.UserAdminMapper;
 import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+import com.goldensnitch.qudditch.service.FileStorageService;
+import com.goldensnitch.qudditch.service.OCRService;
 import com.goldensnitch.qudditch.service.UserService;
 
 @RestController
@@ -190,19 +193,36 @@ public class AuthenticationController {
         return userService.registerUserCustomer(userCustomer);
     }
 
+    @Autowired
+    private OCRService ocrService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
     // 점주 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/store")
-    public ResponseEntity<?> registerStore(@RequestBody UserStore userStore) {
-        // 사용자 정보 저장 로직 (점주)
-        return userService.registerUserStore(userStore);
+    public ResponseEntity<?> registerStore(@ModelAttribute RegisterStoreRequest request) {
+        try {
+            String fileUrl = fileStorageService.storeFile(request.getBusinessLicenseFile());
+            String extractedBusinessNumber = ocrService.extractBusinessNumber(request.getBusinessLicenseFile());
+
+            if (!request.getBusinessNumber().equals(extractedBusinessNumber)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사업자 등록증 번호가 일치하지 않습니다.");
+            }
+
+            // 여기에서 나머지 회원가입 로직을 추가...
+            // 예: UserStore 객체 생성 및 userService.registerUserStore 호출
+            // 반환된 결과를 ResponseEntity로 감싸서 반환
+
+            return ResponseEntity.ok("점주 등록이 완료되었습니다. 파일 저장 경로: " + fileUrl);
+        } catch (Exception e) {
+            // 에러 로깅
+            Logger log = LoggerFactory.getLogger(AuthenticationController.class);
+            log.error("회원가입 처리 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원가입 처리 중 오류가 발생했습니다.");
+        }
     }
 
-    // 관리자 유저 회원가입을 위한 엔드포인트
-    @PostMapping("/register/admin")
-    public ResponseEntity<?> registerAdmin(@RequestBody UserAdmin userAdmin) {
-        // 사용자 정보 저장 로직 (관리자)
-        return userService.registerUserAdmin(userAdmin);
-    }
 
     @PostMapping("/admin/login")
 public ResponseEntity<?> authenticateAdmin(@RequestBody LoginRequest loginRequest) {

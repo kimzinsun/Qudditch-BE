@@ -186,7 +186,10 @@ public class SecurityConfig {
     // RestTemplate 빈을 생성합니다.
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        // RestTemplate 인스턴스 생성 및 커스텀 설정
+        RestTemplate restTemplate = new RestTemplate();
+        // 예: 프록시 설정, 타임아웃 설정 등
+        return restTemplate;
     }
 
 

@@ -12,6 +12,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.goldensnitch.qudditch.dto.SocialLoginDto;
 import com.goldensnitch.qudditch.dto.UserAdmin;
@@ -65,7 +66,7 @@ public class UserService {
     }
 
     // 점주 회원가입 로직
-    public ResponseEntity<String> registerUserStore(UserStore userStore) {
+    public ResponseEntity<String> registerUserStore(UserStore userStore, MultipartFile businessLicenseFile) {
         try {
             if (userStoreMapper.findByEmail(userStore.getEmail()) != null) {
                 log.error("이미 존재하는 이메일입니다: {}", userStore.getEmail());
