@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goldensnitch.qudditch.mapper.StoreOrderMapper">
+
+    <!--발주리스트-->
+    <select id="orderList" parameterType="StoreOrderParam" resultType="StoreOrder">
+        select id, user_store_id, state, total_amount
+        from store_order
+        <if test="choice !=null and choice != '' and search != null and search != ''">
+        <if test="choice == 'state'">
+        where state like concat('%', #{search},'%')
+        </if>
+        </if>
+        order by id desc
+        limit ${(pageNumber * 10)}, 10
+    </select>
+    <!--발주 수-->
+    <select id="getallList" parameterType="storeOrderParam" resultType="Integer">
+        select count(*)
+        from store_order
+        <if test="choice != null and choice != '' and search != null and search != '' ">
+        <if test="choice == 'state'">
+        where state like concat('%', #{search}, '%')
+        </if>
+        </if>
+    </select>
+    <!--발주오더생성-->
+    <insert id="insertOrder" parameterType="StoreOrder">
+        insert into store_order (user_store_id)
+        values (${userStoreId});
+    </insert>
+    <!--ID 가져오는 함수-->
+    <select id="getStoreId" resultType="Integer">
+        select last_insert_id()
+    </select>
+    <!--storeOrderId를 storeOrderProduct로 insert-->
+    <insert id="insertId" parameterType="storeOrderProduct">
+        insert into store_order_product (order_store_id, product_id, qty)
+        values (${orderStoreId}, ${productId},${qty});
+    </insert>
+    <!--발주상세-->
+    <select id="getStoreOrderById" parameterType="Integer" resultType="StoreOrder">
+            select *
+            from store_order
+            where id = ${id}
+    </select>
+    <!--제품상세-->
+    <select id="getProductWithQty" parameterType="Integer" resultType="ProductWithDetailQty">
+        select p.*, sop.qty as qty
+        from product p, store_order_product sop
+        where p.id = sop.product_id and sop.order_store_id = ${id}
+    </select>
+
+    <!--제품수정-->
+    <update id="updateOrderProducts" parameterType="storeOrderProduct">
+        update store_order_product
+        set qty = ${qty}
+        where order_store_id=${orderStoreId} and product_id=${productId};
+    </update>
+
+
+</mapper>
