@@ -2,6 +2,7 @@ package com.goldensnitch.qudditch.mapper;
 
 import com.goldensnitch.qudditch.dto.Product;
 import com.goldensnitch.qudditch.dto.ProductExt;
+import com.goldensnitch.qudditch.dto.ProductRank;
 import com.goldensnitch.qudditch.dto.StoreStock;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -18,6 +19,8 @@ public interface ProductMapper {
 
     int cntStoreStockByProductId(Integer productId);
     String selectProductNameByID(Integer productId);
+
+    List<ProductRank> getBestProductList();
 
 
     // 제품 조회
