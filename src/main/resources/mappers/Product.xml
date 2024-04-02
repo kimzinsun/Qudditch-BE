@@ -51,5 +51,12 @@
         FROM product
         WHERE id = #{id}
     </select>
+    <select id="getBestProductList" resultType="ProductRank">
+        select rank() over (order by count(cop.product_id) desc) 'rank' , p.id as productId, p.name as productName, p.image as productImage, p.price
+        from customer_order_product cop,
+             product p
+        where cop.product_id = p.id
+        group by cop.product_id
+    </select>
 
 </mapper>
