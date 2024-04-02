@@ -40,6 +40,15 @@
         LIMIT 3;
     </select>
 
+    <select id="best" resultType="Chatbot" parameterType="String">
+        SELECT p.name, p.price
+        FROM store_stock_report s
+                 JOIN product p ON s.product_id = p.id
+        ORDER BY s.out_qty DESC
+        LIMIT 5;
+    </select>
+
+
     <select id="selectNearStores" parameterType="map" resultType="Store">
         SELECT name, address
         FROM store
