@@ -73,7 +73,7 @@ public class AuthenticationController {
         log.info("Attempting to authenticate user with email: " + loginRequest.getEmail());
 
         // 회원 여부 확인 로직
-        UserCustomer user = userCustomerMapper.findByEmail(loginRequest.getEmail());
+        UserCustomer user = userCustomerMapper.selectUserByEmail(loginRequest.getEmail());
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("회원가입이 필요합니다.");
         }

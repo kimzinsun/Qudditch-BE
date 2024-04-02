@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +31,7 @@ public class UserService {
     private final UserStoreMapper userStoreMapper;
     private final UserAdminMapper userAdminMapper;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
@@ -37,6 +40,7 @@ public class UserService {
         this.userStoreMapper = userStoreMapper;
         this.userAdminMapper = userAdminMapper;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     // 일반유저 회원가입 로직
@@ -121,7 +125,7 @@ public class UserService {
 
     public UserDetails processUserIntegration(String provider, SocialLoginDto socialLoginDto) {
         String email = socialLoginDto.getEmail();
-        UserCustomer userCustomer = userCustomerMapper.findByEmail(email);
+        UserCustomer userCustomer = userCustomerMapper.selectUserByEmail(email);
         ExtendedUserDetails userDetails;
 
         if (userCustomer != null) {
@@ -163,4 +167,36 @@ public class UserService {
         return userStoreMapper.searchByName(name);
     }
     //  ... 기타 메서드
+
+     // 아이디 찾기 서비스 메서드
+    public String findUsernameByName(String name) {
+        UserCustomer user = userCustomerMapper.selectUserByName(name);
+        if (user != null) {
+            return user.getEmail(); // 사용자의 이메일을 반환합니다.
+        } else {
+            throw new UsernameNotFoundException("User not found with name: " + name);
+        }
+    }
+
+    // 비밀번호 찾기 서비스 메서드
+    public void resetPassword(String email) {
+        UserCustomer user = userCustomerMapper.selectUserByEmail(email);
+        if (user != null) {
+            String temporaryPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 8); // 8자리 임시 비밀번호 생성
+            user.setPassword(passwordEncoder.encode(temporaryPassword)); // 임시 비밀번호를 암호화하여 설정
+            userCustomerMapper.updateUserCustomer(user); // 데이터베이스 업데이트
+            
+            // 임시 비밀번호를 사용자 이메일로 전송
+            try {
+                emailService.sendPasswordResetEmail(email, temporaryPassword);
+            } catch (IOException e) {
+                log.error("Failed to send password reset email", e);
+                throw new EmailSendingException("Failed to send password reset email");
+            }
+        } else {
+            throw new UsernameNotFoundException("User not found with email: " + email);
+        }
+    }
+
+    // 기타 메서드...
 }
