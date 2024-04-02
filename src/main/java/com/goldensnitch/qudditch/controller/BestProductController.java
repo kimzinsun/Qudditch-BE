@@ -1,7 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
 
-import com.goldensnitch.qudditch.dto.StoreStockReport;
+import com.goldensnitch.qudditch.dto.UserStore;
 import com.goldensnitch.qudditch.service.BestProductService;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +30,8 @@ public class BestProductController {
     @GetMapping("/BestProduct")
     public Map<String,Object> BestProduct(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
 
-        int storeId = userDetails.getId();
-        List<StoreStockReport> list = bestProductService.BestProduct(storeId);
+        int Id = userDetails.getId();
+        List<UserStore> list = bestProductService.BestProduct(Id);
 
         return Map.of(
                 "bestProducts", list
