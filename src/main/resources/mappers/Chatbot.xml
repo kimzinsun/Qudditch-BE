@@ -46,6 +46,7 @@
                  JOIN product p ON s.product_id = p.id
         ORDER BY s.out_qty DESC
         LIMIT 5;
+
     </select>
 
 
