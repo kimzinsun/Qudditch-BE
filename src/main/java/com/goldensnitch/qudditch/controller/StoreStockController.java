@@ -150,7 +150,7 @@ public class StoreStockController {
             List<InputRes> inputList = storeStockService.getOrderListByUserStoreId(userStoreId, paginationParam);
             int count = storeStockService.cntOrderListByUserStoreId(userStoreId);
             if (count == 0) {
-                response.put("status", "success");
+                response.put("status", "fail");
                 response.put("message", "입고 리스트가 존재하지 않습니다.");
             } else {
                 Pagination pagination = new Pagination(count, paginationParam);
