@@ -66,16 +66,16 @@ public class KinesisController {
         }
     }
 
-    @GetMapping("/ice-server")
+    @GetMapping("/ice-server/{httpsEndpoint}")
     public ResponseEntity<Map<String, Object>> getIceServerConfig(
-        @AuthenticationPrincipal ExtendedUserDetails userDetails
+        @AuthenticationPrincipal ExtendedUserDetails userDetails,
+        @PathVariable String httpsEndpoint
     ) {
         try {
-            List<IceServer> iceServers = kinesisService.getIceServerConfig(userDetails.getId()).getIceServerList();
+            List<IceServer> iceServers = kinesisService.getIceServerConfig(userDetails.getId(), httpsEndpoint).getIceServerList();
             return ResponseEntity.ok(Map.of("iceServers", iceServers));
         } catch (Exception e) {
-            log.error("Error getting ice server config", e);
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.ok().body(Map.of("error", e.getMessage()));
         }
     }
 }
