@@ -42,6 +42,7 @@ public interface StoreStockMapper {
     List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, String keyword, int recordSize, int offset);
     int cntState(int storeInputId);
 
+    
     void updateState(int storeInputId);
 
     List<Integer> getTargetAlertUserByProductIdAndStoreId(int productId, int userStoreId);
@@ -55,4 +56,12 @@ public interface StoreStockMapper {
     void updateStockQtyByProductIdAndUserStoreId(Integer productId, Integer userStoreId, Integer newStoreStock);
 
     int updateStoreStockReportOutQty(Integer userStoreId, Integer productId, Date date, Integer outQty);
+
+    List<DisposalItem> getDisposeItemList(int userStoreId, int recordSize, int offset);
+
+    int cntDisposeItem(int userStoreId);
+
+    DisposalItem getDisposeItemByStoreStockId(Integer productId, Integer userStoreId);
+
+    void updateDispose(Integer productId, Integer userStoreId);
 }

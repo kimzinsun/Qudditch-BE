@@ -56,6 +56,29 @@
     <select id="getDisposeLogCount" parameterType="int" resultType="int">
         SELECT COUNT(*) FROM store_stock_disuse WHERE user_store_id = #{userStoreId}
     </select>
+    <select id="getDisposeItemList" resultType="DisposalItem">
+        SELECT s.*, p.name as productName, p.brand as brand, p.price as productPrice
+        FROM store_stock s,
+             product p
+        WHERE s.user_store_id = ${userStoreId}
+          and s.product_id = p.id
+          and s.expired_at <![CDATA[ <= ]]> now()
+          and s.qty > 0
+        limit #{recordSize} offset #{offset}
+    </select>
+    <select id="cntDisposeItem" resultType="int">
+        SELECT COUNT(*)
+        FROM store_stock s, product p
+        WHERE s.user_store_id = ${userStoreId} and s.product_id = p.id and s.expired_at <![CDATA[ <= ]]> now()
+    </select>
+    <update id="updateDispose">
+        update store_stock
+        set qty = qty - 1
+        where user_store_id = ${userStoreId} and product_id = ${productId}
+    </update>
+    <select id="getDisposeItemByStoreStockId">
+        SELECT * FROM store_stock WHERE product_id = ${productId} and user_store_id = ${userStoreId} and expired_at <![CDATA[ <= ]]> now()
+    </select>
     <select id="getDisposeLog" parameterType="int" resultType="DisposeLog">
         SELECT * FROM store_stock_disuse WHERE user_store_id = #{userStoreId} limit #{recordSize} offset #{offset}
     </select>
