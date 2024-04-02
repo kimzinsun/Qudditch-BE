@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -158,8 +159,8 @@ public class UserService {
         return userDetails; // 처리된 UserDetails 객체 반환
     }
     
-    // ... 기타 메서드들 ...
-
-
-
+    public List<UserStore> searchStoresByName(String name) {
+        return userStoreMapper.searchByName(name);
+    }
+    //  ... 기타 메서드
 }

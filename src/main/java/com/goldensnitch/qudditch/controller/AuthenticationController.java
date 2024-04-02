@@ -2,6 +2,7 @@ package com.goldensnitch.qudditch.controller;
 
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import com.goldensnitch.qudditch.dto.RegisterStoreRequest;
 import com.goldensnitch.qudditch.dto.SocialLoginDto;
 import com.goldensnitch.qudditch.dto.UserAdmin;
 import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
 import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
 import com.goldensnitch.qudditch.mapper.UserAdminMapper;
 import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
@@ -222,6 +224,12 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원가입 처리 중 오류가 발생했습니다.");
         }
     }
+
+    @GetMapping("/store/search")
+    public ResponseEntity<List<UserStore>> searchStores(@RequestParam String name) {
+    List<UserStore> stores = userService.searchStoresByName(name);
+    return ResponseEntity.ok(stores);
+}
 
 
     @PostMapping("/admin/login")
