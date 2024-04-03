@@ -21,8 +21,8 @@ public class CustomerOrderProductController {
         this.customerOrderProductService = customerOrderProductService;
     }
 
-    @GetMapping("/{partnerOrderId}")
-    public ResponseEntity<?> getReceiptByPartnerOrderId(@PathVariable String partnerOrderId) {
+    @GetMapping("/receipt")
+    public ResponseEntity<?> getReceiptByPartnerOrderId(@RequestParam String partnerOrderId) {
         try {
             OrderResponse orderResponse = customerOrderProductService.generateReceiptByPartnerOrderId(partnerOrderId);
             return ResponseEntity.ok(orderResponse);
@@ -33,10 +33,10 @@ public class CustomerOrderProductController {
 
     // getId 변경 - 03.29
     @GetMapping("/history")
-    public ResponseEntity<List<?>> getMonthlyOrderHistory(@RequestParam String monthYear){
+    public ResponseEntity<List<?>> getMonthlyOrderHistory(@RequestParam String monthYear, @RequestParam Integer status){
         try {
 
-            List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(monthYear);
+            List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(monthYear, status);
             return ResponseEntity.ok(history);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);

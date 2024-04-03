@@ -18,7 +18,7 @@ public interface CustomerOrderProductMapper  {
 
     List<CustomerOrder> findByUserCustomerId(String monthYear);
 
-    List<CustomerOrder> findByMonthYear(String monthYear);
+    List<CustomerOrder> findByMonthYear(String monthYear, Integer status);
 
      CustomerOrder findById(int customerOrderId);
 

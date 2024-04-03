@@ -52,9 +52,9 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
         return receipt;
     }
 
-    public List<OrderResponse> getMonthlyOrderHistory(String monthYear) {
+    public List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status) {
         // 주문 내역 조회
-        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByMonthYear(monthYear);
+        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByMonthYear(monthYear, status);
         List<OrderResponse> monthlyOrderHistory = customerOrders.stream().map(order -> {
             List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());
             OrderResponse orderResponse = new OrderResponse();
