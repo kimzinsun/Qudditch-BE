@@ -250,7 +250,7 @@ public class PaymentService {
         // 컨트롤러에 설정한 파라미터가 paymentService 메소드로 전달되어 기능 동작
         paymentRequest.setCid("TC0ONETIME");
         paymentRequest.setPartner_order_id(String.valueOf(random_order)); // 고유한 주문 ID 생성
-        paymentRequest.setPartner_user_id(partner_user_id.toString());
+        paymentRequest.setPartner_user_id(partner_user_id);
         paymentRequest.setItem_name(item_name.length() > 80 ? item_name.substring(0, 77) + "..." : item_name); // 상품명 설정
         paymentRequest.setItem_code(item_code);
         paymentRequest.setQuantity(quantity);
