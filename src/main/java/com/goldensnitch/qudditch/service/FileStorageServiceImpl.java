@@ -1,15 +1,15 @@
 package com.goldensnitch.qudditch.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
-    private final Path rootLocation = Paths.get("업로드된 파일 저장 경로");
+    private final Path rootLocation = Paths.get("classpath:/static/uploads");
 
     @Override
     public String storeFile(MultipartFile file) {

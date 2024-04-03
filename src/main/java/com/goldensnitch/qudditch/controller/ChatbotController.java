@@ -193,7 +193,7 @@ public class ChatbotController {
 
         StringBuilder sb = new StringBuilder();
         for (Chatbot random : randomList) {
-            sb.append(random.getName()).append(" : ").append(random.getPrice()).append("원\n");;
+            sb.append(random.getName()).append(" : ").append(random.getPrice()).append("원\n");
         }
 
         recommend.put("value", sb.toString());
@@ -218,7 +218,7 @@ public class ChatbotController {
 
         StringBuilder sr = new StringBuilder();
         for (Chatbot best : bestList) {
-            sr.append(best.getName()).append(" : ").append(best.getPrice()).append("원\n");;
+            sr.append(best.getName()).append(" : ").append(best.getPrice()).append("원\n");
         }
 
         product.put("value", sr.toString());

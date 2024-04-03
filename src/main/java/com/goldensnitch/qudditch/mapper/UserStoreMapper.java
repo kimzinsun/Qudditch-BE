@@ -1,11 +1,9 @@
 package com.goldensnitch.qudditch.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-
 import com.goldensnitch.qudditch.dto.UserStore;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 @Mapper
 public interface UserStoreMapper {
@@ -20,6 +18,9 @@ public interface UserStoreMapper {
     void insertUserStore(UserStore userStore);
 
     // 점포 이름으로 검색하는 메서드
-    @Select("SELECT * FROM user_store WHERE name LIKE CONCAT('%', #{name}, '%')")
     List<UserStore> searchByName(String name);
+
+    Integer findUserStoreIdByStoreId(Integer storeId);
+
+    Integer countUserStoreById(Integer userStoreId);
 }
