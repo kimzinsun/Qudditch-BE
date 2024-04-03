@@ -39,12 +39,12 @@ public class AuthenticationController {
 
     @Autowired
     public AuthenticationController(
-        AuthenticationManager authenticationManager,
-        JwtTokenProvider jwtTokenProvider,
-        UserCustomerMapper userCustomerMapper,
-        UserService userService,
-        PasswordEncoder passwordEncoder,
-        UserAdminMapper userAdminMapper // 생성자 주입 추가
+            AuthenticationManager authenticationManager,
+            JwtTokenProvider jwtTokenProvider,
+            UserCustomerMapper userCustomerMapper,
+            UserService userService,
+            PasswordEncoder passwordEncoder,
+            UserAdminMapper userAdminMapper // 생성자 주입 추가
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -70,7 +70,7 @@ public class AuthenticationController {
 
         // 인증 로직 (비밀번호 검증이 성공하면 토큰을 생성)
         Authentication authentication =
-            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
 
         authentication = authenticationManager.authenticate(authentication);
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -85,7 +85,7 @@ public class AuthenticationController {
     @PostMapping("/store/login")
     public ResponseEntity<?> authenticateStore(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
-            .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // 토큰 생성 및 반환
         String token = jwtTokenProvider.generateToken(authentication);
@@ -244,7 +244,7 @@ public class AuthenticationController {
 
         // 인증 로직
         Authentication authentication =
-            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
         authentication = authenticationManager.authenticate(authentication);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
