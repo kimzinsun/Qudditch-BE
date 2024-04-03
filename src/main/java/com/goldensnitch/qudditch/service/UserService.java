@@ -166,7 +166,7 @@ public class UserService {
     public List<UserStore> searchStoresByName(String name) {
         return userStoreMapper.searchByName(name);
     }
-    //  ... 기타 메서드
+    
 
      // 아이디 찾기 서비스 메서드
     public String findUsernameByName(String name) {
@@ -198,5 +198,18 @@ public class UserService {
         }
     }
 
-    // 기타 메서드...
+    // 개인정보 수정 기능
+    public ResponseEntity<String> updateUserInfo(UserCustomer userCustomer) {
+        try {
+            userCustomer.setPassword(passwordEncoder.encode(userCustomer.getPassword())); // 비밀번호 암호화
+            userCustomerMapper.updateUserCustomer(userCustomer); // 사용자 정보 업데이트
+            return ResponseEntity.ok("사용자 정보가 업데이트 되었습니다.");
+        } catch (DataAccessException e) {
+            log.error("데이터베이스 오류", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 오류가 발생했습니다.");
+        } catch (Exception e) {
+            log.error("알 수 없는 오류", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("알 수 없는 오류가 발생했습니다.");
+        }
+    }
 }
