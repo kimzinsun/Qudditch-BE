@@ -1,7 +1,9 @@
 package com.goldensnitch.qudditch.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class StoreStockRes extends StoreStock{
     private String categoryName;

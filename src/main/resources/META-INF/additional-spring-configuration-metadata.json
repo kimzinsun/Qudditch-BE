@@ -1,34 +1,114 @@
 {
   "properties": [
     {
-      "name": "app.jwtSecret",
-      "type": "java.lang.String",
-      "description": "A description for 'app.jwtSecret'."
-    },
-    {
-      "name": "app.refreshTokenExpirationInMsWeb",
-      "type": "java.lang.String",
-      "description": "A description for 'app.refreshTokenExpirationInMsWeb'."
-    },
-    {
       "name": "twilio.sendgrid.from-email",
       "type": "java.lang.String",
-      "description": "A description for 'twilio.sendgrid.from-email'."
+      "description": "The email address used as the sender when sending emails via Twilio SendGrid."
     },
     {
       "name": "naver.api.client-secret",
       "type": "java.lang.String",
-      "description": "A description for 'naver.api.client-secret'."
+      "description": "The secret key required for accessing the Naver API."
     },
     {
       "name": "naver.api.client-id",
       "type": "java.lang.String",
-      "description": "A description for 'naver.api.client-id'."
+      "description": "The client ID required for accessing the Naver API."
     },
     {
       "name": "naver.api.mail-url",
       "type": "java.lang.String",
-      "description": "A description for 'naver.api.mail-url'."
+      "description": "The URL used for Naver API mail service."
+    },
+    {
+      "name": "aws.region",
+      "type": "java.lang.String",
+      "description": "Sets the AWS region for configuration."
+    },
+    {
+      "name": "aws.profile",
+      "type": "java.lang.String",
+      "description": "Sets the AWS credentials profile for authentication."
+    },
+    {
+      "name": "aws.rekognition.liveness.output.config.s3-bucket-name",
+      "type": "java.lang.String",
+      "description": "Sets the S3 bucket name where AWS Rekognition Liveness analysis results will be stored."
+    },
+    {
+      "name": "aws.rekognition.liveness.setting.audit-images-limit",
+      "type": "java.lang.Integer",
+      "description": "Sets the limit on the number of audit images to generate during AWS Rekognition Liveness analysis."
+    },
+    {
+      "name": "aws.rekognition.index-faces.max-faces",
+      "type": "java.lang.Integer",
+      "description": "Sets the maximum number of faces to index during AWS Rekognition index creation."
+    },
+    {
+      "name": "aws.rekognition.index-faces.detection-attribute",
+      "type": "java.lang.String",
+      "description": "Sets the detection attribute to use during AWS Rekognition index creation."
+    },
+    {
+      "name": "aws.rekognition.stream-processor-name",
+      "type": "java.lang.String",
+      "description": "Sets the name of the AWS Rekognition stream processor."
+    },
+    {
+      "name": "aws.rekognition.kinesis-video-stream-arn",
+      "type": "java.lang.String",
+      "description": "Sets the ARN of the Kinesis video stream used by AWS Rekognition."
+    },
+    {
+      "name": "aws.rekognition.kinesis-data-stream-arn",
+      "type": "java.lang.String",
+      "description": "Sets the ARN of the Kinesis data stream used by AWS Rekognition."
+    },
+    {
+      "name": "aws.rekognition.role-arn",
+      "type": "java.lang.String",
+      "description": "Sets the ARN of the role for AWS Rekognition."
+    },
+    {
+      "name": "aws.rekognition.collection-id",
+      "type": "java.lang.String",
+      "description": "Sets the identifier for the collection used by AWS Rekognition."
+    },
+    {
+      "name": "aws.rekognition.match-threshold",
+      "type": "java.lang.Float",
+      "description": "Sets the minimum confidence threshold considered as a face match by AWS Rekognition."
+    },
+    {
+      "name": "aws.access-key-id",
+      "type": "java.lang.String",
+      "description": "The AWS access key ID."
+    },
+    {
+      "name": "aws_secret-access-key",
+      "type": "java.lang.String",
+      "description": "The AWS secret access key."
+    },
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "description": "The secret key used for JWT token generation and validation."
+    },
+    {
+      "name": "jwt.expirationInMs",
+      "type": "java.lang.Long",
+      "description": "The expiration time for JWT tokens in milliseconds."
+    },
+    {
+      "name": "jwt.refreshTokenExpirationInMsWeb",
+      "type": "java.lang.Long",
+      "description": "The expiration time for JWT refresh tokens used in web applications."
+    },
+    {
+      "name": "jwt.refreshTokenExpirationInMsApp",
+      "type": "java.lang.Long",
+      "description": "The expiration time for JWT refresh tokens used in mobile applications."
     }
   ]
 }

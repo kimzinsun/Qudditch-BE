@@ -1,3 +1,5 @@
+src/main/resources/firebase/*
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
@@ -294,8 +296,3 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/osx,macos,windows,intellij,eclipse,java
-
-# 민감한 프로퍼티 파일
-application-private.properties
-
-.fake

@@ -9,7 +9,7 @@ public class OrderRes {
     private int id;
     private Date orderedAt;
     private String name;
-    private String items;
+    private String orderItems;
     private String state;
 
 }

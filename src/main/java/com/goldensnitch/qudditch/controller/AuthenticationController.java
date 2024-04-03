@@ -70,8 +70,6 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-        log.info("Attempting to authenticate user with email: " + loginRequest.getEmail());
-
         // 회원 여부 확인 로직
         UserCustomer user = userCustomerMapper.selectUserByEmail(loginRequest.getEmail());
         if (user == null) {
@@ -94,16 +92,11 @@ public class AuthenticationController {
         String token = jwtTokenProvider.generateToken(authentication);
         AuthResponse authResponse = new AuthResponse(token);
 
-        // 인증 후 응답 로그 변경
-        log.info("Security Conte에 Authentication: {}", authResponse.getToken());
-        // 생성된 토큰을 클라이언트에 반환
-        log.info("User authenticated suessfully: " + authResponse);
         return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/store/login")
     public ResponseEntity<?> authenticateStore(@RequestBody LoginRequest loginRequest) {
-        log.info("Attempting to authenticate store with email: " + loginRequest.getEmail());
         Authentication authentication = authenticationManager
             .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -125,7 +118,7 @@ public class AuthenticationController {
         public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto) {
             // UserService의 계정 통합 로직 호출
             ExtendedUserDetails  user = (ExtendedUserDetails) userService.processUserIntegration(provider, socialLoginDto);
-        
+
             if (user != null) {
                 // 계정 통합 또는 생성 후 성공적으로 처리된 경우, JWT 토큰 발급 및 반환
                 String token = jwtTokenProvider.generateToken(new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities()));
@@ -190,7 +183,6 @@ public class AuthenticationController {
     // 일반 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/customer")
     public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
-        log.info("Registering customer with email: {}", userCustomer.getEmail());
         // UserService의 회원가입 로직을 호출하여 처리결과를 반환한다.
         return userService.registerUserCustomer(userCustomer);
     }
@@ -260,5 +252,5 @@ public ResponseEntity<?> authenticateAdmin(@RequestBody LoginRequest loginReques
     log.info("Admin authenticated successfully: {}", authResponse);
     return ResponseEntity.ok(authResponse);
 }
-    
+
 }
