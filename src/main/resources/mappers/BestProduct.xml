@@ -4,13 +4,14 @@
 
 <mapper namespace="com.goldensnitch.qudditch.mapper.BestProductMapper">
 
-    <!-- 가게별 베스트 판매상품 TOP10 -->
+    <!-- 가게별 베스트 판매상품 TOP5 -->
     <select id="BestProduct" resultType="BestProduct" parameterType="Integer">
-        SELECT p.name, s.out_qty
-        FROM store_stock_report s
-                 JOIN product p ON s.product_id = p.id
-        WHERE s.user_store_id = #{storeId}
-        ORDER BY s.out_qty DESC
+        SELECT concat(p.brand, ' ', p.name) name, ssr.out_qty
+        FROM user_store us
+                 JOIN store_stock_report ssr ON us.id = ssr.user_store_id
+                 JOIN product p ON ssr.product_id = p.id
+        WHERE us.id = #{Id}
+        ORDER BY ssr.out_qty DESC
         LIMIT 5;
     </select>
 

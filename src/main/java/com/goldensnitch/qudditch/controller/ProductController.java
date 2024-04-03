@@ -95,4 +95,10 @@ public class ProductController {
 
     }
 
+    @GetMapping("/rank")
+    public List<ProductRank> getBestProductList() {
+        System.out.println(productService.getBestProductList());
+        return productService.getBestProductList();
+    }
+
 }

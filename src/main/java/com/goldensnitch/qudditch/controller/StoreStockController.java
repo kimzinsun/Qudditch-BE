@@ -36,9 +36,9 @@ public class StoreStockController {
                 response.put("status", "fail");
                 response.put("message", "로그인이 필요합니다.");
             } else {
-                Integer count = categoryId == 0 ? storeStockService.cntProductByUserStoreId(userStoreId) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+                Integer count = categoryId == 0 ? storeStockService.cntProductByUserStoreId(userStoreId, paginationParam.getKeyword()) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam.getKeyword());
                 List<StoreStockRes> stockList = categoryId == 0 ? storeStockService.selectAllProductByUserStoreId(userStoreId, paginationParam) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam);
-                if (stockList.isEmpty()) {
+                if (stockList == null || stockList.isEmpty()) {
                     response.put("status", "fail");
                     response.put("message", "상품이 존재하지 않습니다.");
                 } else {
@@ -150,7 +150,7 @@ public class StoreStockController {
             List<InputRes> inputList = storeStockService.getOrderListByUserStoreId(userStoreId, paginationParam);
             int count = storeStockService.cntOrderListByUserStoreId(userStoreId);
             if (count == 0) {
-                response.put("status", "success");
+                response.put("status", "fail");
                 response.put("message", "입고 리스트가 존재하지 않습니다.");
             } else {
                 Pagination pagination = new Pagination(count, paginationParam);
