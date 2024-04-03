@@ -98,7 +98,7 @@ public class StoreStockController {
             List<DisposalItem> disposeItemList = storeStockService.getDisposeItemList(userStoreId, paginationParam);
             if (count == 0 || disposeItemList.isEmpty() ) {
                 response.put("status", "fail");
-                response.put("message", "해당 폐기 상품이 존재하지 않습니다.");
+                response.put("message", "폐기 상품이 존재하지 않습니다.");
             } else {
                 response.put("status", "success");
                 response.put("data", disposeItemList);
