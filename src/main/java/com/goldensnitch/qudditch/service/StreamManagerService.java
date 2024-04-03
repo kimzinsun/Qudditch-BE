@@ -32,8 +32,9 @@ public class StreamManagerService {
     }
 
     private int getUserStoreId() {
-        SecurityContextHolder.getContext().getAuthentication();
-        return 2;
+        ExtendedUserDetails userDetails = (ExtendedUserDetails) SecurityContextHolder.getContext().getAuthentication()
+            .getPrincipal();
+        return userDetails.getId();
     }
 
     private StoreStream getCurrentStoreStream() {

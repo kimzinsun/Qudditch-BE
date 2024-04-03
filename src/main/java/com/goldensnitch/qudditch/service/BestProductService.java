@@ -1,6 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.StoreStockReport;
+import com.goldensnitch.qudditch.dto.UserStore;
 import com.goldensnitch.qudditch.mapper.BestProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,8 +17,8 @@ public class BestProductService {
         this.bestProductMapper = bestProductMapper;
     }
 
-    public List<StoreStockReport> BestProduct(Integer storeId){
+    public List<UserStore> BestProduct(Integer Id){
 
-        return bestProductMapper.BestProduct(storeId);
+        return bestProductMapper.BestProduct(Id);
     }
 }

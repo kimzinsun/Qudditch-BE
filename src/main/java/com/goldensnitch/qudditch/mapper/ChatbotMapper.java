@@ -13,5 +13,6 @@ public interface ChatbotMapper {
     List<String> selectSimilarProductNames(String productName);
 
     List<Chatbot> random();
+    List<Chatbot> best();
     List<Store> selectNearStores(double currentWgs84X, double currentWgs84Y);
 }

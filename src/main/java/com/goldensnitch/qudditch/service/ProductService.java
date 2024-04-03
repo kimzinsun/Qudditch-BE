@@ -1,9 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.PaginationParam;
-import com.goldensnitch.qudditch.dto.Product;
-import com.goldensnitch.qudditch.dto.ProductExt;
-import com.goldensnitch.qudditch.dto.StoreStock;
+import com.goldensnitch.qudditch.dto.*;
 import com.goldensnitch.qudditch.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +28,10 @@ public class ProductService {
 
     public int cntStoreStockByProductId(Integer productId) {
         return productMapper.cntStoreStockByProductId(productId);
+    }
+
+    public List<ProductRank> getBestProductList() {
+        return productMapper.getBestProductList();
     }
 
 }

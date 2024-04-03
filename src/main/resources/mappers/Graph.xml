@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goldensnitch.qudditch.mapper.GraphMapper">
+    <select id="selectSalesList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailySalesDto">
+        select str.ymd as date, sum(p.price * str.out_qty) as sales
+        from store_stock_report str
+            join product p on str.product_id = p.id
+        where str.user_store_id = #{userStoreId}
+        group by ymd
+        having ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
+            and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
+        order by ymd
+    </select>
+
+    <select id="selectCategoryList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.CategorySalesDto">
+        select (select name category_id from category where id = p.category_id) as categoryName, sum(p.price * str.out_qty) as sales
+        from store_stock_report str
+            join product p on str.product_id = p.id
+        where user_store_id = #{userStoreId}
+            and ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
+            and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
+        group by p.category_id
+        order by sales desc
+    </select>
+
+    <select id="selectDailyVisitorList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailyVisitorDto">
+        select ymd as date, sum(cnt) as count
+        from store_visitor_daily_hour
+        where user_store_id = #{userStoreId}
+            and YEAR(ymd) = YEAR(#{yearMonth})
+            and MONTH(ymd) = MONTH(#{yearMonth})
+        group by ymd
+        order by ymd
+    </select>
+
+    <select id="selectDailyHourVisitorList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailyHourVisitorDto">
+        select HOUR(hour) as hour, sum(cnt) as count
+        from store_visitor_daily_hour
+        where user_store_id = #{userStoreId}
+            and ymd = #{date}
+        group by HOUR(hour)
+        order by HOUR(hour)
+    </select>
+</mapper>
