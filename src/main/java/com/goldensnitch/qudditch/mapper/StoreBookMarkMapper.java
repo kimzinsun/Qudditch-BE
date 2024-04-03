@@ -8,11 +8,9 @@ import java.util.List;
 @Mapper
 public interface StoreBookMarkMapper {
 
-    int toggleStoreBookmark(Integer userCustomerId, Integer storeId);
-
     int addStoreBookmark(Integer userCustomerId,Integer storeId);
 
-    int deleteStoreBookmark(Integer userCustomerId,Integer storeId);
+    int deleteAllStoreBookmark(Integer userCustomerId);
 
     List<CustomerBookmarkStore> bookmarkList(Integer userCustomerId);
 
