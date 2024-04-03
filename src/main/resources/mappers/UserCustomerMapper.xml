@@ -74,6 +74,11 @@
         FROM user_customer
         WHERE email = #{email}
     </select>
+    <select id="selectUserByEmail" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
+        SELECT *
+        FROM user_customer
+        WHERE email = #{email}
+    </select>
 
     <!-- update쿼리 -->
     <!-- 사용자 정보 업데이트 -->

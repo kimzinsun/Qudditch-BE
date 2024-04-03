@@ -11,4 +11,5 @@ public class InputDetailRes {
     private int qty;
     private String state;
     private String expDate;
+    private int locate;
 }

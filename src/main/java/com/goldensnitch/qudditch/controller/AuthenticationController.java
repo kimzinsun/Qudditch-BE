@@ -1,10 +1,14 @@
 package com.goldensnitch.qudditch.controller;
 
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
+import com.goldensnitch.qudditch.mapper.UserAdminMapper;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+import com.goldensnitch.qudditch.service.FileStorageService;
+import com.goldensnitch.qudditch.service.OCRService;
+import com.goldensnitch.qudditch.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,28 +21,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.goldensnitch.qudditch.dto.AuthResponse;
-import com.goldensnitch.qudditch.dto.LoginRequest;
-import com.goldensnitch.qudditch.dto.RegisterStoreRequest;
-import com.goldensnitch.qudditch.dto.SocialLoginDto;
-import com.goldensnitch.qudditch.dto.UserAdmin;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
-import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
-import com.goldensnitch.qudditch.mapper.UserAdminMapper;
-import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
-import com.goldensnitch.qudditch.service.ExtendedUserDetails;
-import com.goldensnitch.qudditch.service.FileStorageService;
-import com.goldensnitch.qudditch.service.OCRService;
-import com.goldensnitch.qudditch.service.UserService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 public class AuthenticationController {
@@ -70,8 +57,6 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-        log.info("Attempting to authenticate user with email: " + loginRequest.getEmail());
-
         // 회원 여부 확인 로직
         UserCustomer user = userCustomerMapper.selectUserByEmail(loginRequest.getEmail());
         if (user == null) {
@@ -94,16 +79,11 @@ public class AuthenticationController {
         String token = jwtTokenProvider.generateToken(authentication);
         AuthResponse authResponse = new AuthResponse(token);
 
-        // 인증 후 응답 로그 변경
-        log.info("Security Conte에 Authentication: {}", authResponse.getToken());
-        // 생성된 토큰을 클라이언트에 반환
-        log.info("User authenticated suessfully: " + authResponse);
         return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/store/login")
     public ResponseEntity<?> authenticateStore(@RequestBody LoginRequest loginRequest) {
-        log.info("Attempting to authenticate store with email: " + loginRequest.getEmail());
         Authentication authentication = authenticationManager
             .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -121,20 +101,20 @@ public class AuthenticationController {
     //     String token = "가상의 토큰"; // 이 부분은 실제 로직에 따라 생성된 토큰으로 대체해야 합니다.
     //     return ResponseEntity.ok(new AuthResponse(token));
     // }
-        @PostMapping("/social-login/{provider}")
-        public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto) {
-            // UserService의 계정 통합 로직 호출
-            ExtendedUserDetails  user = (ExtendedUserDetails) userService.processUserIntegration(provider, socialLoginDto);
-        
-            if (user != null) {
-                // 계정 통합 또는 생성 후 성공적으로 처리된 경우, JWT 토큰 발급 및 반환
-                String token = jwtTokenProvider.generateToken(new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities()));
-                return ResponseEntity.ok(new AuthResponse(token));
-            } else {
-                // 처리 중 오류 발생 시
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계정 처리 중 오류 발생");
-            }
+    @PostMapping("/social-login/{provider}")
+    public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto) {
+        // UserService의 계정 통합 로직 호출
+        ExtendedUserDetails user = (ExtendedUserDetails) userService.processUserIntegration(provider, socialLoginDto);
+
+        if (user != null) {
+            // 계정 통합 또는 생성 후 성공적으로 처리된 경우, JWT 토큰 발급 및 반환
+            String token = jwtTokenProvider.generateToken(new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities()));
+            return ResponseEntity.ok(new AuthResponse(token));
+        } else {
+            // 처리 중 오류 발생 시
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계정 처리 중 오류 발생");
         }
+    }
 
     @GetMapping("/loginSuccess")
     public String loginSuccess(@AuthenticationPrincipal OAuth2User user) {
@@ -190,7 +170,6 @@ public class AuthenticationController {
     // 일반 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/customer")
     public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
-        log.info("Registering customer with email: {}", userCustomer.getEmail());
         // UserService의 회원가입 로직을 호출하여 처리결과를 반환한다.
         return userService.registerUserCustomer(userCustomer);
     }
@@ -205,7 +184,6 @@ public class AuthenticationController {
     @PostMapping("/register/store")
     public ResponseEntity<?> registerStore(@ModelAttribute RegisterStoreRequest request) {
         try {
-            String fileUrl = fileStorageService.storeFile(request.getBusinessLicenseFile());
             String extractedBusinessNumber = ocrService.extractBusinessNumber(request.getBusinessLicenseFile());
 
             if (!request.getBusinessNumber().equals(extractedBusinessNumber)) {
@@ -215,8 +193,19 @@ public class AuthenticationController {
             // 여기에서 나머지 회원가입 로직을 추가...
             // 예: UserStore 객체 생성 및 userService.registerUserStore 호출
             // 반환된 결과를 ResponseEntity로 감싸서 반환
+            UserStore userStore = new UserStore();
+            userStore.setStoreId(request.getStoreId());
+            userStore.setEmail(request.getEmail());
+            userStore.setPassword(request.getPassword());
+            userStore.setName(request.getName());
+            userStore.setBnNumber(Integer.parseInt(request.getBusinessNumber().replaceAll("-", "")));
+            try {
+                userService.registerUserStore(userStore);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("점주 등록 중 오류가 발생했습니다.");
+            }
 
-            return ResponseEntity.ok("점주 등록이 완료되었습니다. 파일 저장 경로: " + fileUrl);
+            return ResponseEntity.ok("점주 등록이 완료되었습니다.");
         } catch (Exception e) {
             // 에러 로깅
             Logger log = LoggerFactory.getLogger(AuthenticationController.class);
@@ -227,38 +216,44 @@ public class AuthenticationController {
 
     @GetMapping("/store/search")
     public ResponseEntity<List<UserStore>> searchStores(@RequestParam String name) {
-    List<UserStore> stores = userService.searchStoresByName(name);
-    return ResponseEntity.ok(stores);
-}
+        List<UserStore> stores = userService.searchStoresByName(name);
+        return ResponseEntity.ok(stores);
+    }
 
+    @PostMapping("/register/admin")
+    public ResponseEntity<?> registerAdmin(@RequestBody UserAdmin userAdmin) {
+        userService.registerUserAdmin(userAdmin);
+
+        return ResponseEntity.ok("관리자 등록이 완료되었습니다.");
+    }
 
     @PostMapping("/admin/login")
-public ResponseEntity<?> authenticateAdmin(@RequestBody LoginRequest loginRequest) {
-    log.info("Attempting to authenticate admin with email: {}", loginRequest.getEmail());
+    public ResponseEntity<?> authenticateAdmin(@RequestBody LoginRequest loginRequest) {
+        log.info("Attempting to authenticate admin with email: {}", loginRequest.getEmail());
 
-    // 관리자 여부 확인 로직
-    UserAdmin admin = userAdminMapper.findByEmail(loginRequest.getEmail());
-    if (admin == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("관리자 계정이 존재하지 않습니다.");
+        // 관리자 여부 확인 로직
+        UserAdmin admin = userAdminMapper.findByEmail(loginRequest.getEmail());
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("관리자 계정이 존재하지 않습니다.");
+        }
+
+        // 비밀번호 검증 로직
+        if (!passwordEncoder.matches(loginRequest.getPassword(), admin.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀렸습니다.");
+        }
+
+        // 인증 로직
+        Authentication authentication =
+            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+        authentication = authenticationManager.authenticate(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // JWT 토큰 생성
+        String token = jwtTokenProvider.generateToken(authentication);
+        AuthResponse authResponse = new AuthResponse(token);
+
+        log.info("Admin authenticated successfully: {}", authResponse);
+        return ResponseEntity.ok(authResponse);
     }
 
-    // 비밀번호 검증 로직
-    if (!passwordEncoder.matches(loginRequest.getPassword(), admin.getPassword())) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀렸습니다.");
-    }
-
-    // 인증 로직
-    Authentication authentication =
-        new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
-    authentication = authenticationManager.authenticate(authentication);
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-    // JWT 토큰 생성
-    String token = jwtTokenProvider.generateToken(authentication);
-    AuthResponse authResponse = new AuthResponse(token);
-
-    log.info("Admin authenticated successfully: {}", authResponse);
-    return ResponseEntity.ok(authResponse);
-}
-    
 }

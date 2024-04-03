@@ -1,9 +1,12 @@
 package com.goldensnitch.qudditch.service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
-
+import com.goldensnitch.qudditch.dto.SocialLoginDto;
+import com.goldensnitch.qudditch.dto.UserAdmin;
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
+import com.goldensnitch.qudditch.mapper.UserAdminMapper;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.mapper.UserStoreMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +18,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.goldensnitch.qudditch.dto.SocialLoginDto;
-import com.goldensnitch.qudditch.dto.UserAdmin;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
-import com.goldensnitch.qudditch.mapper.UserAdminMapper;
-import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
-import com.goldensnitch.qudditch.mapper.UserStoreMapper;
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -71,7 +69,7 @@ public class UserService {
     }
 
     // 점주 회원가입 로직
-    public ResponseEntity<String> registerUserStore(UserStore userStore, MultipartFile businessLicenseFile) {
+    public ResponseEntity<String> registerUserStore(UserStore userStore) {
         try {
             if (userStoreMapper.findByEmail(userStore.getEmail()) != null) {
                 log.error("이미 존재하는 이메일입니다: {}", userStore.getEmail());
@@ -83,9 +81,9 @@ public class UserService {
             userStore.setState(0); // 기본 상태로 설정
 
             // 순차적으로 store_id 설정
-            Integer maxStoreId = userStoreMapper.findMaxStoreId();
-            int nextStoreId = (maxStoreId == null) ? 1 : maxStoreId + 1;
-            userStore.setStoreId(nextStoreId);
+//            Integer maxStoreId = userStoreMapper.findMaxStoreId();
+//            int nextStoreId = (maxStoreId == null) ? 1 : maxStoreId + 1;
+//            userStore.setStoreId(nextStoreId);
 
             // 데이터베이스에 사용자 정보 저장
             userStoreMapper.insertUserStore(userStore);

@@ -1,12 +1,10 @@
-
 package com.goldensnitch.qudditch.config;
 
-
+import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,19 +19,19 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
-import com.goldensnitch.qudditch.service.CustomUserDetailsService;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private final CustomUserDetailsService userDetailsService;
     private final JwtTokenFilter jwtTokenFilter;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtTokenFilter jwtTokenFilter) {
-        this.userDetailsService = userDetailsService;
+    public SecurityConfig(JwtTokenFilter jwtTokenFilter) {
         this.jwtTokenFilter = jwtTokenFilter;
     }
 
@@ -43,19 +41,26 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // 스프링 시큐리티가 제공하는 기본 구성을 사용하여
-    // AuthenticationManager를 설정합니다.
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)
-            .passwordEncoder(passwordEncoder());
-        // 기존 록지 + jwttokenfilter추가
-
-    }
-
     // AuthenticationManager 빈을 생성합니다.
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    protected CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowCredentials(true);
+//        configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://hdw-mbp.taile3da1.ts.net"));
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     // SecurityFilterChain 빈 정의
@@ -63,27 +68,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http//  CSRF 비활성화
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             //  세션 관리 정책 설정
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // 권한 설정 및 접근
-                
-            // 4. 사용자 권한에 따른 UI 구성
-            // 일반 유저: 기본적인 서비스 화면.
-            // 점주: 매출 그래프, 매장 관리 탭 추가. (데이터베이스 또는 서비스 레이어에서 권한에 따른 데이터 접근 로직을 구현 EX.점주는 자신의 매장에 대한정보만 조회할 수 있어야한다.)
-            // 관리자: 발주 관리, 시스템 관리 탭 추가.
-                .requestMatchers("/self").authenticated()
-                .requestMatchers("/public/**", "/login", "/store/login","/admin/login", "/test/register", "/register/customer", "/register/store", "/register/admin").permitAll()
-                .requestMatchers("/user/**").hasRole("USER")    // 일반 유저만 접근 가능
-                .requestMatchers("/store/**").hasRole("STORE")  // 점주만 접근 가능
-                .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
-                .anyRequest().authenticated())  // 나머지 경로는 인증된 사용자만 접근 가능
-                // SecurityConfig.java에서 oauth2Login 설정 부분
-                .oauth2Login(oauth2 -> oauth2
-                    .redirectionEndpoint(redirection -> redirection
-                    .   baseUri("/oauth2/callback/*"))
-                    .userInfoEndpoint(userInfo -> userInfo
-                        .userService(oauth2UserService())) // 이 메서드는 oauth2UserService를 참조합니다
+                .anyRequest().permitAll())
+            .oauth2Login(oauth2 -> oauth2
+                .redirectionEndpoint(redirection -> redirection
+                    .baseUri("/oauth2/callback/*"))
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(oauth2UserService())) // 이 메서드는 oauth2UserService를 참조합니다
             )
             .logout(logout -> logout
                 .logoutSuccessUrl("/login")
@@ -112,10 +106,7 @@ public class SecurityConfig {
     // RestTemplate 빈을 생성합니다.
     @Bean
     public RestTemplate restTemplate() {
-        // RestTemplate 인스턴스 생성 및 커스텀 설정
-        RestTemplate restTemplate = new RestTemplate();
-        // 예: 프록시 설정, 타임아웃 설정 등
-        return restTemplate;
+        return new RestTemplate();
     }
 
 

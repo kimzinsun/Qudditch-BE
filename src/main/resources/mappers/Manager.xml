@@ -15,17 +15,30 @@
                                                      )
                            ELSE GROUP_CONCAT(p.name ORDER BY p.id ASC SEPARATOR ', ')
                            END
-               ) AS items, so.state
+               ) AS orderItems, so.state
         FROM store s,product p
                          INNER JOIN
         store_order_product sop ON sop.product_id = p.id
                          INNER JOIN
         store_order so ON so.id = sop.order_store_id
         where s.id = so.user_store_id
-        GROUP BY so.id, so.ordered_at;
+        GROUP BY
+            so.id, so.ordered_at, s.name, so.state
+        ORDER BY
+            CASE
+                WHEN so.state = '대기' THEN 0
+                ELSE 1
+                END,
+            so.ordered_at DESC
+        LIMIT
+            ${recordSize} OFFSET ${offset};
+    </select>
+    <select id="getOrderCount">
+        select count(*)
+        from store_order
     </select>
     <select id="getOrderDetail" resultType="OrderDetailRes">
-        select p.id as productId, p.brand, p.name, p.price, sop.qty, p.expiration_date as expirationDate
+        select p.id as productId, p.brand, p.name, p.price, sop.qty as reqQty, p.expiration_date as expirationDate
         from store_order_product sop, product p
         where order_store_id = ${orderStoreId} and sop.product_id = p.id
     </select>
