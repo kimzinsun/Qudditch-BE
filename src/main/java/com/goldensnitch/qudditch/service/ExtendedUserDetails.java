@@ -10,6 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+// User 클래스를 확장하여 추가적인 정보를 보유할 수 있도록 한 클래스입니다.
 public class ExtendedUserDetails extends User {
     private Integer id;
     private String name;
@@ -19,8 +20,11 @@ public class ExtendedUserDetails extends User {
 
     public ExtendedUserDetails(String username, String password,
                             Collection<? extends GrantedAuthority> authorities,
-                            Integer id, String name, String email) {
-        super(username, password, authorities);
+                            Integer id, String name, String email,
+                            boolean accountNonExpired, boolean accountNonLocked,
+                            boolean credentialsNonExpired, boolean enabled) {
+        super(username, password, enabled, accountNonExpired, accountNonLocked,
+            credentialsNonExpired, authorities);
         this.id = id;
         this.name = name;
         this.email = email;

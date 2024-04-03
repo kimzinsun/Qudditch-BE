@@ -11,6 +11,7 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 public class NaverCloud {
 
@@ -37,7 +38,7 @@ public class NaverCloud {
             // post request
             con.setDoOutput(true);
             DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-            wr.write(message.getBytes("UTF-8"));
+            wr.write(message.getBytes(StandardCharsets.UTF_8));
             wr.flush();
             wr.close();
             int responseCode = con.getResponseCode();
@@ -74,13 +75,13 @@ public class NaverCloud {
         String encodeBase64String = "";
 
         try {
-            byte[] secrete_key_bytes = secretKey.getBytes("UTF-8");
+            byte[] secrete_key_bytes = secretKey.getBytes(StandardCharsets.UTF_8);
 
             SecretKeySpec signingKey = new SecretKeySpec(secrete_key_bytes, "HmacSHA256");
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(signingKey);
 
-            byte[] rawHmac = mac.doFinal(message.getBytes("UTF-8"));
+            byte[] rawHmac = mac.doFinal(message.getBytes(StandardCharsets.UTF_8));
             encodeBase64String = Base64.encodeToString(rawHmac, Base64.NO_WRAP);
 
             return encodeBase64String;
