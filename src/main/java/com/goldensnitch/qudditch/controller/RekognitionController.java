@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -20,11 +21,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/rekognition")
 public class RekognitionController {
-    @Value("${aws.rekognition.collection-id}")
-    private String REKOGNITION_COLLECTION_ID;
     private final RekognitionService rekognitionService;
     private final StreamManagerService streamManagerService;
     private final AwsUtil awsUtil;
+    @Value("${aws.rekognition.collection-id}")
+    private String REKOGNITION_COLLECTION_ID;
 
     @Autowired
     public RekognitionController(
@@ -125,6 +126,27 @@ public class RekognitionController {
         } catch (Exception e) {
             log.error("Error while getting stream processor status", e);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/check-face")
+    public ResponseEntity<Map<String, Object>> checkFace(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam("file") MultipartFile file) {
+        try {
+            SearchUsersByImageResult searchUsersByImageResult = rekognitionService.searchUsersByImage(file);
+            if (!searchUsersByImageResult.getUserMatches().isEmpty()) {
+                List<Integer> userIds = rekognitionService.enteredCustomers(
+                    userDetails.getId(),
+                    searchUsersByImageResult.getUserMatches().stream()
+                        .map(UserMatch::getUser)
+                        .map(MatchedUser::getUserId)
+                        .map(Integer::parseInt).distinct().toList()
+                );
+                return ResponseEntity.status(HttpStatus.OK).body(Map.of("userIds", userIds));
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "No user found"));
+        } catch (Exception e) {
+            log.error("Error while checking face", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 

@@ -2,10 +2,12 @@ package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.CustomerDevice;
 import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.FCMNotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -23,8 +25,6 @@ public class FCMNotificationController {
         String email = requestBody.get("email");
         String deviceToken = requestBody.get("deviceToken");
 
-        log.info("FCMNotificationController.loginDevice: email {}, deviceToken {}", email, deviceToken);
-
         UserCustomer userCustomer = service.getUserCustomerByEmail(email);
 
         CustomerDevice customerDevice = new CustomerDevice();
@@ -36,21 +36,34 @@ public class FCMNotificationController {
         return ResponseEntity.ok("SUCCESS");
     }
 
-    @DeleteMapping("/logout-device")
+    @PutMapping("/logout-device")
     public ResponseEntity<String> logoutDevice(@RequestBody Map<String, String> requestBody){
         String email =  requestBody.get("email");
 
-        log.info("FCMNotificationController.loginDevice: email {}", email);
-
         UserCustomer userCustomer = service.getUserCustomerByEmail(email);
 
-        boolean isSuccess = service.RemoveCustomerDevice(userCustomer.getId());
+        boolean isSuccess = service.loggedOutCustomerDevie(userCustomer.getId());
 
         if (isSuccess){
             return ResponseEntity.ok("SUCCESS");
         } else {
-            return ResponseEntity.ok("email:" + email + " 디바이스 토큰이 삭제되지 않았습니다.");
+            return ResponseEntity.ok("email:" + email + " 디바이스 토큰이 로그아웃 상태로 변경되지 않았습니다.");
         }
     }
 
+    @GetMapping("/customer-device")
+    public ResponseEntity<CustomerDevice> getCustomerDevice(@AuthenticationPrincipal ExtendedUserDetails userDetails){
+        return ResponseEntity.ok(service.getCustomerDevice(userDetails.getId()));
+    }
+
+    @PostMapping("/notification")
+    public ResponseEntity<String> setNotificationOnOff(@AuthenticationPrincipal ExtendedUserDetails userDetails, boolean active){
+        CustomerDevice customerDevice = new CustomerDevice();
+        customerDevice.setUserCustomerId(userDetails.getId());
+        customerDevice.setState(active);
+
+        service.setNotificationOnOff(customerDevice);
+
+        return ResponseEntity.ok("SUCCESS");
+    }
 }
