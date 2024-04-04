@@ -77,7 +77,9 @@
             cop.qty
         FROM customer_order_product cop
                  JOIN product p ON cop.product_id = p.id
+                 JOIN customer_order co ON cop.customer_order_id = co.id
         WHERE cop.customer_order_id = #{customerOrderId}
+        AND co.status = #{status}
     </select>
 
     <!-- partner_order_id로 주문 상품 정보 조회 -->

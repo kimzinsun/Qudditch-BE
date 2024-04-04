@@ -193,13 +193,39 @@ public class ChatbotController {
 
         StringBuilder sb = new StringBuilder();
         for (Chatbot random : randomList) {
-            sb.append(random.getName()).append(" : ").append(random.getPrice()).append("원\n");;
+            sb.append(random.getName()).append(" : ").append(random.getPrice()).append("원\n");
         }
 
         recommend.put("value", sb.toString());
         rs.add(recommend);
         ra.put("data", rs);
         return ra;
+    }
+
+    @PostMapping(path = "/best", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Map<String, Object> best(@Nullable @RequestBody Map<String, Object> body) {
+        log.info("body {}", body);
+
+        List<Chatbot> bestList = chatbotService.best();
+
+        log.info("bestList: {}", bestList);
+
+        Map<String, Object> ba = new HashMap<>();
+        ArrayList<Map<String, Object>> bs = new ArrayList<>();
+        Map<String, Object> product = new HashMap<>();
+        product.put("variableName","product");
+
+        StringBuilder sr = new StringBuilder();
+        for (Chatbot best : bestList) {
+            sr.append(best.getName()).append(" : ").append(best.getPrice()).append("원\n");
+        }
+
+        product.put("value", sr.toString());
+        bs.add(product);
+        ba.put("data", bs);
+
+        return ba;
     }
 
 }

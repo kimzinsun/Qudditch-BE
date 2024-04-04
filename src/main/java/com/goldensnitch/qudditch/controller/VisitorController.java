@@ -1,7 +1,9 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.VisitorService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,18 +21,17 @@ public class VisitorController {
 
     // TODO : visitor 관련 기능 구현
     @GetMapping("/daily")
-    public Integer getDailyVisitor(@RequestParam String date) {
-        int storeId = 2;
-        // int storeId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return visitorService.getDailyVisitor(storeId, date);
+    public Integer getDailyVisitor(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam String date) {
+        int userStoreId = userDetails.getId();
+
+        return visitorService.getDailyVisitor(userStoreId, date);
     }
 
     @GetMapping("/month")
-    public Integer getMonthVisitor(@RequestParam String yearMonth) {
-        System.out.println(yearMonth);
-        int storeId = 2;
-        // int storeId = (int) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return visitorService.getMonthVisitor(storeId, yearMonth);
+    public Integer getMonthVisitor(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam String yearMonth) {
+        int userStoreId = userDetails.getId();
+
+        return visitorService.getMonthVisitor(userStoreId, yearMonth);
     }
 
 }

@@ -1,8 +1,8 @@
 package com.goldensnitch.qudditch.dto;
 
-import java.time.LocalDateTime;
-
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 // @Entity
@@ -16,8 +16,7 @@ public class UserCustomer {
     private String name; // 사용자 이름
     private Integer state; // 유저 상태 (0: 미인증, 1: 일반, 2: 탈퇴)
     private String verificationCode; // 이메일 인증 코드 필드 추가
-    private String collectionArn; // AWS 컬렉션 ARN
-    
+
     private LocalDateTime createdAt; // 계정 생성 시간
     
     private LocalDateTime modifiedAt; // 계정 수정 시간

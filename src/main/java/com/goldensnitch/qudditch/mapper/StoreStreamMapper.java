@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface StoreStreamMapper {
     Integer insertStoreStream(StoreStream storeStream);
+
     StoreStream selectStoreStreamByUserStoreId(Integer userStoreId);
 
     Integer deleteStoreStreamByUserStoreId(Integer userStoreId);

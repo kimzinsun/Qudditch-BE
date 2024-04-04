@@ -18,4 +18,5 @@ public class CustomerOrder {
     private String tid; // 결제 고유번호
     private String cid;
     private String pgToken;
+    private Integer status;
 }

@@ -1,29 +1,36 @@
 package com.goldensnitch.qudditch.service;
 
-import com.amazonaws.services.kinesis.AmazonKinesis;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.kinesisvideo.AmazonKinesisVideo;
 import com.amazonaws.services.kinesisvideo.model.*;
+import com.amazonaws.services.kinesisvideosignalingchannels.AmazonKinesisVideoSignalingChannels;
+import com.amazonaws.services.kinesisvideosignalingchannels.AmazonKinesisVideoSignalingChannelsClientBuilder;
+import com.amazonaws.services.kinesisvideosignalingchannels.model.GetIceServerConfigRequest;
+import com.amazonaws.services.kinesisvideosignalingchannels.model.GetIceServerConfigResult;
 import com.goldensnitch.qudditch.dto.StoreStream;
 import com.goldensnitch.qudditch.mapper.StoreStreamMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class KinesisService {
+    private final AmazonKinesisVideoSignalingChannelsClientBuilder kinesisVideoSignalingChannelsClientBuilder;
     private static final int DATA_RETENTION_IN_HOURS = 1;
     private static final int MESSAGE_TTL_SECONDS = 60;
     private static final String STREAM_PROCESSOR_NAME_PREFIX = "USER_STORE_ID_";
     private static final String VIDEO_STREAM_NAME_PREFIX = "VIDEO_USER_STORE_ID_";
     private static final String CHANNEL_NAME_PREFIX = "CHANNEL_USER_STORE_ID_";
-    private final AmazonKinesis kinesisClient;
     private final AmazonKinesisVideo kinesisVideoClient;
+    @Value("${aws.region}")
+    private String region;
     private final StoreStreamMapper storeStreamMapper;
 
     @Autowired
-    public KinesisService(AmazonKinesis kinesisClient, AmazonKinesisVideo kinesisVideoClient, StoreStreamMapper storeStreamMapper) {
-        this.kinesisClient = kinesisClient;
+    public KinesisService(AmazonKinesisVideo kinesisVideoClient, AmazonKinesisVideoSignalingChannelsClientBuilder kinesisVideoSignalingChannelsClientBuilder, StoreStreamMapper storeStreamMapper) {
+        this.kinesisVideoSignalingChannelsClientBuilder = kinesisVideoSignalingChannelsClientBuilder;
         this.kinesisVideoClient = kinesisVideoClient;
         this.storeStreamMapper = storeStreamMapper;
     }
@@ -101,5 +108,41 @@ public class KinesisService {
         kinesisVideoClient.deleteSignalingChannel(new DeleteSignalingChannelRequest().withChannelARN(channelARN));
 
         return storeStreamMapper.deleteStoreStreamByUserStoreId(userStoreId);
+    }
+
+    public GetSignalingChannelEndpointResult getSignalingChannelEndpoint(Integer userStoreId) {
+        StoreStream storeStream = storeStreamMapper.selectStoreStreamByUserStoreId(userStoreId);
+        return kinesisVideoClient.getSignalingChannelEndpoint(
+            createSignalingChannelEndpointRequest(storeStream.getSignalingChannelArn())
+        );
+    }
+
+    private GetSignalingChannelEndpointRequest createSignalingChannelEndpointRequest(String channelARN) {
+        return new GetSignalingChannelEndpointRequest()
+            .withChannelARN(channelARN)
+            .withSingleMasterChannelEndpointConfiguration(
+                createSingleMasterChannelEndpointConfiguration()
+            );
+    }
+
+    private SingleMasterChannelEndpointConfiguration createSingleMasterChannelEndpointConfiguration() {
+        return new SingleMasterChannelEndpointConfiguration()
+            .withProtocols(ChannelProtocol.WSS, ChannelProtocol.HTTPS)
+            .withRole(ChannelRole.MASTER);
+    }
+
+    public GetIceServerConfigResult getIceServerConfig(Integer userStoreId, String httpsEndpoint) {
+        StoreStream storeStream = storeStreamMapper.selectStoreStreamByUserStoreId(userStoreId);
+        AmazonKinesisVideoSignalingChannels kinesisVideoSignalingChannels =
+            kinesisVideoSignalingChannelsClientBuilder.withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(httpsEndpoint, region)
+            ).build();
+
+        return kinesisVideoSignalingChannels
+            .getIceServerConfig(createIceServerConfigRequest(storeStream.getSignalingChannelArn()));
+    }
+
+    private GetIceServerConfigRequest createIceServerConfigRequest(String channelARN) {
+        return new GetIceServerConfigRequest().withChannelARN(channelARN);
     }
 }

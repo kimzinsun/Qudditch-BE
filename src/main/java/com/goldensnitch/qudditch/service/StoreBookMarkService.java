@@ -16,15 +16,14 @@ public class StoreBookMarkService {
         this.storeBookmarkMapper = storeBookmarkMapper;
     }
 
-    public String toggleStoreBookmark(Integer userCustomerId, Integer storeId) {
-       int count = storeBookmarkMapper.toggleStoreBookmark(userCustomerId, storeId);
-        if (count == 0){
-            storeBookmarkMapper.addStoreBookmark(userCustomerId, storeId);
-            return "관심 스토어 등록 성공 !";
-        }else {
-            storeBookmarkMapper.deleteStoreBookmark(userCustomerId, storeId);
-            return "관심 스토어 설정 해제 !";
-        }
+
+    public String updateStoreBookmark(Integer userCustomerId, Integer storeId){
+        // 먼저 모든 북마크 제거
+        storeBookmarkMapper.deleteAllStoreBookmark(userCustomerId);
+
+        // 새 스토어 추가
+        storeBookmarkMapper.addStoreBookmark(userCustomerId, storeId);
+        return "관심 스토어 등록 성공 !";
     }
 
     public List<CustomerBookmarkStore> bookmarkList(Integer userCustomerId) {
