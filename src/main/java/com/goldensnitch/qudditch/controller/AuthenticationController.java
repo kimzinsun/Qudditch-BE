@@ -6,7 +6,6 @@ import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
 import com.goldensnitch.qudditch.mapper.UserAdminMapper;
 import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
-import com.goldensnitch.qudditch.service.FileStorageService;
 import com.goldensnitch.qudditch.service.OCRService;
 import com.goldensnitch.qudditch.service.UserService;
 import org.slf4j.Logger;
@@ -29,13 +28,16 @@ import java.util.Map;
 
 @RestController
 public class AuthenticationController {
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider; // JWT 토큰 제공자 의존성 주입
     private final UserCustomerMapper userCustomerMapper;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final UserAdminMapper userAdminMapper; // 생성자 주입 추가
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
+    @Autowired
+    private OCRService ocrService;
+
 
     @Autowired
     public AuthenticationController(
@@ -53,7 +55,6 @@ public class AuthenticationController {
         this.passwordEncoder = passwordEncoder;
         this.userAdminMapper = userAdminMapper; // 초기화 추가
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -173,12 +174,6 @@ public class AuthenticationController {
         // UserService의 회원가입 로직을 호출하여 처리결과를 반환한다.
         return userService.registerUserCustomer(userCustomer);
     }
-
-    @Autowired
-    private OCRService ocrService;
-
-    @Autowired
-    private FileStorageService fileStorageService;
 
     // 점주 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/store")
