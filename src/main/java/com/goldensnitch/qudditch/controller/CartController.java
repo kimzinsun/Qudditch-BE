@@ -20,11 +20,11 @@ public class CartController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> addItemToCart(@RequestParam Integer storeId, @AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam Integer productId){
+    public ResponseEntity<?> addItemToCart(@RequestParam Integer storeId, @AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam Integer productId, @RequestParam Integer usedPoint){
         try{
             int userCustomerId = userDetails.getId();
 
-            boolean addItemSuccess = cartService.addItemToCart(storeId, userCustomerId, productId);
+            boolean addItemSuccess = cartService.addItemToCart(storeId, userCustomerId, productId, usedPoint);
             if(!addItemSuccess){
                 return ResponseEntity.badRequest().body("Failed to add item to cart.");
             }
