@@ -68,6 +68,7 @@ public class CartService { // 장바구니 기능 (추가, 조회, 수량변경,
             CartItem item = new CartItem();
             item.setUserStoreId(userStoreId);
             item.setName(product.getName());
+            item.setImage(product.getImage());
             item.setProductId(productId);
             item.setQty(1); // 수량이 1개씩 증가, 수량변경: updateItemQty 메서드
             item.setPrice(product.getPrice());
