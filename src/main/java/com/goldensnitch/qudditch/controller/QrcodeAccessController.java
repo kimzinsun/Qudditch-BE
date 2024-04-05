@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/access/qrcode")
@@ -34,11 +36,9 @@ public class QrcodeAccessController {
     }
 
     @GetMapping("/confirm")
-    public String confirm(String uuid, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
+    public ResponseEntity<Map<String, Object>> confirm(String uuid, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         StoreVisitorLog storeVisitorLog = new StoreVisitorLog();
         storeVisitorLog.setUserStoreId(userDetails.getId());
-        return qrcodeAccessService.confirmQrAccess(uuid, storeVisitorLog);
-
+        return ResponseEntity.ok(qrcodeAccessService.confirmQrAccess(uuid, storeVisitorLog));
     }
-
 }
