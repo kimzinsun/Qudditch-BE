@@ -57,8 +57,8 @@ public class CartController {
         return ResponseEntity.ok().body("Cart item updated successfully.");
     }
 
-    @DeleteMapping("/{productId}")
-    public ResponseEntity<?> removeItemFromCart(@PathVariable Integer productId, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
+    @DeleteMapping("")
+    public ResponseEntity<?> removeItemFromCart(@RequestParam Integer productId, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         int userCustomerId = userDetails.getId();
 
         boolean isRemoved = cartService.removeItemFromCart(productId, userCustomerId);
