@@ -8,6 +8,7 @@ import com.goldensnitch.qudditch.util.AwsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -202,13 +203,15 @@ public class RekognitionService {
         }
     }
 
+    @Transactional
     public List<Integer> enteredCustomers(Integer userStoreId, List<Integer> userIds) {
         ArrayList<Integer> enteredCustomers = new ArrayList<>();
-        userIds.stream().filter(userId -> !redisService.checkExistsKey(userId.toString())).forEach(userId -> {
-            redisService.setValues(userId.toString(), userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT));
-            accessMapper.insertVisitLog(new StoreVisitorLog(userStoreId, userId));
-            enteredCustomers.add(userId);
-        });
+        userIds.stream().filter(userId -> !redisService.checkExistsKey(userId.toString())).distinct()
+            .forEach(userId -> {
+                redisService.setValues(userId.toString(), userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT));
+                accessMapper.insertVisitLog(new StoreVisitorLog(userStoreId, userId));
+                enteredCustomers.add(userId);
+            });
         return enteredCustomers;
     }
 
