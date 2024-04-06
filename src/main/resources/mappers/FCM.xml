@@ -43,16 +43,10 @@
         WHERE user_customer_id = #{userCustomerId}
     </update>
 
-    <select id="selectCustomerAlertLogs" parameterType="Integer" resultType="com.goldensnitch.qudditch.dto.CustomerAlertLog">
-        SELECT id, user_customer_id AS userCustomerId, title, body, created_at AS createdAt
-        FROM customer_alert_log
+    <delete id="deleteCustomerDevice" parameterType="Integer">
+        DELETE FROM customer_device
         WHERE user_customer_id = #{userCustomerId}
-    </select>
-
-    <insert id="insertCustomerAlertLog" parameterType="com.goldensnitch.qudditch.dto.CustomerAlertLog">
-        INSERT INTO customer_alert_log(user_customer_id, title, body, created_at)
-        VALUES(#{userCustomerId}, #{title}, #{body}, NOW())
-    </insert>
+    </delete>
 
     <select id="selectUserCustomerByEmail" parameterType="String" resultType="UserCustomer">
         SELECT id,
@@ -66,9 +60,21 @@
         WHERE email = #{email}
     </select>
 
-    <delete id="deleteCustomerDevice" parameterType="Integer">
-        DELETE FROM customer_device
+    <select id="selectCustomerAlertLogs" parameterType="Integer" resultType="com.goldensnitch.qudditch.dto.CustomerAlertLog">
+        SELECT id, user_customer_id AS userCustomerId, title, body, created_at AS createdAt
+        FROM customer_alert_log
         WHERE user_customer_id = #{userCustomerId}
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insertCustomerAlertLog" parameterType="com.goldensnitch.qudditch.dto.CustomerAlertLog">
+        INSERT INTO customer_alert_log(user_customer_id, title, body, created_at)
+        VALUES(#{userCustomerId}, #{title}, #{body}, NOW())
+    </insert>
+
+    <delete id="deleteCustomerAlertLog" parameterType="Integer">
+        DELETE FROM customer_alert_log
+        WHERE id = #{id}
     </delete>
 
 </mapper>

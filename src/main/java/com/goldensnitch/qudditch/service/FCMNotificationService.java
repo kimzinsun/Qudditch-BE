@@ -118,4 +118,8 @@ public class FCMNotificationService {
     public UserCustomer getUserCustomerByEmail(String email){
         return mapper.selectUserCustomerByEmail(email);
     }
+
+    public boolean removeCustomerAlertLog(int id){
+        return  mapper.deleteCustomerAlertLog(id) > 0;
+    }
 }

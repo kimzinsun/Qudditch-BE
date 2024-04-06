@@ -19,4 +19,5 @@ public interface FCMMapper {
     List<CustomerAlertLog> selectCustomerAlertLogs(int userCustomerId);
     int insertCustomerAlertLog(CustomerAlertLog dto);
     UserCustomer selectUserCustomerByEmail(String email);
+    int deleteCustomerAlertLog(int id);
 }
