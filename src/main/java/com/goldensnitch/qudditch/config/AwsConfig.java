@@ -35,17 +35,17 @@ public class AwsConfig {
     @Bean
     public AmazonRekognition rekognitionClient() {
         return AmazonRekognitionClient.builder()
-            .withRegion(Regions.fromName(region))
-            .withCredentials(staticCredentialsProvider())
-            .build();
+                .withRegion(Regions.fromName(region))
+                .withCredentials(staticCredentialsProvider())
+                .build();
     }
 
     @Bean
     public AmazonKinesis kinesisClient() {
         return AmazonKinesisClient.builder()
-            .withRegion(Regions.fromName(region))
-            .withCredentials(staticCredentialsProvider())
-            .build();
+                .withRegion(Regions.fromName(region))
+                .withCredentials(staticCredentialsProvider())
+                .build();
     }
 
     @Bean
@@ -57,8 +57,8 @@ public class AwsConfig {
     @Bean
     public AmazonKinesisVideo kinesisVideoClient() {
         return AmazonKinesisVideoClient.builder()
-            .withRegion(Regions.fromName(region))
-            .withCredentials(staticCredentialsProvider())
-            .build();
+                .withRegion(Regions.fromName(region))
+                .withCredentials(staticCredentialsProvider())
+                .build();
     }
 }

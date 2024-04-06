@@ -8,13 +8,24 @@ import com.goldensnitch.qudditch.util.AwsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class RekognitionService {
+    private static final int MAX_USERS = 1;
+    private static final int USER_ENTER_TIMEOUT = 1;
+    private static final Float USER_MATCH_THRESHOLD = 95.0f;
+    private final RedisService redisService;
+    private final AmazonRekognition rekognitionClient;
+    private final AwsUtil awsUtil;
+    private final AccessMapper accessMapper;
     @Value("${aws.rekognition.liveness.output.config.s3-bucket-name}")
     private String LIVENESS_BUCKET_NAME;
     @Value("${aws.rekognition.liveness.setting.audit-images-limit}")
@@ -25,12 +36,6 @@ public class RekognitionService {
     private String DETECTION_ATTRIBUTE;
     @Value("${aws.rekognition.collection-id}")
     private String COLLECTION_ID;
-    private static final int MAX_USERS = 1;
-    private static final int USER_ENTER_TIMEOUT = 1;
-    private final RedisService redisService;
-    private final AmazonRekognition rekognitionClient;
-    private final AwsUtil awsUtil;
-    private final AccessMapper accessMapper;
 
     @Autowired
     public RekognitionService(
@@ -175,19 +180,39 @@ public class RekognitionService {
             .withMaxUsers(MAX_USERS);
     }
 
-    public void enteredCustomers(Integer userStoreId, List<Integer> userIds) {
-        for (Integer userId : userIds) {
-            if (redisService.checkExistsKey(userId.toString())) {
-                continue;
-            } else {
-                redisService.setValues(
-                    userId.toString(), userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT)
-                );
-            }
-            accessMapper.insertVisitLog(
-                new StoreVisitorLog(userStoreId, userId)
-            );
+    public SearchUsersByImageResult searchUsersByImage(MultipartFile file) {
+        SearchUsersByImageRequest request = createSearchUsersByImageRequest(getImageFromFormFile(file));
+
+        return rekognitionClient.searchUsersByImage(request);
+    }
+
+    private SearchUsersByImageRequest createSearchUsersByImageRequest(Image image) {
+        return new SearchUsersByImageRequest()
+            .withImage(image)
+            .withCollectionId(COLLECTION_ID)
+            .withQualityFilter(QualityFilter.AUTO)
+            .withUserMatchThreshold(USER_MATCH_THRESHOLD)
+            .withMaxUsers(MAX_USERS);
+    }
+
+    private Image getImageFromFormFile(MultipartFile file) {
+        try {
+            return new Image().withBytes(ByteBuffer.wrap(file.getBytes()));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read file", e);
         }
+    }
+
+    @Transactional
+    public List<Integer> enteredCustomers(Integer userStoreId, List<Integer> userIds) {
+        ArrayList<Integer> enteredCustomers = new ArrayList<>();
+        userIds.stream().filter(userId -> !redisService.checkExistsKey(userId.toString())).distinct()
+            .forEach(userId -> {
+                redisService.setValues(userId.toString(), userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT));
+                accessMapper.insertVisitLog(new StoreVisitorLog(userStoreId, userId));
+                enteredCustomers.add(userId);
+            });
+        return enteredCustomers;
     }
 
     private Image getImageFromS3(String key) {

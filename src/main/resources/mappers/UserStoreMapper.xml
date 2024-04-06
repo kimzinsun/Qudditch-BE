@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.goldensnitch.qudditch.mapper.UserStoreMapper">
-    
+
     <!-- 새로운 가게유저 추가 -->
     <insert id="insertUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">
         INSERT INTO user_store (store_id, email, password, name, bn_number, state)
@@ -10,15 +10,20 @@
 
     <!-- 이메일로 점주 검색 -->
     <select id="findByEmail" parameterType="String" resultType="com.goldensnitch.qudditch.dto.UserStore">
-        SELECT * FROM user_store WHERE email = #{email}
+        SELECT *
+        FROM user_store
+        WHERE email = #{email}
     </select>
     <!-- 가게유저 검색 -->
     <select id="selectUserStoreById" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserStore">
-        SELECT * FROM user_store WHERE id = #{id}
+        SELECT *
+        FROM user_store
+        WHERE id = #{id}
     </select>
     <!-- 현재 최대 store_id 값을 찾는 쿼리 -->
     <select id="findMaxStoreId" resultType="Integer">
-        SELECT MAX(store_id) FROM user_store
+        SELECT MAX(store_id)
+        FROM user_store
     </select>
 
     <!-- 가게유저 수정 -->
@@ -37,9 +42,38 @@
 
     <!-- 가제유저 삭제 -->
     <delete id="deleteUserStore" parameterType="int">
-        DELETE FROM user_store WHERE id = #{id}
+        DELETE
+        FROM user_store
+        WHERE id = #{id}
     </delete>
-    
+
     <!-- 추가 쿼리는 사용 사례에 맞게 작성 -->
 
+    <!-- user_store_id의 유효성 검증(존재 여부) -->
+    <select id="findUserStoreIdByStoreId" resultType="Integer" parameterType="Integer">
+        SELECT us.id
+        FROM user_store us
+                 INNER JOIN store s
+                            ON us.store_id = s.id
+        WHERE s.id = #{storeId}
+    </select>
+
+    <!-- user_store_id가 존재하는지 확인(개수 반환) -->
+    <select id="countUserStoreById" resultType="Integer" parameterType="Integer">
+        SELECT COUNT(*)
+        FROM user_store
+        WHERE id = #{userStoreId}
+    </select>
+    <select id="searchByName" resultType="com.goldensnitch.qudditch.dto.UserStore">
+        SELECT *
+        FROM user_store
+        WHERE name LIKE CONCAT('%', #{name}, '%')
+    </select>
+
+    <!-- store명 검색 -->
+    <select id="searchByStoreName" resultType="com.goldensnitch.qudditch.dto.Store">
+        SELECT *
+        FROM store
+        WHERE name LIKE CONCAT('%', #{name}, '%')
+    </select>
 </mapper>
