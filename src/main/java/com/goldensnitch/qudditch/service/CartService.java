@@ -5,6 +5,8 @@ import com.goldensnitch.qudditch.dto.payment.CartItem;
 import com.goldensnitch.qudditch.mapper.ProductMapper;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -109,12 +111,19 @@ public class CartService { // 장바구니 기능 (추가, 조회, 수량변경,
     }
 
     // 장바구니 아이템 삭제
-    public boolean removeItemFromCart(Integer userCustomerId, Integer productId){
-        List<CartItem> cartItems = userCarts.get(userCustomerId);
-        if(cartItems != null){
-            return cartItems.removeIf(item -> item.getProductId().equals(productId));
+    public ResponseEntity<?> removeItemFromCart(Integer userCustomerId, Integer productId){
+        List<CartItem> cartItems = userCarts.getOrDefault(userCustomerId, new ArrayList<>());
+
+        // 삭제할 아이템을 찾아 제거
+        boolean isRemoved = cartItems.removeIf(item -> item.getProductId().equals(productId));
+
+        if (isRemoved) {
+            // 아이템 삭제에 성공한 경우, 업데이트된 장바구니 정보를 반환
+            return ResponseEntity.ok().body(cartItems);
+        } else {
+            // 아이템을 찾지 못했거나 삭제에 실패한 경우
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item with ID " + productId + " not found in cart.");
         }
-        return false;
     }
 
     // 장바구니 비우기
