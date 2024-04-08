@@ -5,6 +5,8 @@ import com.goldensnitch.qudditch.dto.payment.CartItem;
 import com.goldensnitch.qudditch.mapper.ProductMapper;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class CartService { // 장바구니 기능 (추가, 조회, 수량변경,
     // ConcurrentHashMap은 어떨 때 쓰이는지? 동시성이슈가 뭔지?
 
     // 장바구니 아이템 추가
-    public boolean addItemToCart(Integer storeId, Integer userCustomerId, Integer productId) {
+    public boolean addItemToCart(Integer storeId, Integer userCustomerId, Integer productId, Integer usedPoint) {
         List<CartItem> cart = userCarts.computeIfAbsent(userCustomerId, k -> new ArrayList<>());
         // computeIfAbsent: Map에 특정 키에 해당하는 키값이 존재하는지 확인하고 없으면 새로 만들어주는 코드
 
@@ -68,10 +70,20 @@ public class CartService { // 장바구니 기능 (추가, 조회, 수량변경,
             CartItem item = new CartItem();
             item.setUserStoreId(userStoreId);
             item.setName(product.getName());
+            item.setImage(product.getImage());
             item.setProductId(productId);
             item.setQty(1); // 수량이 1개씩 증가, 수량변경: updateItemQty 메서드
             item.setPrice(product.getPrice());
 
+            // 부가세
+            Integer taxFreeAmount = (int)(product.getPrice() * 0.9);
+            item.setTax_free_amount(taxFreeAmount);
+            item.setVat_amount(product.getPrice() - taxFreeAmount);
+
+            // 포인트
+            item.setEarnPoint((int) (product.getPrice() * 0.01));
+            item.setUsedPoint(usedPoint);
+            item.setTotalPay(product.getPrice() - usedPoint);
             cart.add(item);
         }
 
@@ -99,12 +111,19 @@ public class CartService { // 장바구니 기능 (추가, 조회, 수량변경,
     }
 
     // 장바구니 아이템 삭제
-    public boolean removeItemFromCart(Integer userCustomerId, Integer productId){
-        List<CartItem> cartItems = userCarts.get(userCustomerId);
-        if(cartItems != null){
-            return cartItems.removeIf(item -> item.getProductId().equals(productId));
+    public ResponseEntity<?> removeItemFromCart(Integer userCustomerId, Integer productId){
+        List<CartItem> cartItems = userCarts.getOrDefault(userCustomerId, new ArrayList<>());
+
+        // 삭제할 아이템을 찾아 제거
+        boolean isRemoved = cartItems.removeIf(item -> item.getProductId().equals(productId));
+
+        if (isRemoved) {
+            // 아이템 삭제에 성공한 경우, 업데이트된 장바구니 정보를 반환
+            return ResponseEntity.ok().body(cartItems);
+        } else {
+            // 아이템을 찾지 못했거나 삭제에 실패한 경우
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item with ID " + productId + " not found in cart.");
         }
-        return false;
     }
 
     // 장바구니 비우기
