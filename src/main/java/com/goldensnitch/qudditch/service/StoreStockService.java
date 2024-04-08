@@ -50,6 +50,13 @@ public class StoreStockService {
         return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId,paginationParam.getKeyword(), categoryId,  paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 
+    public List<DisposalItem> getDisposeItemList(int userStoreId, PaginationParam paginationParam) {
+        return storeStockMapper.getDisposeItemList(userStoreId, paginationParam.getRecordSize(), paginationParam.getOffset());
+    }
+
+    public int cntDisposeItem(int userStoreId) {
+        return storeStockMapper.cntDisposeItem(userStoreId);
+    }
 
 
     public int cntProductByUserStoreId(int userStoreId, String keyword) {
@@ -150,5 +157,13 @@ public class StoreStockService {
         }
 
         excelCreator.downloadOrderDataAsExcel(fileName, headers, request);
+    }
+
+    public DisposalItem getDisposeItemByStoreStockId(Integer productId, Integer userStoreId) {
+        return storeStockMapper.getDisposeItemByStoreStockId(productId, userStoreId);
+    }
+
+    public void updateDispose(Integer storeStockId, Integer userStoreId) {
+        storeStockMapper.updateDispose(storeStockId, userStoreId);
     }
 }
