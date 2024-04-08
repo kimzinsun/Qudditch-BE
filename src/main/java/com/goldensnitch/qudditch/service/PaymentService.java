@@ -243,6 +243,9 @@ public class PaymentService {
         Integer quantity = cartItems.get(0).getQty();
         Integer total_amount = calculateTotalAmount(cartItems);
         Integer vat_amount = (int) Math.round(total_amount * 0.1);
+        Integer usedPoints = cartItems.get(0).getUsedPoint();
+        Integer totalPay = total_amount - usedPoints;
+        Integer earnPoints = (int) (totalPay * 0.01);
 
         // 결제 요청을 위한 PaymentRequest 객체 생성
         PaymentRequest paymentRequest = new PaymentRequest();
@@ -260,9 +263,9 @@ public class PaymentService {
         paymentRequest.setApproval_url("http://localhost:8080/approve");
         paymentRequest.setCancel_url("http://localhost:8080/cancel");
         paymentRequest.setFail_url("http://localhost:8080/fail");
-//        paymentRequest.setUsedPoint(usedPoint);
-//        paymentRequest.setTotalPay(계산된 최종 결제액);
-//        paymentRequest.setEarnPoint(계산된 적립 포인트);
+        paymentRequest.setUsedPoint(usedPoints);
+        paymentRequest.setTotalPay(totalPay);
+        paymentRequest.setEarnPoint(earnPoints);
 
         return paymentRequest;
     }
