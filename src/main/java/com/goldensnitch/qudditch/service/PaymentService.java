@@ -260,6 +260,9 @@ public class PaymentService {
         paymentRequest.setApproval_url("http://localhost:8080/approve");
         paymentRequest.setCancel_url("http://localhost:8080/cancel");
         paymentRequest.setFail_url("http://localhost:8080/fail");
+//        paymentRequest.setUsedPoint(usedPoint);
+//        paymentRequest.setTotalPay(계산된 최종 결제액);
+//        paymentRequest.setEarnPoint(계산된 적립 포인트);
 
         return paymentRequest;
     }
