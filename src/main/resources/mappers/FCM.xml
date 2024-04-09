@@ -72,6 +72,12 @@
         VALUES(#{userCustomerId}, #{title}, #{body}, NOW())
     </insert>
 
+    <insert id="updateCustomerAlertLogReadedAt" parameterType="com.goldensnitch.qudditch.dto.CustomerAlertLog">
+        UPDATE customer_alert_log
+        SET readed_at = #{readedAt}
+        WHERE id = #{id}
+    </insert>
+
     <delete id="deleteCustomerAlertLog" parameterType="Integer">
         DELETE FROM customer_alert_log
         WHERE id = #{id}

@@ -88,4 +88,23 @@ public class FCMNotificationController {
             return ResponseEntity.ok("user:" + userName + " 디바이스 토큰이 삭제되지 않았습니다.");
         }
     }
+
+    @PostMapping("/alert/readed-at")
+    public ResponseEntity<String> setAlertReadedAt(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestBody Map<String, Object> body){
+        String userName = userDetails.getUsername();
+        int alertId = (int)body.get("alertId");
+        String readedAt = (String)body.get("readedAt");
+
+        CustomerAlertLog dto = new CustomerAlertLog();
+        dto.setId(alertId);
+        dto.setReadedAt(readedAt);
+
+        boolean isSuccess = service.setAlertReadedAt(dto);
+
+        if (isSuccess){
+            return ResponseEntity.ok("SUCCESS");
+        } else {
+            return ResponseEntity.ok("user:" + userName + " 디바이스 토큰의 조회정보가 업데이트되지 않았습니다.");
+        }
+    }
 }

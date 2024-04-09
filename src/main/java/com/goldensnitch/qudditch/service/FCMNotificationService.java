@@ -119,6 +119,10 @@ public class FCMNotificationService {
         return mapper.selectUserCustomerByEmail(email);
     }
 
+    public boolean setAlertReadedAt(CustomerAlertLog dto){
+        return mapper.updateCustomerAlertLogReadedAt(dto) > 0;
+    }
+
     public boolean removeCustomerAlertLog(int id){
         return  mapper.deleteCustomerAlertLog(id) > 0;
     }

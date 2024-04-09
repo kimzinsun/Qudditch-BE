@@ -17,6 +17,7 @@ public interface FCMMapper {
     int updateCustomerState(CustomerDevice active);
     int deleteCustomerDevice(int userCustomerId);
     List<CustomerAlertLog> selectCustomerAlertLogs(int userCustomerId);
+    int updateCustomerAlertLogReadedAt(CustomerAlertLog dto);
     int insertCustomerAlertLog(CustomerAlertLog dto);
     UserCustomer selectUserCustomerByEmail(String email);
     int deleteCustomerAlertLog(int id);

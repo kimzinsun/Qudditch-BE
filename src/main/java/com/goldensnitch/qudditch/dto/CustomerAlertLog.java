@@ -11,6 +11,6 @@ public class CustomerAlertLog {
     private String title;
     private String body;
     private Object etc;
-    private Date createdAt;
-    private Date readedAt;
+    private String createdAt;
+    private String readedAt;
 }
