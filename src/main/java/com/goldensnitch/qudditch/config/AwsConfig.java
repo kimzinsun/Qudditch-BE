@@ -11,6 +11,8 @@ import com.amazonaws.services.kinesisvideosignalingchannels.AmazonKinesisVideoSi
 import com.amazonaws.services.kinesisvideosignalingchannels.AmazonKinesisVideoSignalingChannelsClientBuilder;
 import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.AmazonRekognitionClient;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,19 +35,27 @@ public class AwsConfig {
     }
 
     @Bean
+    public AmazonS3 s3Client() {
+        return AmazonS3Client.builder()
+            .withRegion(Regions.fromName(region))
+            .withCredentials(staticCredentialsProvider())
+            .build();
+    }
+
+    @Bean
     public AmazonRekognition rekognitionClient() {
         return AmazonRekognitionClient.builder()
-                .withRegion(Regions.fromName(region))
-                .withCredentials(staticCredentialsProvider())
-                .build();
+            .withRegion(Regions.fromName(region))
+            .withCredentials(staticCredentialsProvider())
+            .build();
     }
 
     @Bean
     public AmazonKinesis kinesisClient() {
         return AmazonKinesisClient.builder()
-                .withRegion(Regions.fromName(region))
-                .withCredentials(staticCredentialsProvider())
-                .build();
+            .withRegion(Regions.fromName(region))
+            .withCredentials(staticCredentialsProvider())
+            .build();
     }
 
     @Bean
@@ -57,8 +67,8 @@ public class AwsConfig {
     @Bean
     public AmazonKinesisVideo kinesisVideoClient() {
         return AmazonKinesisVideoClient.builder()
-                .withRegion(Regions.fromName(region))
-                .withCredentials(staticCredentialsProvider())
-                .build();
+            .withRegion(Regions.fromName(region))
+            .withCredentials(staticCredentialsProvider())
+            .build();
     }
 }

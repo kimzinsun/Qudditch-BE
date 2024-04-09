@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.goldensnitch.qudditch.dto.CustomerAlertLog;
 import com.goldensnitch.qudditch.dto.CustomerDevice;
 import com.goldensnitch.qudditch.dto.UserCustomer;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -65,5 +67,44 @@ public class FCMNotificationController {
         service.setNotificationOnOff(customerDevice);
 
         return ResponseEntity.ok("SUCCESS");
+    }
+
+    @GetMapping("/alerts")
+    public ResponseEntity<List<CustomerAlertLog>> getAllAlerts(@AuthenticationPrincipal ExtendedUserDetails userDetails){
+        int id = userDetails.getId();
+
+        return ResponseEntity.ok(service.getCustomerAlertLogs(id));
+    }
+
+    @DeleteMapping("/alert")
+    public ResponseEntity<String> removeAlert(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestBody Map<String,Integer> body){
+        String userName = userDetails.getUsername();
+        int alertId = body.get("alertId");
+        boolean isSuccess = service.removeCustomerAlertLog(alertId);
+
+        if (isSuccess){
+            return ResponseEntity.ok("SUCCESS");
+        } else {
+            return ResponseEntity.ok("user:" + userName + " 디바이스 토큰이 삭제되지 않았습니다.");
+        }
+    }
+
+    @PostMapping("/alert/readed-at")
+    public ResponseEntity<String> setAlertReadedAt(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestBody Map<String, Object> body){
+        String userName = userDetails.getUsername();
+        int alertId = (int)body.get("alertId");
+        String readedAt = (String)body.get("readedAt");
+
+        CustomerAlertLog dto = new CustomerAlertLog();
+        dto.setId(alertId);
+        dto.setReadedAt(readedAt);
+
+        boolean isSuccess = service.setAlertReadedAt(dto);
+
+        if (isSuccess){
+            return ResponseEntity.ok("SUCCESS");
+        } else {
+            return ResponseEntity.ok("user:" + userName + " 디바이스 토큰의 조회정보가 업데이트되지 않았습니다.");
+        }
     }
 }

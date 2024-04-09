@@ -2,12 +2,14 @@ package com.goldensnitch.qudditch.service;
 
 import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.model.*;
+import com.amazonaws.services.s3.AmazonS3;
 import com.goldensnitch.qudditch.dto.StoreVisitorLog;
 import com.goldensnitch.qudditch.mapper.AccessMapper;
 import com.goldensnitch.qudditch.util.AwsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,6 +25,7 @@ public class RekognitionService {
     private static final Float USER_MATCH_THRESHOLD = 95.0f;
     private final RedisService redisService;
     private final AmazonRekognition rekognitionClient;
+    private final AmazonS3 s3Client;
     private final AwsUtil awsUtil;
     private final AccessMapper accessMapper;
     @Value("${aws.rekognition.liveness.output.config.s3-bucket-name}")
@@ -40,11 +43,13 @@ public class RekognitionService {
     public RekognitionService(
         RedisService redisService,
         AmazonRekognition rekognitionClient,
+        AmazonS3 s3Client,
         AwsUtil awsUtil,
         AccessMapper accessMapper
     ) {
         this.redisService = redisService;
         this.rekognitionClient = rekognitionClient;
+        this.s3Client = s3Client;
         this.awsUtil = awsUtil;
         this.accessMapper = accessMapper;
     }
@@ -202,17 +207,26 @@ public class RekognitionService {
         }
     }
 
+    @Transactional
     public List<Integer> enteredCustomers(Integer userStoreId, List<Integer> userIds) {
         ArrayList<Integer> enteredCustomers = new ArrayList<>();
-        userIds.stream().filter(userId -> !redisService.checkExistsKey(userId.toString())).forEach(userId -> {
-            redisService.setValues(userId.toString(), userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT));
-            accessMapper.insertVisitLog(new StoreVisitorLog(userStoreId, userId));
-            enteredCustomers.add(userId);
-        });
+        userIds.stream().filter(userId -> !redisService.checkExistsKey(userId.toString())).distinct()
+            .forEach(userId -> {
+                redisService.setValues(userId.toString(), userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT));
+                accessMapper.insertVisitLog(new StoreVisitorLog(userStoreId, userId));
+                enteredCustomers.add(userId);
+            });
         return enteredCustomers;
     }
 
     private Image getImageFromS3(String key) {
         return new Image().withS3Object(awsUtil.createS3Object(LIVENESS_BUCKET_NAME, key));
+    }
+
+    public void deleteFaceObjectsFromS3(GetFaceLivenessSessionResultsResult flsrr) {
+        flsrr.getAuditImages().forEach(auditImage -> {
+            s3Client.deleteObject(LIVENESS_BUCKET_NAME, auditImage.getS3Object().getName());
+        });
+        s3Client.deleteObject(LIVENESS_BUCKET_NAME, flsrr.getReferenceImage().getS3Object().getName());
     }
 }

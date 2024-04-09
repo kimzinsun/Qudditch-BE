@@ -63,5 +63,50 @@
         from store_order
         where id = ${orderStoreId}
     </select>
+    <select id="getStoreList">
+        select s.name as storeName, s.phone, s.address, us.id, us.email, us.name, us.created_at
+        from store s,
+             user_store us
+        where s.id = us.store_id
+        LIMIT
+            ${recordSize} OFFSET ${offset};
+    </select>
+    <select id="getStoreCount">
+        select count(*)
+        from user_store
+    </select>
+    <select id="getProductListByCategoryId">
+        SELECT p.*, c.name AS categoryName
+        FROM product p
+                 LEFT JOIN category c ON p.category_id = c.id
+        WHERE p.category_id = ${categoryId}
+        LIMIT ${recordSize} OFFSET ${offset};
+    </select>
+    <select id="getProductCountByCategoryId">
+        SELECT count(*)
+        FROM product
+        WHERE
+
+            category_id = ${categoryId}
+    </select>
+    <select id="getProductList">
+        SELECT *
+        FROM product
+        LIMIT
+            ${recordSize} OFFSET ${offset};
+    </select>
+    <select id="getProductCount">
+        SELECT count(*)
+        FROM product
+    </select>
+    <insert id="addProduct">
+        insert into product (category_id, brand, name, image, price, unit_price, expiration_date)
+        values (${categoryId}, '${brand}', '${name}', '${image}', ${price}, ${unitPrice}, '${expirationDate}')
+    </insert>
+    <update id="updateProduct">
+        update product
+        set category_id = ${categoryId}, brand = '${brand}', name = '${name}', image = '${image}', price = ${price}, unit_price = ${unitPrice}, expiration_date = '${expirationDate}'
+        where id = ${productId}
+    </update>
 
 </mapper>

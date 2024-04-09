@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/access/qrcode")
@@ -26,19 +29,20 @@ public class QrcodeAccessController {
 
 
     @PostMapping("/request")
-    public String requestQrAccess(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
+    public ResponseEntity<Map<String, Object>> requestQrAccess(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
+        Map<String, Object> response = new HashMap<>();
         QrAccessReq request = new QrAccessReq();
         request.setUserId(userDetails.getId());
-        return qrcodeAccessService.requestQrAccess(request);
+        response.put("status", "success");
+        response.put("data", qrcodeAccessService.requestQrAccess(request));
+        return ResponseEntity.ok(response);
 
     }
 
     @GetMapping("/confirm")
-    public String confirm(String uuid, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
+    public ResponseEntity<Map<String, Object>> confirm(String uuid, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         StoreVisitorLog storeVisitorLog = new StoreVisitorLog();
         storeVisitorLog.setUserStoreId(userDetails.getId());
-        return qrcodeAccessService.confirmQrAccess(uuid, storeVisitorLog);
-
+        return ResponseEntity.ok(qrcodeAccessService.confirmQrAccess(uuid, storeVisitorLog));
     }
-
 }
