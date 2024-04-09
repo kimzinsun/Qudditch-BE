@@ -87,8 +87,17 @@ public class EmailService {
         Content content = new Content("text/plain", contentText);
         Mail mail = new Mail(from, subject, to, content);
 
-        sendEmail(mail);
+        
+
+        // 이메일 구성 및 전송 로직
+        try {
+            sendEmail(mail);
+        } catch (IOException e) {
+            log.error("이메일 인증 보내기에 실패하였습니다.", e);
+            throw new EmailSendingException("이메일 보내기에 실패했습니다: " + e.getMessage());
+        }
     }
+    
 
     public void sendPasswordResetEmail(String toEmail, String temporaryPassword) throws IOException {
         String subject = "Password Reset Request";
