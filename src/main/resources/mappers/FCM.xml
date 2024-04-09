@@ -61,7 +61,7 @@
     </select>
 
     <select id="selectCustomerAlertLogs" parameterType="Integer" resultType="com.goldensnitch.qudditch.dto.CustomerAlertLog">
-        SELECT id, user_customer_id AS userCustomerId, title, body, created_at AS createdAt
+        SELECT id, user_customer_id AS userCustomerId, title, body, created_at AS createdAt, readed_at as readedAt
         FROM customer_alert_log
         WHERE user_customer_id = #{userCustomerId}
         ORDER BY created_at DESC

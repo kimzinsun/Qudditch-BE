@@ -2,8 +2,6 @@ package com.goldensnitch.qudditch.dto;
 
 import lombok.Data;
 
-import java.sql.Date;
-
 @Data
 public class CustomerAlertLog {
     private Integer id;
