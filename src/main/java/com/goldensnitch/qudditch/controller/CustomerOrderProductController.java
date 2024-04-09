@@ -33,10 +33,14 @@ public class CustomerOrderProductController {
 
     // getId 변경 - 03.29
     @GetMapping("/history")
-    public ResponseEntity<List<?>> getMonthlyOrderHistory(@RequestParam String monthYear, @RequestParam Integer status){
+    public ResponseEntity<List<OrderResponse>> getMonthlyOrderHistory(@RequestParam String monthYear, @RequestParam Integer status){
         try {
 
             List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(monthYear, status);
+            if (history.isEmpty()) {
+                // 비어 있는 경우 적절한 HTTP 상태 코드와 함께 빈 리스트 반환
+                return ResponseEntity.noContent().build();
+            }
             return ResponseEntity.ok(history);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
