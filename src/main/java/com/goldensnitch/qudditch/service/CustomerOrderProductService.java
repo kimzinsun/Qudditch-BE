@@ -54,6 +54,9 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
 
     public List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status) {
         // 주문 내역 조회
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("monthYear", monthYear);
+//        params.put("status", status);
         List<CustomerOrder> customerOrders = customerOrderProductMapper.findByMonthYear(monthYear, status);
         List<OrderResponse> monthlyOrderHistory = customerOrders.stream().map(order -> {
             List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());

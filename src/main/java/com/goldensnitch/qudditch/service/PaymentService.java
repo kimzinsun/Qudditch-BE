@@ -179,16 +179,34 @@ public class PaymentService {
             // 결제 취소 성공 시, 재고 복구 로직 실행
             CustomerOrder order = customerOrderProductMapper.findByTid(tid);
             if (order != null) {
-                List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());
-                for (CustomerOrderProduct orderProduct : orderProducts) {
-                    // 해당 상품의 현재 재고량 조회
-                    Integer currentStock = storeStockMapper.selectStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), order.getUserStoreId());
-                    // 재고량 복구
-                    storeStockMapper.updateStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), order.getUserStoreId(), currentStock + orderProduct.getQty());
+                Map<String, Object> params = new HashMap<>();
+                params.put("tid", tid);
+                params.put("status", 2);
+                customerOrderProductMapper.updateOrderStatus(params); // 수정됨
 
-                    // 판매 정보 업데이트: 취소된 수량만큼 out_qty를 감소
-                    LocalDate ymd = order.getOrderedAt().toLocalDate();
-                    storeStockMapper.updateStoreStockReportOutQty(order.getUserStoreId(), orderProduct.getProductId(), Date.valueOf(ymd), -orderProduct.getQty());
+                LocalDate ymd = order.getOrderedAt().toLocalDate();
+
+                List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());
+
+//                for (CustomerOrderProduct orderProduct : orderProducts) {
+//                    // 해당 상품의 현재 재고량 조회
+//                    Integer currentStock = storeStockMapper.selectStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), order.getUserStoreId());
+//                    // 재고량 복구
+//                    storeStockMapper.updateStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), order.getUserStoreId(), currentStock + orderProduct.getQty());
+//
+//                    // 판매 정보 업데이트: 취소된 수량만큼 out_qty를 감소
+//                    LocalDate ymd = order.getOrderedAt().toLocalDate();
+//                    storeStockMapper.updateStoreStockReportOutQty(order.getUserStoreId(), orderProduct.getProductId(), Date.valueOf(ymd), -orderProduct.getQty());
+//                }
+
+                for (CustomerOrderProduct orderProduct : orderProducts) {
+                    // 새로운 로그 라인에 취소된 수량(-qty) 기록
+                    storeStockMapper.insertStoreStockReport(
+                            order.getUserStoreId(),
+                            orderProduct.getProductId(),
+                            Date.valueOf(ymd),
+                            -orderProduct.getQty() // 취소된 수량
+                    );
                 }
             }
         }
@@ -243,6 +261,9 @@ public class PaymentService {
         Integer quantity = cartItems.get(0).getQty();
         Integer total_amount = calculateTotalAmount(cartItems);
         Integer vat_amount = (int) Math.round(total_amount * 0.1);
+        Integer usedPoints = cartItems.get(0).getUsedPoint();
+        Integer totalPay = total_amount - usedPoints;
+        Integer earnPoints = (int) (totalPay * 0.01);
 
         // 결제 요청을 위한 PaymentRequest 객체 생성
         PaymentRequest paymentRequest = new PaymentRequest();
@@ -260,9 +281,9 @@ public class PaymentService {
         paymentRequest.setApproval_url("http://localhost:8080/approve");
         paymentRequest.setCancel_url("http://localhost:8080/cancel");
         paymentRequest.setFail_url("http://localhost:8080/fail");
-//        paymentRequest.setUsedPoint(usedPoint);
-//        paymentRequest.setTotalPay(계산된 최종 결제액);
-//        paymentRequest.setEarnPoint(계산된 적립 포인트);
+        paymentRequest.setUsedPoint(usedPoints);
+        paymentRequest.setTotalPay(totalPay);
+        paymentRequest.setEarnPoint(earnPoints);
 
         return paymentRequest;
     }
