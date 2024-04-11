@@ -43,7 +43,7 @@ public class CustomerOrderProductController {
         }
     }
 
-    @GetMapping("/history/point/{userCustomerId}")
+    @GetMapping("/history/point")
     public ResponseEntity<List<CustomerOrder>> getPointHistoryByCustomerId(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
         try {
             int userCustomerId = userDetails.getId();

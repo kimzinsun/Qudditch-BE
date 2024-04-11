@@ -28,5 +28,5 @@ public interface CustomerOrderProductMapper  {
     List<CustomerOrderProduct> findOrderProductsByOrderId(int customerOrderId);
 
     // 사용자 ID로 포인트 사용 및 적립 내역 조회
-    List<CustomerOrder> findPointHistoryByCustomerId(@Param("userCustomerId") Integer userCustomerId);
+    List<CustomerOrder> findPointHistoryByCustomerId(Integer userCustomerId);
 }
