@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.config;
 
-import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +24,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import com.goldensnitch.qudditch.jwt.JwtTokenFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -91,10 +92,16 @@ public class SecurityConfig {
 
     @Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
-        // DefaultOAuth2UserService를 통해 user 정보를 가져옵니다.
-        // 필요한 경우 OAuth2User에 대한 추가 처리를 수행하고 반환합니다.
-        // 예를 들어, 가져온 사용자 정보를 기반으로 데이터베이스에서 사용자를 찾거나 생성할 수 있습니다.
-        return new DefaultOAuth2UserService();
+        DefaultOAuth2UserService defaultService = new DefaultOAuth2UserService();
+        return userRequest -> {
+            // DefaultOAuth2UserService를 통해 user 정보를 가져옵니다.
+            OAuth2User oAuth2User = defaultService.loadUser(userRequest);
+            
+            // 필요한 경우 OAuth2User에 대한 추가 처리를 수행하고 반환합니다.
+            // 예를 들어, 가져온 사용자 정보를 기반으로 데이터베이스에서 사용자를 찾거나 생성할 수 있습니다.
+
+            return oAuth2User;
+        };
     }
 
     // RestTemplate 빈을 생성합니다.

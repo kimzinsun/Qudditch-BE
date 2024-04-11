@@ -26,6 +26,7 @@ public class RekognitionService {
     private static final int MAX_USERS = 1;
     private static final int USER_ENTER_TIMEOUT = 1;
     private static final Float USER_MATCH_THRESHOLD = 95.0f;
+    private static final String REDIS_KEY_PREFIX = "face-";
     private final RedisService redisService;
     private final AmazonRekognition rekognitionClient;
     private final AmazonS3 s3Client;
@@ -244,9 +245,9 @@ public class RekognitionService {
     @Transactional
     public List<Integer> enteredCustomers(Integer userStoreId, List<Integer> userIds) {
         ArrayList<Integer> enteredCustomers = new ArrayList<>();
-        userIds.stream().filter(userId -> !redisService.checkExistsKey(userId.toString())).distinct()
+        userIds.stream().filter(userId -> !redisService.checkExistsKey(REDIS_KEY_PREFIX + userId)).distinct()
             .forEach(userId -> {
-                redisService.setValues(userId.toString(), userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT));
+                redisService.setValues(REDIS_KEY_PREFIX + userId, userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT));
                 accessMapper.insertVisitLog(new StoreVisitorLog(userStoreId, userId));
                 enteredCustomers.add(userId);
             });

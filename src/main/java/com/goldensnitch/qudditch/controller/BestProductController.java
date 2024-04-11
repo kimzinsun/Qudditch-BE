@@ -28,13 +28,17 @@ public class BestProductController {
     }
 
     @GetMapping("/BestProduct")
-    public Map<String,Object> BestProduct(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
-
+    public Map<String, Object> BestProduct(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
+        if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return Map.of(
+                "bestProducts", bestProductService.BestProduct(null)
+            );
+        }
         int Id = userDetails.getId();
         List<UserStore> list = bestProductService.BestProduct(Id);
 
         return Map.of(
-                "bestProducts", list
+            "bestProducts", list
         );
     }
 }
