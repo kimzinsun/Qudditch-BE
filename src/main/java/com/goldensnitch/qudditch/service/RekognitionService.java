@@ -4,7 +4,9 @@ import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.goldensnitch.qudditch.dto.StoreVisitorLog;
+import com.goldensnitch.qudditch.dto.UserPersona;
 import com.goldensnitch.qudditch.mapper.AccessMapper;
+import com.goldensnitch.qudditch.mapper.PersonaMapper;
 import com.goldensnitch.qudditch.util.AwsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class RekognitionService {
@@ -38,20 +41,22 @@ public class RekognitionService {
     private String DETECTION_ATTRIBUTE;
     @Value("${aws.rekognition.collection-id}")
     private String COLLECTION_ID;
+    private final PersonaMapper personaMapper;
 
     @Autowired
     public RekognitionService(
-        RedisService redisService,
-        AmazonRekognition rekognitionClient,
-        AmazonS3 s3Client,
-        AwsUtil awsUtil,
-        AccessMapper accessMapper
+            RedisService redisService,
+            AmazonRekognition rekognitionClient,
+            AmazonS3 s3Client,
+            AwsUtil awsUtil,
+            AccessMapper accessMapper, PersonaMapper personaMapper
     ) {
         this.redisService = redisService;
         this.rekognitionClient = rekognitionClient;
         this.s3Client = s3Client;
         this.awsUtil = awsUtil;
         this.accessMapper = accessMapper;
+        this.personaMapper = personaMapper;
     }
 
     public String createSession() {
@@ -114,7 +119,36 @@ public class RekognitionService {
                 )
             )
         );
+        createDetectFacesResult(createDetectFacesRequest(getImageFromS3(livenessSessionResult.getReferenceImage().getS3Object().getName())));
         return indexFacesResults;
+    }
+
+    private DetectFacesRequest createDetectFacesRequest(Image imageFromS3) {
+        return new DetectFacesRequest()
+                .withImage(imageFromS3)
+                .withAttributes(Attribute.ALL);
+    }
+
+    private void createDetectFacesResult(DetectFacesRequest request) {
+        try {
+            DetectFacesResult result = rekognitionClient.detectFaces(request);
+            List < FaceDetail > faceDetails = result.getFaceDetails();
+
+            UserPersona userPersona = new UserPersona();
+            userPersona.setAgeRange((
+                    faceDetails.get(0).getAgeRange().getLow() +
+                            faceDetails.get(0).getAgeRange().getHigh()) / 2
+            );
+            userPersona.setGender(faceDetails.get(0).getGender().getValue());
+            personaMapper.insertPersona(userPersona);
+
+
+            System.out.println(faceDetails);
+
+
+        } catch (AmazonRekognitionException e) {
+            e.printStackTrace();
+        }
     }
 
     private IndexFacesRequest createIndexFacesRequest(String key, String collectionId) {
