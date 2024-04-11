@@ -6,6 +6,7 @@ import com.goldensnitch.qudditch.mapper.AccessMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -26,10 +27,10 @@ public class QrcodeAccessService {
         return uuid;
     }
 
-    public String confirmQrAccess(String uuid, StoreVisitorLog storeVisitorLog) {
+    public Map<String, Object> confirmQrAccess(String uuid, StoreVisitorLog storeVisitorLog) {
 
         if (Objects.equals(redisService.getValues(uuid), "false")) {
-            return "QR코드 접근이 허용되지 않았습니다.";
+            return Map.of("message", "QR코드 접근이 허용되지 않았습니다.", "confirm", false);
 
         } else {
             int userId = Integer.parseInt(redisService.getValues(uuid));
@@ -37,10 +38,7 @@ public class QrcodeAccessService {
             accessMapper.insertVisitLog(storeVisitorLog);
             redisService.deleteValues(uuid);
 
-            return "QR코드 접근이 허용되었습니다.";
-
+            return Map.of("message", "QR코드 접근이 허용되었습니다.", "confirm", true);
         }
-
-
     }
 }

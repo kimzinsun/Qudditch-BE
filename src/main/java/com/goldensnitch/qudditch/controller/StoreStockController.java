@@ -36,9 +36,9 @@ public class StoreStockController {
                 response.put("status", "fail");
                 response.put("message", "로그인이 필요합니다.");
             } else {
-                Integer count = categoryId == 0 ? storeStockService.cntProductByUserStoreId(userStoreId) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+                Integer count = categoryId == 0 ? storeStockService.cntProductByUserStoreId(userStoreId, paginationParam.getKeyword()) : storeStockService.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam.getKeyword());
                 List<StoreStockRes> stockList = categoryId == 0 ? storeStockService.selectAllProductByUserStoreId(userStoreId, paginationParam) : storeStockService.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam);
-                if (stockList.isEmpty()) {
+                if (stockList == null || stockList.isEmpty()) {
                     response.put("status", "fail");
                     response.put("message", "상품이 존재하지 않습니다.");
                 } else {
@@ -85,56 +85,50 @@ public class StoreStockController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/stock/dispose")
-    public ResponseEntity<Map<String, Object>> disposeProduct(@RequestBody List<DisposeReq> list, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
+
+    @GetMapping("/stock/dispose")
+    public ResponseEntity<Map<String, Object>> getDisposeItemList(@AuthenticationPrincipal ExtendedUserDetails userDetails, PaginationParam paginationParam) {
         Map<String, Object> response = new HashMap<>();
-
         Integer userStoreId = userDetails.getId();
-
         if (userStoreId == null) {
             response.put("status", "fail");
             response.put("message", "로그인이 필요합니다.");
-        }
-        if (list.isEmpty()) {
-            response.put("status", "fail");
-            response.put("message", "폐기 상품이 존재하지 않습니다.");
-        }
-        for (DisposeReq req : list) {
-            StoreStock storeStock = storeStockService.selectProductByUserStoreIdAndProductId(userStoreId, req.getProductId());
-            if (storeStock == null) {
+        } else {
+            int count = storeStockService.cntDisposeItem(userStoreId);
+            List<DisposalItem> disposeItemList = storeStockService.getDisposeItemList(userStoreId, paginationParam);
+            if (count == 0 || disposeItemList.isEmpty() ) {
                 response.put("status", "fail");
-                response.put("message", "해당 상품이 존재하지 않습니다.");
-                response.put("productId", req.getProductId());
-            }
-            if (storeStock.getQty() < req.getQty()) {
-                response.put("status", "fail");
-                response.put("message", "폐기할 수량이 재고보다 많습니다.");
+                response.put("message", "폐기 상품이 존재하지 않습니다.");
             } else {
-                storeStock.setQty(storeStock.getQty() - req.getQty());
-                storeStockService.updateStock(storeStock);
-                storeStockService.insertDisposeLog(userStoreId, req.getProductId(), req.getQty());
                 response.put("status", "success");
-                response.put("message", "폐기가 완료되었습니다.");
+                response.put("data", disposeItemList);
+                response.put("pagination", new Pagination(count, new PaginationParam()));
+
             }
         }
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/stock/dispose")
-    public ResponseEntity<Map<String, Object>> getDisposeLog(PaginationParam paginationParam, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
+    @PostMapping("/stock/dispose")
+    public ResponseEntity<Map<String, Object>> disposeProduct(@RequestBody DisposeReq disposeReq, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
+        Integer productId = disposeReq.getProductId();
         Map<String, Object> response = new HashMap<>();
         Integer userStoreId = userDetails.getId();
-
         if (userStoreId == null) {
             response.put("status", "fail");
             response.put("message", "로그인이 필요합니다.");
         } else {
-            int count = storeStockService.getDisposeLogCount(userStoreId);
-            List<DisposeLog> disposeLog = storeStockService.getDisposeLog(userStoreId, paginationParam);
-            response.put("data", disposeLog);
-            Pagination pagination = new Pagination(count, paginationParam);
-            response.put("pagination", pagination);
-            response.put("status", "success");
+            DisposalItem disposalItem = storeStockService.getDisposeItemByStoreStockId(productId, userStoreId);
+            if (disposalItem == null) {
+                response.put("status", "fail");
+                response.put("message", "폐기 상품이 존재하지 않습니다.");
+            } else {
+
+                storeStockService.updateDispose(disposalItem.getId(), userStoreId);
+                storeStockService.insertDisposeLog(userStoreId, productId, 1);
+                response.put("status", "success");
+                response.put("message", "폐기가 완료되었습니다.");
+            }
         }
         return ResponseEntity.ok(response);
     }
@@ -150,7 +144,7 @@ public class StoreStockController {
             List<InputRes> inputList = storeStockService.getOrderListByUserStoreId(userStoreId, paginationParam);
             int count = storeStockService.cntOrderListByUserStoreId(userStoreId);
             if (count == 0) {
-                response.put("status", "success");
+                response.put("status", "fail");
                 response.put("message", "입고 리스트가 존재하지 않습니다.");
             } else {
                 Pagination pagination = new Pagination(count, paginationParam);

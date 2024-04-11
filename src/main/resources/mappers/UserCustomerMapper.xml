@@ -23,10 +23,10 @@
         where id = #{id}
     </select>
     <!-- 이메일로 특정 사용자 조회 -->
-    <select id="selectUserByEmail" parameterType="String" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
-        select *
-        from user_customer
-        where email = #{email}
+    <select id="selectUserByName" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
+        SELECT name, email
+        FROM user_customer
+        WHERE name = #{name}
     </select>
 
     <!-- 이메일 인증 코드로 사용자 조회-->
@@ -40,6 +40,14 @@
         select *
         from user_customer
     </select>
+
+    <!-- 이름으로 사용자 조회 -->
+    <select id="findByName" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
+        SELECT name, email
+        FROM user_customer
+        WHERE name = #{name}
+    </select>
+
 
     <!-- update쿼리 -->
     <!-- 사용자 정보 업데이트 -->
@@ -77,7 +85,7 @@
     <select id="selectUserCustomerWithStore" resultType="map">
         SELECT uc.*, us.store_id, us.bn_number
         FROM user_customer uc
-                 JOIN user_store us ON uc.id = us.id
+                JOIN user_store us ON uc.id = us.id
         WHERE uc.id = #{id}
     </select>
     <select id="findByEmail" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
@@ -85,4 +93,11 @@
         FROM user_customer
         WHERE email = #{email}
     </select>
+    <select id="selectUserByEmail" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
+        SELECT *
+        FROM user_customer
+        WHERE email = #{email}
+    </select>
+
+
 </mapper>

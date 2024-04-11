@@ -29,8 +29,9 @@ public class PaymentController {
         try {
             int userCustomerId = userDetails.getId();
 
-            String redirectUrl = paymentService.initiatePayment(cartItems, userCustomerId); if (!"Error".equals(redirectUrl)) {
-                return ResponseEntity.ok().body(redirectUrl);
+            String redirectUrl = paymentService.initiatePayment(cartItems, userCustomerId);
+            if (!"Error".equals(redirectUrl)) {
+                return ResponseEntity.ok().body(Map.of("redirectUrl", redirectUrl));
             }
             else {
                 return ResponseEntity.badRequest().body("Failed to initiate payment");

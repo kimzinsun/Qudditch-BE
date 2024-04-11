@@ -1,8 +1,11 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.Store;
 import com.goldensnitch.qudditch.mapper.UserStoreMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UserStoreService {
@@ -36,4 +39,7 @@ public class UserStoreService {
         return count != null && count > 0;
     }
 
+    public List<Store> searchByStoreName(String name){
+        return userStoreMapper.searchByStoreName(name);
+    }
 }

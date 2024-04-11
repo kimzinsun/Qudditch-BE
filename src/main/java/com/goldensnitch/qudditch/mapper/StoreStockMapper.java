@@ -11,17 +11,17 @@ import java.util.List;
 
 @Mapper
 public interface StoreStockMapper {
-    int cntProductByUserStoreId(int userStoreId);
+    int cntProductByUserStoreId(int userStoreId, String keyword);
     List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId);
     StoreStock selectProductByUserStoreIdAndProductId(int userStoreId, int productId);
 
     void updateStock(StoreStock storeStock);
 
-    List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId,int recordSize, int offset);
+    List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, String keyword, Integer categoryId ,int recordSize, int offset);
 
     List<StoreLocQty> selectStoreByProductId(int productName, double currentWgs84X, double currentWgs84Y);
 
-    int cntProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId);
+    int cntProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId, String keyword);
 
     void insertDisposeLog(int userStoreId, int productId, int qty);
 
@@ -39,9 +39,10 @@ public interface StoreStockMapper {
     void insertInputLog(InputRepoReq inputRepoReq);
     Date getInputDate(int storeInputId);
 
-    List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, int recordSize, int offset);
+    List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, String keyword, int recordSize, int offset);
     int cntState(int storeInputId);
 
+    
     void updateState(int storeInputId);
 
     List<Integer> getTargetAlertUserByProductIdAndStoreId(int productId, int userStoreId);
@@ -55,4 +56,12 @@ public interface StoreStockMapper {
     void updateStockQtyByProductIdAndUserStoreId(Integer productId, Integer userStoreId, Integer newStoreStock);
 
     int updateStoreStockReportOutQty(Integer userStoreId, Integer productId, Date date, Integer outQty);
+
+    List<DisposalItem> getDisposeItemList(int userStoreId, int recordSize, int offset);
+
+    int cntDisposeItem(int userStoreId);
+
+    DisposalItem getDisposeItemByStoreStockId(Integer productId, Integer userStoreId);
+
+    void updateDispose(Integer storeStockId, Integer userStoreId);
 }

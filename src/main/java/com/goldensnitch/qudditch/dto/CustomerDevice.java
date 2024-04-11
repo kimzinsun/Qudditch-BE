@@ -10,4 +10,6 @@ public class CustomerDevice {
     private Integer userCustomerId;
     private String token;
     private Date refreshedAt;
+    private Boolean state;
+    private Boolean loggedIn;
 }

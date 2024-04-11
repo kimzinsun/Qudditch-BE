@@ -32,8 +32,11 @@ public class FCMNotificationService {
         boolean isNotDuplicate = mapper.countCustomerDevice(dto.getUserCustomerId()) == 0;
 
         if(isNotDuplicate){
+            dto.setState(true);
+            dto.setLoggedIn(true);
             result = mapper.insertCustomerDevice(dto);
         }else{
+            dto.setLoggedIn(true);
             result = mapper.updateCustomerDeviceToken(dto);
         }
 
@@ -44,6 +47,14 @@ public class FCMNotificationService {
         return mapper.deleteCustomerDevice(userCustomerId) > 0;
     }
 
+    public boolean loggedOutCustomerDevie(int userCustomerId){
+        CustomerDevice customerDevice = new CustomerDevice();
+        customerDevice.setUserCustomerId(userCustomerId);
+        customerDevice.setLoggedIn(false);
+
+        return mapper.updateCustomerLoggedIn(customerDevice) > 0;
+    }
+
     public String sendNotificationByToken(FCMNotificationRequestDto requestDto) {
         CustomerDevice customerDevice = mapper.selectCustomerDevice(requestDto.getTargetUserId());
 
@@ -51,6 +62,14 @@ public class FCMNotificationService {
             String token = customerDevice.getToken();
 
             if (token!= null && !token.isEmpty()) {
+                if(!customerDevice.getState()){
+                    return "알림을 허용하지 않고 있습니다. targetUserId=" + requestDto.getTargetUserId();
+                }
+
+                if(!customerDevice.getLoggedIn()){
+                    return "로그아웃 상태입니다. targetUserId=" + requestDto.getTargetUserId();
+                }
+
                 Notification notification = Notification.builder()
                         .setTitle(requestDto.getTitle())
                         .setBody(requestDto.getBody())
@@ -84,11 +103,27 @@ public class FCMNotificationService {
         }
     }
 
+    public boolean setNotificationOnOff(CustomerDevice active){
+        return mapper.updateCustomerState(active) > 0;
+    }
+
+    public CustomerDevice getCustomerDevice(int userCustomerId){
+        return mapper.selectCustomerDevice(userCustomerId);
+    }
+
     public List<CustomerAlertLog> getCustomerAlertLogs(int userCustomerId){
         return mapper.selectCustomerAlertLogs(userCustomerId);
     }
 
     public UserCustomer getUserCustomerByEmail(String email){
         return mapper.selectUserCustomerByEmail(email);
+    }
+
+    public boolean setAlertReadedAt(CustomerAlertLog dto){
+        return mapper.updateCustomerAlertLogReadedAt(dto) > 0;
+    }
+
+    public boolean removeCustomerAlertLog(int id){
+        return  mapper.deleteCustomerAlertLog(id) > 0;
     }
 }

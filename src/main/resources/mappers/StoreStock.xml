@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.goldensnitch.qudditch.mapper.StoreStockMapper">
     <select id="cntProductByUserStoreId" parameterType="int" resultType="int">
-        SELECT COUNT(*) FROM store_stock WHERE user_store_id = #{userStoreId}
+        SELECT COUNT(*) FROM store_stock , product WHERE user_store_id = #{userStoreId} and store_stock.product_id = product.id and product.name like concat('%',${keyword},'%')
     </select>
     <select id="selectAllProductByUserStoreId">
         SELECT s.*,ps.name as positioned, c.name AS categoryName, p.name AS productName, p.brand AS brand, p.image AS productImage, p.price AS productPrice,
@@ -13,7 +13,7 @@
         FROM position ps, store_stock s
                  JOIN product p ON s.product_id = p.id
                  JOIN category c ON p.category_id = c.id
-        WHERE s.user_store_id = ${userStoreId} and ps.id = s.position_id
+        WHERE s.user_store_id = ${userStoreId} and ps.id = s.position_id and p.name like concat('%',${keyword},'%')
         ORDER BY isNearExpiry, p.name
         LIMIT #{recordSize} OFFSET #{offset};
     </select>
@@ -28,13 +28,13 @@
     <select id="selectProductByUserStoreIdAndCategoryId">
         SELECT s.*, c.name as categoryName, p.name as productName, p.brand as brand, p.image as productImage, p.price as productPrice
         FROM store_stock s , product p, category c
-        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id and p.category_id = #{categoryId}
+        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id and p.category_id = #{categoryId} and p.name like concat('%',${keyword},'%')
         limit #{recordSize} offset #{offset}
     </select>
     <select id="cntProductByUserStoreIdAndCategoryId">
         SELECT COUNT(*)
         FROM store_stock s , product p, category c
-        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id and p.category_id = #{categoryId}
+        WHERE user_store_id = #{userStoreId} and s.product_id = p.id and p.category_id = c.id and p.category_id = #{categoryId} and p.name like concat('%',${keyword},'%')
     </select>
 
     <select id="selectStoreByProductId"  resultType="StoreLocQty">
@@ -55,6 +55,29 @@
     </insert>
     <select id="getDisposeLogCount" parameterType="int" resultType="int">
         SELECT COUNT(*) FROM store_stock_disuse WHERE user_store_id = #{userStoreId}
+    </select>
+    <select id="getDisposeItemList" resultType="DisposalItem">
+        SELECT s.*, p.name as productName, p.brand as brand, p.price as productPrice
+        FROM store_stock s,
+             product p
+        WHERE s.user_store_id = ${userStoreId}
+          and s.product_id = p.id
+          and s.expired_at <![CDATA[ <= ]]> now()
+          and s.qty > 0
+        limit #{recordSize} offset #{offset}
+    </select>
+    <select id="cntDisposeItem" resultType="int">
+        SELECT COUNT(*)
+        FROM store_stock s, product p
+        WHERE s.user_store_id = ${userStoreId} and s.product_id = p.id and s.expired_at <![CDATA[ <= ]]> now()
+    </select>
+    <update id="updateDispose">
+        update store_stock
+        set qty = qty - 1
+        where user_store_id = ${userStoreId} and id=${storeStockId}
+    </update>
+    <select id="getDisposeItemByStoreStockId">
+        SELECT * FROM store_stock WHERE product_id = ${productId} and user_store_id = ${userStoreId} and expired_at <![CDATA[ <= ]]> now() and qty > 0
     </select>
     <select id="getDisposeLog" parameterType="int" resultType="DisposeLog">
         SELECT * FROM store_stock_disuse WHERE user_store_id = #{userStoreId} limit #{recordSize} offset #{offset}
@@ -162,7 +185,6 @@
     <!-- 주문 ID로 주문된 상품 정보 조회 -->
     <select id="findOrderProductsByOrderId" parameterType="int" resultType="CustomerOrderProduct">
         SELECT
-            cop.id,
             cop.customer_order_id,
             cop.product_id,
             cop.qty

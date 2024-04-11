@@ -85,7 +85,7 @@ public class PaymentService {
                 // 객체 생성 및 필요한 정보 설정
                 CustomerOrder order = new CustomerOrder();
                 order.setPartnerOrderId(Integer.valueOf(request.getPartner_order_id()));
-                order.setUserCustomerId(5);
+                order.setUserCustomerId(userCustomerId);
                 order.setUserStoreId(Integer.valueOf(request.getPartner_user_id())); // 가맹점
                 order.setTotalAmount(request.getTotal_amount());
                 order.setUsedPoint(request.getUsedPoint() != null ? request.getUsedPoint() : 0);
@@ -175,6 +175,42 @@ public class PaymentService {
         ResponseEntity<PaymentResponse> response = restTemplate.exchange(
                 kakaoPayCancelUrl, HttpMethod.POST, entity, PaymentResponse.class);
 
+        if (response.getStatusCode() == HttpStatus.OK) {
+            // 결제 취소 성공 시, 재고 복구 로직 실행
+            CustomerOrder order = customerOrderProductMapper.findByTid(tid);
+            if (order != null) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("tid", tid);
+                params.put("status", 2);
+                customerOrderProductMapper.updateOrderStatus(params); // 수정됨
+
+                LocalDate ymd = order.getOrderedAt().toLocalDate();
+
+                List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());
+
+//                for (CustomerOrderProduct orderProduct : orderProducts) {
+//                    // 해당 상품의 현재 재고량 조회
+//                    Integer currentStock = storeStockMapper.selectStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), order.getUserStoreId());
+//                    // 재고량 복구
+//                    storeStockMapper.updateStockQtyByProductIdAndUserStoreId(orderProduct.getProductId(), order.getUserStoreId(), currentStock + orderProduct.getQty());
+//
+//                    // 판매 정보 업데이트: 취소된 수량만큼 out_qty를 감소
+//                    LocalDate ymd = order.getOrderedAt().toLocalDate();
+//                    storeStockMapper.updateStoreStockReportOutQty(order.getUserStoreId(), orderProduct.getProductId(), Date.valueOf(ymd), -orderProduct.getQty());
+//                }
+
+                for (CustomerOrderProduct orderProduct : orderProducts) {
+                    // 새로운 로그 라인에 취소된 수량(-qty) 기록
+                    storeStockMapper.insertStoreStockReport(
+                            order.getUserStoreId(),
+                            orderProduct.getProductId(),
+                            Date.valueOf(ymd),
+                            -orderProduct.getQty() // 취소된 수량
+                    );
+                }
+            }
+        }
+
         return response.getBody();
     }
 
@@ -225,6 +261,9 @@ public class PaymentService {
         Integer quantity = cartItems.get(0).getQty();
         Integer total_amount = calculateTotalAmount(cartItems);
         Integer vat_amount = (int) Math.round(total_amount * 0.1);
+        Integer usedPoints = cartItems.get(0).getUsedPoint();
+        Integer totalPay = total_amount - usedPoints;
+        Integer earnPoints = (int) (totalPay * 0.01);
 
         // 결제 요청을 위한 PaymentRequest 객체 생성
         PaymentRequest paymentRequest = new PaymentRequest();
@@ -232,7 +271,7 @@ public class PaymentService {
         // 컨트롤러에 설정한 파라미터가 paymentService 메소드로 전달되어 기능 동작
         paymentRequest.setCid("TC0ONETIME");
         paymentRequest.setPartner_order_id(String.valueOf(random_order)); // 고유한 주문 ID 생성
-        paymentRequest.setPartner_user_id(partner_user_id.toString());
+        paymentRequest.setPartner_user_id(partner_user_id);
         paymentRequest.setItem_name(item_name.length() > 80 ? item_name.substring(0, 77) + "..." : item_name); // 상품명 설정
         paymentRequest.setItem_code(item_code);
         paymentRequest.setQuantity(quantity);
@@ -242,25 +281,28 @@ public class PaymentService {
         paymentRequest.setApproval_url("http://localhost:8080/approve");
         paymentRequest.setCancel_url("http://localhost:8080/cancel");
         paymentRequest.setFail_url("http://localhost:8080/fail");
+        paymentRequest.setUsedPoint(usedPoints);
+        paymentRequest.setTotalPay(totalPay);
+        paymentRequest.setEarnPoint(earnPoints);
 
         return paymentRequest;
     }
 
-    private void decrementStockAndUpdateReport(int customerOrderId) {
+    private void decrementStockAndUpdateReport(int partnerOrderId) {
         try {
             // 주문 정보 조회
-            CustomerOrder order = customerOrderProductMapper.findById(customerOrderId);
+            CustomerOrder order = customerOrderProductMapper.findById(partnerOrderId);
             if (order == null) {
-                throw new RuntimeException("Order not found with ID: " + customerOrderId);
+                throw new RuntimeException("Order not found with ID: " + partnerOrderId);
             }
 
             Integer userStoreId = order.getUserStoreId();
             LocalDate ymd = order.getOrderedAt().toLocalDate();
 
             // 주문된 상품 정보 조회
-            List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(customerOrderId);
+            List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(partnerOrderId);
             if (orderProducts.isEmpty()) {
-                throw new RuntimeException("No products found for order ID: " + customerOrderId);
+                throw new RuntimeException("No products found for order ID: " + partnerOrderId);
             }
 
             for (CustomerOrderProduct orderProduct : orderProducts) {

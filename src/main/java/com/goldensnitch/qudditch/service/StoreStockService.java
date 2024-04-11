@@ -47,17 +47,24 @@ public class StoreStockService {
     }
 
     public List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId, PaginationParam paginationParam) {
-        return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId, categoryId, paginationParam.getRecordSize(), paginationParam.getOffset());
+        return storeStockMapper.selectProductByUserStoreIdAndCategoryId(userStoreId,paginationParam.getKeyword(), categoryId,  paginationParam.getRecordSize(), paginationParam.getOffset());
+    }
+
+    public List<DisposalItem> getDisposeItemList(int userStoreId, PaginationParam paginationParam) {
+        return storeStockMapper.getDisposeItemList(userStoreId, paginationParam.getRecordSize(), paginationParam.getOffset());
+    }
+
+    public int cntDisposeItem(int userStoreId) {
+        return storeStockMapper.cntDisposeItem(userStoreId);
     }
 
 
-
-    public int cntProductByUserStoreId(int userStoreId) {
-        return storeStockMapper.cntProductByUserStoreId(userStoreId);
+    public int cntProductByUserStoreId(int userStoreId, String keyword) {
+        return storeStockMapper.cntProductByUserStoreId(userStoreId, keyword);
     }
 
-    public int cntProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId) {
-        return storeStockMapper.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId);
+    public int cntProductByUserStoreIdAndCategoryId(int userStoreId, Integer categoryId, String keyword) {
+        return storeStockMapper.cntProductByUserStoreIdAndCategoryId(userStoreId, categoryId, keyword);
 
     }
 
@@ -114,7 +121,7 @@ public class StoreStockService {
     }
 
     public List<StoreStockRes> selectAllProductByUserStoreId(int userStoreId, PaginationParam paginationParam) {
-        return storeStockMapper.selectAllProductByUserStoreId(userStoreId, paginationParam.getRecordSize(), paginationParam.getOffset());
+        return storeStockMapper.selectAllProductByUserStoreId(userStoreId,paginationParam.getKeyword(), paginationParam.getRecordSize(), paginationParam.getOffset());
     }
 
     public int getUserStoreIdByInputId(int storeInputId) {
@@ -150,5 +157,13 @@ public class StoreStockService {
         }
 
         excelCreator.downloadOrderDataAsExcel(fileName, headers, request);
+    }
+
+    public DisposalItem getDisposeItemByStoreStockId(Integer productId, Integer userStoreId) {
+        return storeStockMapper.getDisposeItemByStoreStockId(productId, userStoreId);
+    }
+
+    public void updateDispose(Integer storeStockId, Integer userStoreId) {
+        storeStockMapper.updateDispose(storeStockId, userStoreId);
     }
 }

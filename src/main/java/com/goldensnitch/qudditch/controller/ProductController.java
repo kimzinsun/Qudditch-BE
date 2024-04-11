@@ -1,15 +1,14 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.ProductService;
-import com.sendgrid.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,12 +54,12 @@ public class ProductController {
     }
 
     @GetMapping("/store/{productId}")
-    public ResponseEntity<Map<String, Object>> selectStoreStockByProductId(@PathVariable Integer productId, PaginationParam paginationParam, @RequestParam double currentWgs84X, @RequestParam double currentWgs84Y) {
+    public ResponseEntity<Map<String, Object>> selectStoreStockByProductId(@PathVariable Integer productId, PaginationParam paginationParam, @RequestParam double currentWgs84X, @RequestParam double currentWgs84Y, @AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<String, Object>();
         String status;
 //        Integer userId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Integer userId = null;
+        Integer userId = userDetails.getId();
         ProductExt productDetail = productService.selectProductById(productId, userId);
         response.put("productDetail", productDetail);
         int count = productService.cntStoreStockByProductId(productId);
@@ -93,6 +92,12 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }
 
+    }
+
+    @GetMapping("/rank")
+    public List<ProductRank> getBestProductList() {
+        System.out.println(productService.getBestProductList());
+        return productService.getBestProductList();
     }
 
 }
