@@ -20,14 +20,30 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
         this.customerOrderProductMapper = customerOrderProductMapper;
     }
 
-    public OrderResponse generateReceipt(Integer orderId) {
+//    public OrderResponse generateReceipt(Integer orderId) {
+//        // 주문 정보 조회
+//        CustomerOrder customerOrder = customerOrderProductMapper.findById(orderId);
+//        if (customerOrder == null) {
+//            throw new RuntimeException("Order not found with ID: " + orderId);
+//        }
+//        // 해당 주문의 상품 정보 조회
+//        List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findOrderProductsByOrderId(orderId);
+//
+//        OrderResponse receipt = new OrderResponse();
+//        receipt.setCustomerOrder(customerOrder);
+//        receipt.setCustomerOrderProducts(customerOrderProducts);
+//
+//        return receipt;
+//    }
+
+    public OrderResponse generateReceiptByPartnerOrderId(String partnerOrderId) {
         // 주문 정보 조회
-        CustomerOrder customerOrder = customerOrderProductMapper.findById(orderId);
+        CustomerOrder customerOrder = customerOrderProductMapper.findByPartnerOrderId(partnerOrderId);
         if (customerOrder == null) {
-            throw new RuntimeException("Order not found with ID: " + orderId);
+            throw new RuntimeException("Order not found with partner_order_id: " + partnerOrderId);
         }
         // 해당 주문의 상품 정보 조회
-        List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findOrderProductsByOrderId(orderId);
+        List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findOrderProductsByPartnerOrderId(partnerOrderId);
 
         OrderResponse receipt = new OrderResponse();
         receipt.setCustomerOrder(customerOrder);
@@ -36,9 +52,12 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
         return receipt;
     }
 
-    public List<OrderResponse> getMonthlyOrderHistory(Integer userCustomerId, String monthYear) {
+    public List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status) {
         // 주문 내역 조회
-        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByUserCustomerId(userCustomerId, monthYear);
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("monthYear", monthYear);
+//        params.put("status", status);
+        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByMonthYear(monthYear, status);
         List<OrderResponse> monthlyOrderHistory = customerOrders.stream().map(order -> {
             List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());
             OrderResponse orderResponse = new OrderResponse();

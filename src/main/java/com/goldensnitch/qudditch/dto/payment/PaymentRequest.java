@@ -2,6 +2,7 @@ package com.goldensnitch.qudditch.dto.payment;
 
 import lombok.Data;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -27,6 +28,7 @@ public class PaymentRequest {
     private Map<String, String> custom_json; // 사전에 정의된 기능
 
     // 추가
+    private List<CartItem> cartItems;
     private Integer usedPoint; // 포인트 사용금액
     private Integer totalPay; // 실제 지불금액
     private Integer earnPoint; // 포인트 모으기
