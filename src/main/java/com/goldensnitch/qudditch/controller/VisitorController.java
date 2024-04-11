@@ -22,6 +22,9 @@ public class VisitorController {
     // TODO : visitor 관련 기능 구현
     @GetMapping("/daily")
     public Integer getDailyVisitor(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam String date) {
+        if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return visitorService.getDailyVisitor(null, date);
+        }
         int userStoreId = userDetails.getId();
 
         return visitorService.getDailyVisitor(userStoreId, date);
@@ -29,6 +32,9 @@ public class VisitorController {
 
     @GetMapping("/month")
     public Integer getMonthVisitor(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam String yearMonth) {
+        if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return visitorService.getMonthVisitor(null, yearMonth);
+        }
         int userStoreId = userDetails.getId();
 
         return visitorService.getMonthVisitor(userStoreId, yearMonth);

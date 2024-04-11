@@ -7,10 +7,17 @@
     <!-- 가게별 베스트 판매상품 TOP5 -->
     <select id="BestProduct" resultType="BestProduct" parameterType="Integer">
         SELECT concat(p.brand, ' ', p.name) name, ssr.out_qty
-        FROM user_store us
-                 JOIN store_stock_report ssr ON us.id = ssr.user_store_id
-                 JOIN product p ON ssr.product_id = p.id
-        WHERE us.id = #{Id}
+        # Id 가 null 일 경우 전체 가게의 베스트 상품을 조회
+        <if test="Id != null">
+            FROM user_store us
+            JOIN store_stock_report ssr ON us.id = ssr.user_store_id
+            JOIN product p ON ssr.product_id = p.id
+            WHERE us.id = #{Id}
+        </if>
+        <if test="Id == null">
+            FROM store_stock_report ssr
+            JOIN product p ON ssr.product_id = p.id
+        </if>
         ORDER BY ssr.out_qty DESC
         LIMIT 5;
     </select>
