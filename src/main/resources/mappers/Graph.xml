@@ -6,40 +6,45 @@
     <select id="selectSalesList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailySalesDto">
         select str.ymd as date, sum(p.price * str.out_qty) as sales
         from store_stock_report str
-            join product p on str.product_id = p.id
-        where str.user_store_id = #{userStoreId}
+        join product p on str.product_id = p.id
+        <if test="userStoreId != null">where str.user_store_id = #{userStoreId}</if>
         group by ymd
         having ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
-            and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
+        and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
         order by ymd
     </select>
 
-    <select id="selectCategoryList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.CategorySalesDto">
-        select (select name category_id from category where id = p.category_id) as categoryName, sum(p.price * str.out_qty) as sales
+    <select id="selectCategoryList" parameterType="map"
+            resultType="com.goldensnitch.qudditch.dto.graph.CategorySalesDto">
+        select (select name category_id from category where id = p.category_id) as categoryName,
+        sum(p.price * str.out_qty) as sales
         from store_stock_report str
-            join product p on str.product_id = p.id
-        where user_store_id = #{userStoreId}
-            and ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
-            and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
+        join product p on str.product_id = p.id
+        where
+        <if test="userStoreId != null">user_store_id = #{userStoreId} and</if>
+        ymd <![CDATA[>=]]> DATE_FORMAT(#{yearMonth}, '%Y-%m-01')
+        and ymd <![CDATA[<=]]> LAST_DAY(#{yearMonth})
         group by p.category_id
         order by sales desc
     </select>
 
-    <select id="selectDailyVisitorList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailyVisitorDto">
+    <select id="selectDailyVisitorList" parameterType="map"
+            resultType="com.goldensnitch.qudditch.dto.graph.DailyVisitorDto">
         select ymd as date, sum(cnt) as count
         from store_visitor_daily_hour
-        where user_store_id = #{userStoreId}
-            and YEAR(ymd) = YEAR(#{yearMonth})
-            and MONTH(ymd) = MONTH(#{yearMonth})
+        where
+        <if test="userStoreId != null">user_store_id = #{userStoreId} and</if>
+        YEAR(ymd) = YEAR(#{yearMonth})
+        and MONTH(ymd) = MONTH(#{yearMonth})
         group by ymd
         order by ymd
     </select>
 
-    <select id="selectDailyHourVisitorList" parameterType="map" resultType="com.goldensnitch.qudditch.dto.graph.DailyHourVisitorDto">
+    <select id="selectDailyHourVisitorList" parameterType="map"
+            resultType="com.goldensnitch.qudditch.dto.graph.DailyHourVisitorDto">
         select HOUR(hour) as hour, sum(cnt) as count
         from store_visitor_daily_hour
-        where user_store_id = #{userStoreId}
-            and ymd = #{date}
+        where <if test="userStoreId != null">user_store_id = #{userStoreId} and</if> ymd = #{date}
         group by HOUR(hour)
         order by HOUR(hour)
     </select>
