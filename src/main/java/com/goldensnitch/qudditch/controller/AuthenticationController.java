@@ -1,13 +1,10 @@
 package com.goldensnitch.qudditch.controller;
 
 
-import com.goldensnitch.qudditch.dto.*;
-import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
-import com.goldensnitch.qudditch.mapper.UserAdminMapper;
-import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
-import com.goldensnitch.qudditch.service.ExtendedUserDetails;
-import com.goldensnitch.qudditch.service.OCRService;
-import com.goldensnitch.qudditch.service.UserService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,33 +17,50 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.goldensnitch.qudditch.dto.AuthResponse;
+import com.goldensnitch.qudditch.dto.LoginRequest;
+import com.goldensnitch.qudditch.dto.RegisterStoreRequest;
+import com.goldensnitch.qudditch.dto.SocialLoginDto;
+import com.goldensnitch.qudditch.dto.UserAdmin;
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
+import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
+import com.goldensnitch.qudditch.mapper.UserAdminMapper;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+import com.goldensnitch.qudditch.service.OCRService;
+import com.goldensnitch.qudditch.service.UserService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 public class AuthenticationController {
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider; // JWT 토큰 제공자 의존성 주입
     private final UserCustomerMapper userCustomerMapper;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final UserAdminMapper userAdminMapper; // 생성자 주입 추가
-    @Autowired
-    private OCRService ocrService;
-
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
     @Autowired
     public AuthenticationController(
-            AuthenticationManager authenticationManager,
-            JwtTokenProvider jwtTokenProvider,
-            UserCustomerMapper userCustomerMapper,
-            UserService userService,
-            PasswordEncoder passwordEncoder,
-            UserAdminMapper userAdminMapper // 생성자 주입 추가
+        AuthenticationManager authenticationManager,
+        JwtTokenProvider jwtTokenProvider,
+        UserCustomerMapper userCustomerMapper,
+        UserService userService,
+        PasswordEncoder passwordEncoder,
+        UserAdminMapper userAdminMapper // 생성자 주입 추가
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -56,66 +70,72 @@ public class AuthenticationController {
         this.userAdminMapper = userAdminMapper; // 초기화 추가
     }
 
+    //일반 유저 로그인 처리(http-only쿠키 사용)
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-        // 회원 여부 확인 로직
-        UserCustomer user = userCustomerMapper.selectUserByEmail(loginRequest.getEmail());
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("회원가입이 필요합니다.");
-        }
+public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
+    // 회원 여부 확인 로직, 비밀번호 검증 로직 추가
+    Authentication authentication = authenticationManager
+        .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+    SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 비밀번호 검증 로직 (입력된 비밀번호와 데이터베이스에 저장된 해시를 비교)
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀렸습니다.");
-        }
+    String jwtToken = jwtTokenProvider.generateToken(authentication);
 
-        // 인증 로직 (비밀번호 검증이 성공하면 토큰을 생성)
-        Authentication authentication =
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+    // HTTP-Only 쿠키 생성 및 설정
+    boolean secureCookie = false; // 로컬 환경을 위한 설정 변경
+    Cookie cookie = new Cookie("jwt", jwtToken);
+    cookie.setHttpOnly(true);
+    cookie.setSecure(secureCookie); 
+    cookie.setPath("/");
+    response.addCookie(cookie);
 
-        authentication = authenticationManager.authenticate(authentication);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+    // 토큰 대신 간단한 성공 메시지를 선택적으로 반환
+    // return ResponseEntity.ok("사용자 인증에 성공했습니다.");
+    return ResponseEntity.ok(new AuthResponse(jwtToken));
+}
 
-        // JWT 토큰 생성
-        String token = jwtTokenProvider.generateToken(authentication);
-        AuthResponse authResponse = new AuthResponse(token);
-
-        return ResponseEntity.ok(authResponse);
-    }
+    
 
     @PostMapping("/store/login")
     public ResponseEntity<?> authenticateStore(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+            .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // 토큰 생성 및 반환
         String token = jwtTokenProvider.generateToken(authentication);
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
-    // 소셜 로그인 및 이메일 인증 통합을 위한 컨트롤러 메소드 추가
-    // @PostMapping("/social-login/naver")
-    // public ResponseEntity<?> socialLogin(@RequestBody SocialLoginDto socialLoginDto) {
-    //     // 네이버 소셜 로그인 후 받은 정보를 처리하는 로직을 구현
-    //     // 이 때, 필요한 정보를 DTO로부터 받아오고 처리 결과를 반환합니다.
-    //     // 예시로 AuthResponse를 사용하여 토큰과 함께 응답
-    //     String token = "가상의 토큰"; // 이 부분은 실제 로직에 따라 생성된 토큰으로 대체해야 합니다.
-    //     return ResponseEntity.ok(new AuthResponse(token));
-    // }
-    @PostMapping("/social-login/{provider}")
-    public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto) {
-        // UserService의 계정 통합 로직 호출
-        ExtendedUserDetails user = (ExtendedUserDetails) userService.processUserIntegration(provider, socialLoginDto);
+    // @PostMapping("/social-login/{provider}")
+    // public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto) {
+    //     // UserService의 계정 통합 로직 호출
+    //     ExtendedUserDetails user = (ExtendedUserDetails) userService.processUserIntegration(provider, socialLoginDto);
 
-        if (user != null) {
-            // 계정 통합 또는 생성 후 성공적으로 처리된 경우, JWT 토큰 발급 및 반환
-            String token = jwtTokenProvider.generateToken(new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities()));
-            return ResponseEntity.ok(new AuthResponse(token));
-        } else {
-            // 처리 중 오류 발생 시
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계정 처리 중 오류 발생");
-        }
-    }
+    //     if (user != null) {
+    //         // 계정 통합 또는 생성 후 성공적으로 처리된 경우, JWT 토큰 발급 및 반환
+    //         String token = jwtTokenProvider.generateToken(new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities()));
+    //         return ResponseEntity.ok(new AuthResponse(token));
+    //     } else {
+    //         // 처리 중 오류 발생 시
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계정 처리 중 오류 발생");
+    //     }
+    // }
+
+    @PostMapping("/social-login/{provider}")
+public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto, HttpServletResponse response) {
+    // 기존의 소셜 로그인 로직...
+    String jwtToken = "소셜_로그인_로직으로부터_토큰";
+
+    // HTTP-Only 쿠키 생성 및 설정
+    Cookie cookie = new Cookie("jwt", jwtToken);
+    cookie.setHttpOnly(true);
+    cookie.setSecure(true); // 프로덕션 환경에서 HTTPS를 위해 true로 설정하세요.
+    cookie.setPath("/");
+    response.addCookie(cookie);
+
+    // 토큰 대신 간단한 성공 메시지를 선택적으로 반환
+    return ResponseEntity.ok("소셜 로그인에 성공했습니다.");
+}
+
 
     @GetMapping("/loginSuccess")
     public String loginSuccess(@AuthenticationPrincipal OAuth2User user) {
@@ -174,6 +194,10 @@ public class AuthenticationController {
         // UserService의 회원가입 로직을 호출하여 처리결과를 반환한다.
         return userService.registerUserCustomer(userCustomer);
     }
+
+    @Autowired
+    private OCRService ocrService;
+
 
     // 점주 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/store")
@@ -239,7 +263,7 @@ public class AuthenticationController {
 
         // 인증 로직
         Authentication authentication =
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
         authentication = authenticationManager.authenticate(authentication);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
