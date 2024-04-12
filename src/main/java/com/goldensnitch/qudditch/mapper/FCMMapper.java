@@ -13,8 +13,12 @@ public interface FCMMapper {
     int countCustomerDevice(int userCustomerId);
     int insertCustomerDevice(CustomerDevice dto);
     int updateCustomerDeviceToken(CustomerDevice dto);
+    int updateCustomerLoggedIn(CustomerDevice dto);
+    int updateCustomerState(CustomerDevice active);
     int deleteCustomerDevice(int userCustomerId);
     List<CustomerAlertLog> selectCustomerAlertLogs(int userCustomerId);
+    int updateCustomerAlertLogReadedAt(CustomerAlertLog dto);
     int insertCustomerAlertLog(CustomerAlertLog dto);
     UserCustomer selectUserCustomerByEmail(String email);
+    int deleteCustomerAlertLog(int id);
 }
