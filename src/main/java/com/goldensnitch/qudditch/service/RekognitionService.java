@@ -149,10 +149,8 @@ public class RekognitionService {
                 "storeId", storeId
         );
 
-        redisService.deleteHashOps(REDIS_KEY_EMOTION_PREFIX + userId, "storeId");
+        redisService.deleteHashOps(REDIS_KEY_EMOTION_PREFIX + userId, storeId.toString());
         redisService.setHashOps(REDIS_KEY_EMOTION_PREFIX + userId, map, Duration.ofMinutes(USER_EMOTION_TIMEOUT));
-
-
     }
 
 

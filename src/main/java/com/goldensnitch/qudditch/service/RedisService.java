@@ -58,9 +58,9 @@ public class RedisService {
     }
 
     @Transactional(readOnly = true)
-    public String getHashOps(String key, String hashKey) {
+    public Map<Object, Object> getHashOps(String key, String hashKey) {
         HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
-        return Boolean.TRUE.equals(values.hasKey(key, hashKey)) ? (String) redisTemplate.opsForHash().get(key, hashKey) : "";
+        return values.entries(key);
     }
 
     public void deleteHashOps(String key, String hashKey) {
