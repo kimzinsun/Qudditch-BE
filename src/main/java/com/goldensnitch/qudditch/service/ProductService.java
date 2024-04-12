@@ -34,4 +34,7 @@ public class ProductService {
         return productMapper.getBestProductList();
     }
 
+    public List<Product> selectProductByNameAndStoreId(Integer storeId, String productName) {
+        return productMapper.selectProductByNameAndStoreId(storeId, productName);
+    }
 }

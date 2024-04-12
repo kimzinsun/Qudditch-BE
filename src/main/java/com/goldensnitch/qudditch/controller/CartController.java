@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -25,8 +26,12 @@ public class CartController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> addItemToCart(@RequestParam Integer storeId, @AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam Integer productId, @RequestParam Integer usedPoint){
+    public ResponseEntity<?> addItemToCart(@RequestBody Map<String, Integer> requestBody, @AuthenticationPrincipal ExtendedUserDetails userDetails){
         try{
+            int storeId = requestBody.get("storeId");
+            int productId = requestBody.get("productId");
+            int usedPoint = requestBody.get("usedPoint");
+
             int userCustomerId = userDetails.getId();
 
             boolean addItemSuccess = cartService.addItemToCart(storeId, userCustomerId, productId, usedPoint);
