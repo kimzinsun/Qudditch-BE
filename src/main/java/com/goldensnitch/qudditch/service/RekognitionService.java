@@ -129,7 +129,7 @@ public class RekognitionService {
                 .withAttributes(Attribute.ALL);
     }
 
-    public void createDetectFacesResult(GetFaceLivenessSessionResultsResult livenessSessionResult) {
+    public void createDetectFacesResult(GetFaceLivenessSessionResultsResult livenessSessionResult, Integer userId) {
         try {
             Image imageFromS3 = getImageFromS3(livenessSessionResult.getReferenceImage().getS3Object().getName());
             DetectFacesResult result = rekognitionClient.detectFaces(new DetectFacesRequest().withImage(imageFromS3).withAttributes(Attribute.ALL));
@@ -141,6 +141,7 @@ public class RekognitionService {
                             faceDetails.get(0).getAgeRange().getHigh()) / 2
             );
             userPersona.setGender(faceDetails.get(0).getGender().getValue());
+            userPersona.setUserCustomerId(userId);
             personaMapper.insertPersona(userPersona);
 
 
