@@ -120,7 +120,6 @@ public class RekognitionService {
                 )
             )
         );
-        createDetectFacesResult(createDetectFacesRequest(getImageFromS3(livenessSessionResult.getReferenceImage().getS3Object().getName())));
         return indexFacesResults;
     }
 
@@ -130,9 +129,10 @@ public class RekognitionService {
                 .withAttributes(Attribute.ALL);
     }
 
-    private void createDetectFacesResult(DetectFacesRequest request) {
+    public void createDetectFacesResult(GetFaceLivenessSessionResultsResult livenessSessionResult) {
         try {
-            DetectFacesResult result = rekognitionClient.detectFaces(request);
+            Image imageFromS3 = getImageFromS3(livenessSessionResult.getReferenceImage().getS3Object().getName());
+            DetectFacesResult result = rekognitionClient.detectFaces(new DetectFacesRequest().withImage(imageFromS3).withAttributes(Attribute.ALL));
             List < FaceDetail > faceDetails = result.getFaceDetails();
 
             UserPersona userPersona = new UserPersona();
