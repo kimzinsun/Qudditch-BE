@@ -188,6 +188,41 @@ public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody
         }
     }
 
+    // 이메일 중복 체크
+    @PostMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        boolean exists = userService.checkEmailExists(email); // 가정한 사용자 이메일 체크 로직
+        Map<String, String> response = new HashMap<>();
+        if (exists) {
+            response.put("message", "이미 사용 중인 이메일입니다.");
+        } else {
+            response.put("message", "사용 가능한 이메일입니다.");
+        }
+        return ResponseEntity.ok(response); // JSON 형식으로 반환
+    }
+    // 이메일 인증 요청
+    @PostMapping("/request-verification")
+    public ResponseEntity<?> requestVerification(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        // userService를 통해 이메일 인증을 요청하는 로직
+        boolean sent = userService.sendVerificationEmail(email);
+        if (sent) {
+            return ResponseEntity.ok().body("인증 이메일을 발송하였습니다.");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이메일 발송에 실패했습니다.");
+        }
+    }
+    // 계정 인증
+    @PostMapping("/verify-account")
+    public ResponseEntity<?> verifyAccount(@RequestParam String code) {
+        boolean verified = userService.verifyAccount(code);
+        if (verified) {
+            return ResponseEntity.ok().body("계정이 인증되었습니다.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유효하지 않은 인증 코드입니다.");
+        }
+    }
     // 일반 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/customer")
     public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {

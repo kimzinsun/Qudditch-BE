@@ -44,21 +44,6 @@ public class JwtTokenProvider {
     @Value("${jwt.expirationInMs}")
     private int JWT_EXPIRATION_IN_MS;
 
-//    public JwtTokenProvider() {
-//        byte[] keyBytes =jwtSecret.getBytes(StandardCharsets.UTF_8);
-////        this.sKey = Keys.hmacShaKeyFor(keyBytes);
-//        // this.secretKey = Base64.getEncoder().encodeToString(keyBytes);
-//        this.secretKey = keyBytes;
-//        checkKeyLength(keyBytes);
-//    }
-//
-//    private void checkKeyLength(byte[] keyBytes) {
-//        if (keyBytes.length * 8 < 256) {
-//            logger.error("Key length is less than 256 bits.");
-//            throw new IllegalArgumentException("Key length must be at least 256 bits.");
-//        }
-//    }
-
     // 권한을 토큰에 포함시키는 메소드
     public String generateToken(Authentication authentication) {
         Date now = new Date();
@@ -85,15 +70,15 @@ public class JwtTokenProvider {
                 .setSigningKey(JWT_SECRET).build().parseSignedClaims(authToken);
             return true;
         } catch (ExpiredJwtException e) {
-            logger.error("Expired JWT token.", e);
+            logger.error("인증 토큰이 만료되었습니다.", e);
         } catch (UnsupportedJwtException e) {
-            logger.error("Unsupported JWT token.", e);
+            logger.error("지원하지 않는 인증 토큰입니다.", e);
         } catch (MalformedJwtException e) {
-            logger.error("Invalid JWT token.", e);
+            logger.error("잘못된 인증 토큰 형식입니다", e);
         } catch (SecurityException e) {
-            logger.error("Invalid JWT signature.", e);
+            logger.error("인증 토큰의 서명이 유효하지 않습니다.", e);
         } catch (IllegalArgumentException e) {
-            logger.error("JWT token compact of handler are invalid.", e);
+            logger.error("인증 토큰의 compact한 형태가 유효하지 않습니다.", e);
         }
 
         return false;
@@ -104,32 +89,6 @@ public class JwtTokenProvider {
             // v.decryptWith(sKey)
             .build().parseSignedClaims(token).getPayload();
     }
-
-    // 단일 권항을 가져오는 메서드
-    // public Collection<? extends GrantedAuthority> getAuthorities(String token) {
-    //     Claims claims = extractClaims(token);
-    //     List<GrantedAuthority> authorities = new ArrayList<>();
-
-    //     // 클레임에서 역할 정보 추출
-    //     String role = claims.get("role", String.class);
-
-    //     // 역할에 따라 GrantedAuthority 객체 생성 및 추가
-    //     if (role != null) {
-    //         switch (role) {
-    //             case "USER":
-    //                 authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-    //                 break;
-    //             case "STORE":
-    //                 authorities.add(new SimpleGrantedAuthority("ROLE_STORE"));
-    //                 break;
-    //             case "ADMIN":
-    //                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-    //                 break;
-
-    //             default:
-    //                 throw new IllegalArgumentException("Unknown role: " + role);
-    //         }
-    //     }
 
     public List<SimpleGrantedAuthority> getAuthorities(String token) {
         Claims claims = extractClaims(token);

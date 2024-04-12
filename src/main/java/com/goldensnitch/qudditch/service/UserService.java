@@ -1,12 +1,9 @@
 package com.goldensnitch.qudditch.service;
 
-import com.goldensnitch.qudditch.dto.SocialLoginDto;
-import com.goldensnitch.qudditch.dto.UserAdmin;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
-import com.goldensnitch.qudditch.mapper.UserAdminMapper;
-import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
-import com.goldensnitch.qudditch.mapper.UserStoreMapper;
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +16,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
-
+import com.goldensnitch.qudditch.dto.SocialLoginDto;
+import com.goldensnitch.qudditch.dto.UserAdmin;
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
+import com.goldensnitch.qudditch.mapper.UserAdminMapper;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.mapper.UserStoreMapper;
 @Service
 public class UserService {
     private final UserCustomerMapper userCustomerMapper;
@@ -208,6 +208,38 @@ public class UserService {
         } catch (Exception e) {
             log.error("알 수 없는 오류", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("알 수 없는 오류가 발생했습니다.");
+        }
+    }
+
+    public boolean checkEmailExists(String email) {
+         // 데이터베이스에서 email을 검색하여 존재하는지 확인하는 로직 구현
+        UserCustomer user = userCustomerMapper.selectUserByEmail(email);
+        return user != null;
+    }
+
+    public boolean sendVerificationEmail(String email) {
+        String verificationCode = VerificationCodeGenerator.generate();
+        try {
+            emailService.sendVerificationEmail(email, verificationCode);
+            // 데이터베이스에 인증 코드 저장 로직 추가 필요
+            // 예: userCustomerMapper.updateVerificationCode(email, verificationCode);
+            return true;
+        } catch (IOException e) {
+            log.error("인증 이메일 보내기에 실패하였습니다.", e);
+            return false;
+        }
+    }
+
+    public boolean verifyAccount(String code) {
+        // 전달받은 코드로 사용자를 찾아서 상태를 업데이트하는 로직 구현
+        UserCustomer user = userCustomerMapper.findByVerificationCode(code);
+        if (user != null) {
+            user.setState(1); // 인증된 사용자로 상태 변경, 상태 코드에 따라 달라질 수 있음
+            user.setVerificationCode(null); // 인증 후 코드 제거
+            userCustomerMapper.updateUserCustomer(user);
+            return true;
+        } else {
+            return false;
         }
     }
 }
