@@ -278,7 +278,7 @@ public class PaymentService {
         paymentRequest.setTotal_amount(total_amount);
         paymentRequest.setTax_free_amount(0);
         paymentRequest.setVat_amount(vat_amount);
-        paymentRequest.setApproval_url("http://localhost:8080/approve");
+        paymentRequest.setApproval_url("https://vercel.qudditch.dawoony.com/m/order-history/approve");
         paymentRequest.setCancel_url("http://localhost:8080/cancel");
         paymentRequest.setFail_url("http://localhost:8080/fail");
         paymentRequest.setUsedPoint(usedPoints);
