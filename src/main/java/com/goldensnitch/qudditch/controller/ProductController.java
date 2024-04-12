@@ -44,6 +44,25 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping("/find/{storeId}/{productName}")
+    public ResponseEntity<Map<String, Object>> selectProductByName(@PathVariable Integer storeId, @PathVariable String productName) {
+        List<Product> productList = productService.selectProductByNameAndStoreId(storeId, productName);
+        String status = productList.isEmpty() ? "fail" : "success";
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", status);
+
+
+        if (productList.isEmpty()) {
+            response.put("message", "해당 상품이 존재하지 않습니다.");
+        } else {
+            response.put("data", productList);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
     // selectProductByName로 먼저 이름을 검색해서 productId를 가져온 후에 selectStoreStockByProductId로 호출하는 방식으로 변경
 
     @GetMapping("/detail/{productId}")
