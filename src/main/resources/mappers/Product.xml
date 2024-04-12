@@ -59,4 +59,10 @@
         group by cop.product_id
     </select>
 
+    <select id="selectProductByNameAndStoreId">
+        select p.id, p.name, p.image, p.price, p.unit_price, p.expiration_date, ss.qty
+        from product p, store_stock ss, store s, user_store us
+        where p.name like concat('%','${productName}','%') and ss.user_store_id = us.id and us.store_id = s.id and ss.product_id = p.id  and s.id = ${storeId}
+    </select>
+
 </mapper>

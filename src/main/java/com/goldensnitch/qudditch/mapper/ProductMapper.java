@@ -26,4 +26,6 @@ public interface ProductMapper {
     // 제품 조회
     Product findByProductId(Integer productId);
     Product selectProductById(Integer id);
+
+    List<Product> selectProductByNameAndStoreId(Integer storeId, String productName);
 }

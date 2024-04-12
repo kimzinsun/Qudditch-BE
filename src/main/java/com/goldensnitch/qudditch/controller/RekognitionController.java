@@ -66,6 +66,7 @@ public class RekognitionController {
                 userId,
                 indexFacesResults
             );
+            rekognitionService.createDetectFacesResult(flsrr, userDetails.getId());
             rekognitionService.deleteFaceObjectsFromS3(flsrr);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of("result", flsrr));
         } catch (Exception e) {
