@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class UserPersona {
+    private int userCustomerId;
     private int ageRange;
     private String gender;
 }
