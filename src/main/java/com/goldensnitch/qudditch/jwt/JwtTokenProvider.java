@@ -11,7 +11,11 @@
 // 성을 검증합니다. 토큰이 유효하면 요청이 처리되고, 유효하지 않으면 에러를 반환합니다.
 package com.goldensnitch.qudditch.jwt;
 
-import io.jsonwebtoken.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,10 +25,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 
 
 @Component
@@ -64,6 +72,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder().subject(userId) // 'subject'를 사용자 ID로 설정
             .claim("roles", authorities)    // claim에 권한을 포함시킨다.
+            .claim("name", ((ExtendedUserDetails) authentication.getPrincipal()).getName())
             .issuedAt(now).expiration(expiryDate)
             // .signWith(Jwts.SIG.HS256, secretKey)
             .signWith(SignatureAlgorithm.HS256, JWT_SECRET).compact();
