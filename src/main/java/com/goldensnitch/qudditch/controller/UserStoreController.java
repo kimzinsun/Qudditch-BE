@@ -27,9 +27,9 @@ public class UserStoreController {
     public ResponseEntity<?> selectStore(@RequestParam Integer storeId){
         Integer userStoreId = userStoreService.selectUserStore(storeId);
         if(userStoreId != null) {
-            return ResponseEntity.ok().body("userStore ID: " + userStoreId);
+            return ResponseEntity.ok().body("{\"userStoreId\": \"" + userStoreId + "\"}");
         } else {
-            return ResponseEntity.badRequest().body("Invalid store ID or store could not be selected.");
+            return ResponseEntity.ok().body("{\"userStoreId\": null}");
         }
     }
 
