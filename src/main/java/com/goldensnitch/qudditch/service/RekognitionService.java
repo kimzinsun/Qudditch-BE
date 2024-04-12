@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -27,6 +28,9 @@ public class RekognitionService {
     private static final int USER_ENTER_TIMEOUT = 1;
     private static final Float USER_MATCH_THRESHOLD = 95.0f;
     private static final String REDIS_KEY_PREFIX = "face-";
+    private static final String REDIS_KEY_EMOTION_PREFIX = "emotion-";
+    private static final int USER_EMOTION_TIMEOUT = 1440;
+
     private final RedisService redisService;
     private final AmazonRekognition rekognitionClient;
     private final AmazonS3 s3Client;
@@ -129,11 +133,34 @@ public class RekognitionService {
                 .withAttributes(Attribute.ALL);
     }
 
+
+    public Image createImage(GetFaceLivenessSessionResultsResult livenessSessionResult) {
+        return getImageFromS3(livenessSessionResult.getReferenceImage().getS3Object().getName());
+    }
+
+    public void detectFaceEmotion(MultipartFile file, Integer userId, Integer storeId) {
+        Image image = getImageFromFormFile(file);
+
+        DetectFacesResult result = rekognitionClient.detectFaces(new DetectFacesRequest().withImage(image).withAttributes(Attribute.ALL));
+        List<FaceDetail> faceDetails = result.getFaceDetails();
+
+        Map<String, Object> map = Map.of(
+                "emotion", faceDetails.get(0).getEmotions().get(0).getType(),
+                "storeId", storeId
+        );
+
+        redisService.deleteHashOps(REDIS_KEY_EMOTION_PREFIX + userId, "storeId");
+        redisService.setHashOps(REDIS_KEY_EMOTION_PREFIX + userId, map, Duration.ofMinutes(USER_EMOTION_TIMEOUT));
+
+
+    }
+
+
     public void createDetectFacesResult(GetFaceLivenessSessionResultsResult livenessSessionResult, Integer userId) {
         try {
-            Image imageFromS3 = getImageFromS3(livenessSessionResult.getReferenceImage().getS3Object().getName());
+            Image imageFromS3 = createImage(livenessSessionResult);
             DetectFacesResult result = rekognitionClient.detectFaces(new DetectFacesRequest().withImage(imageFromS3).withAttributes(Attribute.ALL));
-            List < FaceDetail > faceDetails = result.getFaceDetails();
+            List<FaceDetail> faceDetails = result.getFaceDetails();
 
             UserPersona userPersona = new UserPersona();
             userPersona.setAgeRange((
@@ -221,7 +248,8 @@ public class RekognitionService {
     }
 
     public SearchUsersByImageResult searchUsersByImage(MultipartFile file) {
-        SearchUsersByImageRequest request = createSearchUsersByImageRequest(getImageFromFormFile(file));
+        Image image = getImageFromFormFile(file);
+        SearchUsersByImageRequest request = createSearchUsersByImageRequest(image);
 
         return rekognitionClient.searchUsersByImage(request);
     }
