@@ -41,4 +41,18 @@ public class BestProductController {
             "bestProducts", list
         );
     }
+
+    @GetMapping("/best/age")
+    public Map<String, Object> BestProductByAge(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
+        return Map.of(
+            "bestProducts", bestProductService.bestProductByAge()
+        );
+    }
+
+    @GetMapping("/best/gender")
+    public Map<String, Object> BestProductByGender(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
+        return Map.of(
+            "bestProducts", bestProductService.bestProductByGender()
+        );
+    }
 }
