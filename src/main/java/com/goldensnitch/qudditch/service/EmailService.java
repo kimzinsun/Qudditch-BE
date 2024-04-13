@@ -99,9 +99,9 @@ public class EmailService {
     
 
     public void sendPasswordResetEmail(String toEmail, String temporaryPassword) throws IOException {
-        String subject = "Password Reset Request";
-        String contentText = "Here is your temporary password: " + temporaryPassword +
-                            "\nPlease change your password after logging in.";
+        String subject = "비밀번호 재설정 요청";
+        String contentText = "임시 비밀번호: " + temporaryPassword +
+                            "\n로그인 후 비밀번호를 변경해 주세요.";
         
         Email from = new Email(this.fromEmail);
         Email to = new Email(toEmail);

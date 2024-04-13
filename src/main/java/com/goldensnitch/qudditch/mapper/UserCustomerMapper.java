@@ -14,9 +14,12 @@ public interface UserCustomerMapper {
 
     UserCustomer findByVerificationCode(String verificationCode);
 
-    UserCustomer updateUserCustomer(UserCustomer user);
+    int  updateUserCustomer(UserCustomer user);
 
     Object findByEmail(String email);
 
     UserCustomer selectUserByName(String name);
+
+    // 이메일로 사용자의 인증 코드를 업데이트하는 메서드
+    void updateVerificationCode(String email, String verificationCode);
 }

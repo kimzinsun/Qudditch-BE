@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +37,7 @@ import com.goldensnitch.qudditch.dto.UserStore;
 import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
 import com.goldensnitch.qudditch.mapper.UserAdminMapper;
 import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.service.EmailSendingException;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.OCRService;
 import com.goldensnitch.qudditch.service.UserService;
@@ -206,6 +209,7 @@ public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody
     public ResponseEntity<?> requestVerification(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
         // userService를 통해 이메일 인증을 요청하는 로직
+        userService.sendEmailVerification(email);
         boolean sent = userService.sendVerificationEmail(email);
         if (sent) {
             return ResponseEntity.ok().body("인증 이메일을 발송하였습니다.");
@@ -228,6 +232,31 @@ public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody
     public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
         // UserService의 회원가입 로직을 호출하여 처리결과를 반환한다.
         return userService.registerUserCustomer(userCustomer);
+    }
+
+    // 일반 유저 이메일 찾기
+    @PostMapping("/find-email")
+    public ResponseEntity<?> findEmail(@RequestBody Map<String, String> payload) {
+        String name = payload.get("name");
+        try {
+            String email = userService.findEmailByName(name);
+            return ResponseEntity.ok(Collections.singletonMap("email", email));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 이름으로 등록된 이메일이 없습니다.");
+        }
+    }
+    // 일반 유저 비밀번호 재설정
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        try {
+            userService.sendPasswordResetEmail(email);
+            return ResponseEntity.ok(Collections.singletonMap("message", "비밀번호 재설정 이메일이 발송되었습니다."));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 전송에 실패했습니다.");
+        } catch (EmailSendingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @Autowired

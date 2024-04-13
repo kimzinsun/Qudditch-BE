@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,65 @@ public class UserService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("알 수 없는 오류가 발생했습니다.");
         }
     }
+    // 이메일 인증 코드를 생성하고 이메일을 전송하는 메서드
+    public void sendEmailVerification(String email) {
+        try {
+            String verificationCode = VerificationCodeGenerator.generate();
+            userCustomerMapper.updateVerificationCode(email, verificationCode); // DB에 코드 저장
+            emailService.sendVerificationEmail(email, verificationCode); // 이메일 전송
+        } catch (IOException e) {
+            log.error("이메일 전송 중 에러 발생", e);
+            // 필요하다면 여기서 사용자에게 오류를 알리는 처리를 하세요.
+        }
+    }
 
+    // 인증 코드를 검증하고 사용자 상태를 업데이트하는 메서드
+    public boolean verifyUser(String verificationCode) {
+        UserCustomer user = userCustomerMapper.findByVerificationCode(verificationCode);
+        if (user != null) {
+            user.setState(1); // '1'은 '인증 완료' 상태를 나타낸다고 가정
+            userCustomerMapper.updateUserCustomer(user); // DB에 상태 업데이트
+            return true;
+        }
+        return false;
+    }
+
+    // 해당 이름으로 사용자를 찾고 이메일을 반환하는 메서드
+    public String findEmailByName(String name) {
+        UserCustomer user = userCustomerMapper.selectUserByName(name);
+        if (user != null) {
+            return user.getEmail();
+        } else {
+            throw new UsernameNotFoundException("해당 이름으로 등록된 사용자가 없습니다.");
+        }
+    }
+
+    // 사용자의 이메일을 받아서 비밀번호 재설정 이메일을 보내는 메서드
+    public void sendPasswordResetEmail(String email) {
+        UserCustomer user = userCustomerMapper.selectUserByEmail(email);
+        if (user != null) {
+            // 대문자 알파벳 6자리 랜덤 비밀번호 생성
+            String temporaryPassword = RandomStringUtils.randomAlphabetic(6).toUpperCase();
+            // 비밀번호를 암호화하여 설정
+            user.setPassword(passwordEncoder.encode(temporaryPassword));
+            // 데이터베이스에 비밀번호 업데이트하고 결과를 확인
+            int updatedRows = userCustomerMapper.updateUserCustomer(user);
+            if (updatedRows == 0) {
+                // 업데이트된 행이 없으면 예외를 발생시킵니다.
+                throw new UpdateFailedException("유저 비밀번호 초기화에 실패하였습니다., no rows updated.");
+            }
+            
+            // 비밀번호 재설정 이메일 전송
+            try {
+                emailService.sendPasswordResetEmail(email, temporaryPassword);
+            } catch (IOException e) {
+                log.error("비밀번호 재설정 이메일 전송에 실패했습니다.", e);
+                throw new EmailSendingException("비밀번호 재설정 이메일 전송에 실패했습니다.");
+            }
+        } else {
+            throw new UsernameNotFoundException("해당 이메일을 가진 사용자를 찾을 수 없습니다: " + email);
+        }
+    }
     // 점주 회원가입 로직
     public ResponseEntity<String> registerUserStore(UserStore userStore) {
         try {
