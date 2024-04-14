@@ -29,4 +29,5 @@ public class CartItem { /* 장바구니에 담길 아이템 관리(DB에서 조�
     private Integer userCustomerId;         // 고객 ID 추가
 
     private String image;
+    private Integer maxQty;
 }

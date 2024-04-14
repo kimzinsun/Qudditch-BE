@@ -278,9 +278,9 @@ public class PaymentService {
         paymentRequest.setTotal_amount(total_amount);
         paymentRequest.setTax_free_amount(0);
         paymentRequest.setVat_amount(vat_amount);
-        paymentRequest.setApproval_url("https://vercel.qudditch.dawoony.com/m/order-history");
-        paymentRequest.setCancel_url("http://localhost:8080/cancel");
-        paymentRequest.setFail_url("http://localhost:8080/fail");
+        paymentRequest.setApproval_url("https://vercel.qudditch.dawoony.com/m/store-select/cart");
+        paymentRequest.setCancel_url("https://vercel.qudditch.dawoony.com/m/store-select/cart");
+        paymentRequest.setFail_url("https://vercel.qudditch.dawoony.com/m/store-select/cart");
         paymentRequest.setUsedPoint(usedPoints);
         paymentRequest.setTotalPay(totalPay);
         paymentRequest.setEarnPoint(earnPoints);
