@@ -165,6 +165,15 @@
         SELECT ss.qty
         FROM store_stock ss
         WHERE ss.product_id = #{productId} AND ss.user_store_id = #{userStoreId}
+        ORDER BY ss.receipt_at ASC
+            LIMIT 1
+    </select>
+
+    <!-- userStoreId와 productId로 전체 가게의 상품재고 수 합계 확인 -->
+    <select id="selectTotalStockQtyByProductIdAndUserStoreId" resultType="Integer">
+        SELECT SUM(ss.qty) AS totalQty
+        FROM store_stock ss
+        WHERE ss.product_id = #{productId} AND ss.user_store_id = #{userStoreId}
     </select>
 
     <!-- 재고 수량 업데이트 메서드 -->

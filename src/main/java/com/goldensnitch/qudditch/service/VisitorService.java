@@ -3,6 +3,9 @@ package com.goldensnitch.qudditch.service;
 import com.goldensnitch.qudditch.mapper.VisitorMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class VisitorService {
     private final VisitorMapper visitorMapper;
@@ -23,5 +26,13 @@ public class VisitorService {
             return 0;
         }
         return visitorMapper.getMonthVisitor(storeId, yearMonth);
+    }
+
+    public List<Map<String, Object>> getAgeGenderVisitor() {
+        return visitorMapper.getAgeGenderVisitor();
+    }
+
+    public List<Map<String, Object>> getGenderVisitor() {
+        return visitorMapper.getGenderVisitor();
     }
 }

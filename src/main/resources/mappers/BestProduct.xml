@@ -22,4 +22,41 @@
         LIMIT 5;
     </select>
 
+    <select id="bestProductByAge">
+        SELECT age_range,
+               CONCAT(p.brand, ' ', p.name) AS name,
+               qty                          AS max_qty
+        FROM (SELECT u.age_range,
+                     cop.product_id,
+                     SUM(cop.qty)                                                            AS qty,
+                     ROW_NUMBER() OVER (PARTITION BY u.age_range ORDER BY SUM(cop.qty) DESC) AS row_num
+              FROM user_persona AS u
+                       JOIN
+                   customer_order AS co ON u.user_customer_id = co.user_customer_id
+                       JOIN
+                   customer_order_product AS cop ON co.id = cop.customer_order_id
+              GROUP BY u.age_range,
+                       cop.product_id) AS ranked_products
+                 INNER JOIN product AS p ON ranked_products.product_id = p.id
+        WHERE row_num = 1;
+    </select>
+
+    <select id="bestProductByGender">
+        SELECT gender,
+               CONCAT(p.brand, ' ', p.name) AS name,
+               qty                          AS max_qty
+        FROM (SELECT u.gender,
+                     cop.product_id,
+                     SUM(cop.qty)                                                         AS qty,
+                     ROW_NUMBER() OVER (PARTITION BY u.gender ORDER BY SUM(cop.qty) DESC) AS row_num
+              FROM user_persona AS u
+                       JOIN
+                   customer_order AS co ON u.user_customer_id = co.user_customer_id
+                       JOIN
+                   customer_order_product AS cop ON co.id = cop.customer_order_id
+              GROUP BY u.gender,
+                       cop.product_id) AS ranked_products
+                 INNER JOIN product AS p ON ranked_products.product_id = p.id
+        WHERE row_num = 1;
+    </select>
 </mapper>
