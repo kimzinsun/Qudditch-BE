@@ -143,7 +143,6 @@ public class RekognitionController {
                                 .map(MatchedUser::getUserId)
                                 .map(Integer::parseInt).distinct().toList()
                 );
-                // file, user customer Id
                 if (!userIds.isEmpty()) {
                     rekognitionService.detectFaceEmotion(file, userIds.get(0), userDetails.getId());
 
