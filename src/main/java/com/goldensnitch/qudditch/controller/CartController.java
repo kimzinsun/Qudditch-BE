@@ -6,6 +6,7 @@ import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -55,16 +56,26 @@ public class CartController {
     public ResponseEntity<?> getCartItems(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
         int userCustomerId = userDetails.getId();
 
-        List<CartItem> cartItems = cartService.getCartItem(userCustomerId);
-        return ResponseEntity.ok(cartItems);
+        try{
+            List<CartItem> cartItems = cartService.getCartItem(userCustomerId);
+            return ResponseEntity.ok(cartItems);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @PutMapping("")
     public ResponseEntity<?> updateItemQty(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestBody CartItem cartItem){
         int userCustomerId = userDetails.getId();
 
-        cartService.updateItemQty(userCustomerId, cartItem);
-        return ResponseEntity.ok().body("Cart item updated successfully.");
+        try{
+            cartService.updateItemQty(userCustomerId, cartItem);
+            return ResponseEntity.ok().body("Cart item updated successfully.");
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error updating cart item: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{productId}")
