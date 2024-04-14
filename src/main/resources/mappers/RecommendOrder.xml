@@ -17,5 +17,21 @@
     where user_store_id = #{userStoreId} and s.product_id = p.id and <![CDATA[ s.qty <= 10 ]]>
 </select>
 
+    <select id="selectProductByUserStoreIdAndCategoryId">
+        SELECT s.*,
+               c.name  as categoryName,
+               p.name  as productName,
+               p.brand as brand,
+               p.image as productImage,
+               p.price as productPrice
+        FROM store_stock s,
+             product p,
+             category c
+        WHERE user_store_id = #{storeId}
+          and s.product_id = p.id
+          and p.category_id = c.id
+          and p.category_id = #{categoryId}
+
+    </select>
 
 </mapper>
