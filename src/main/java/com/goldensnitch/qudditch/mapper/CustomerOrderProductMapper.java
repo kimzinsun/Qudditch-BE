@@ -2,6 +2,7 @@ package com.goldensnitch.qudditch.mapper;
 
 import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import com.goldensnitch.qudditch.dto.payment.OrderProductStoreInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -30,12 +31,12 @@ public interface CustomerOrderProductMapper  {
 
     List<CustomerOrderProduct> findOrderProductsByOrderId(int customerOrderId);
 
-    List<CustomerOrderProduct> findOrderProductsByPartnerOrderId(String partnerOrderId);
-
     // 사용자 ID로 포인트 사용 및 적립 내역 조회
     List<CustomerOrder> findPointHistoryByCustomerId(Integer userCustomerId);
 
     void updateOrderStatus(@Param("tid") Map<String, Object> tid);
+
+    List<OrderProductStoreInfo> findOrderProductsAndStoreInfoByPartnerOrderId(String partnerOrderId);
 
     // List<CustomerOrder> findByMonthYear(Map<String, Object> params);
 }

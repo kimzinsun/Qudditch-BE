@@ -24,6 +24,18 @@
         <result column="qty" property="qty"/>
     </resultMap>
 
+    <resultMap id="orderProductStoreInfoResultMap" type="com.goldensnitch.qudditch.dto.payment.OrderProductStoreInfo">
+        <result property="productId" column="product_id"/>
+        <result property="qty" column="qty"/>
+        <result property="productPrice" column="product_price"/>
+        <result property="productName" column="product_name"/>
+        <result property="storeId" column="store_id"/>
+        <result property="storeName" column="store_name"/>
+        <result property="storeAddress" column="store_address"/>
+        <result property="storePhone" column="store_phone"/>
+        <result property="businessNumber" column="business_number"/>
+    </resultMap>
+
     <!-- CustomerOrder에 추가 -->
     <!-- localdate를 사용해서 바꿔야하는지 확인: #{orderedAt, jdbcType=DATE} -->
     <insert id="insertCustomerOrder" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder"
@@ -86,6 +98,21 @@
         FROM customer_order_product cop
                  JOIN customer_order co ON co.id = cop.customer_order_id
                  JOIN product p ON cop.product_id = p.id
+        WHERE co.partner_order_id = #{partnerOrderId}
+    </select>
+
+    <!-- partner_order_id로 주문 상품 정보 및 매장 정보 조회 -->
+    <select id="findOrderProductsAndStoreInfoByPartnerOrderId" parameterType="java.lang.String" resultMap="orderProductStoreInfoResultMap">
+        SELECT
+            cop.product_id, cop.qty, p.price as product_price,
+            p.name as product_name,
+            s.id as store_id, s.name as store_name, s.address as store_address, s.phone as store_phone,
+            us.bn_number as business_number
+        FROM customer_order_product cop
+                 JOIN customer_order co ON co.id = cop.customer_order_id
+                 JOIN product p ON cop.product_id = p.id
+                 JOIN user_store us ON co.user_store_id = us.id
+                 JOIN store s ON us.store_id = s.id
         WHERE co.partner_order_id = #{partnerOrderId}
     </select>
 
