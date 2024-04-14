@@ -50,10 +50,17 @@ public class RedisService {
         values.putAll(key, data);
     }
 
-    @Transactional(readOnly = true)
-    public String getHashOps(String key, String hashKey) {
+    public void setHashOps(String key, Map<String, Object> data, Duration duration) {
         HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
-        return Boolean.TRUE.equals(values.hasKey(key, hashKey)) ? (String) redisTemplate.opsForHash().get(key, hashKey) : "";
+        values.putAll(key, data);
+        redisTemplate.expire(key, duration);
+
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Object, Object> getHashOps(String key, String hashKey) {
+        HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
+        return values.entries(key);
     }
 
     public void deleteHashOps(String key, String hashKey) {
