@@ -28,8 +28,8 @@ public class VisitorService {
         return visitorMapper.getMonthVisitor(storeId, yearMonth);
     }
 
-    public List<Map<String, Object>> getAgeVisitor() {
-        return visitorMapper.getAgeVisitor();
+    public List<Map<String, Object>> getAgeGenderVisitor() {
+        return visitorMapper.getAgeGenderVisitor();
     }
 
     public List<Map<String, Object>> getGenderVisitor() {

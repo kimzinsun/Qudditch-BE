@@ -43,8 +43,8 @@ public class VisitorController {
     }
 
     @GetMapping("/age")
-    public ResponseEntity<Map<String, Object>> getAgeVisitor() {
-        return ResponseEntity.ok(Map.of("result", visitorService.getAgeVisitor()));
+    public ResponseEntity<Map<String, Object>> getAgeGenderVisitor() {
+        return ResponseEntity.ok(Map.of("result", visitorService.getAgeGenderVisitor()));
     }
 
     @GetMapping("/gender")

@@ -14,7 +14,7 @@ public interface VisitorMapper {
     Integer getMonthVisitor(Integer storeId, String yearMonth);
 
     @MapKey("age")
-    List<Map<String, Object>> getAgeVisitor();
+    List<Map<String, Object>> getAgeGenderVisitor();
 
     @MapKey("gender")
     List<Map<String, Object>> getGenderVisitor();
