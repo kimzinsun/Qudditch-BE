@@ -23,26 +23,33 @@
     </select>
 
     <select id="bestProductByAge">
-        SELECT up.age_range,
-               CONCAT(t1.brand, ' ', t1.name) AS name,
-               t1.qty
-        FROM user_persona up
-                 INNER JOIN (SELECT up1.age_range,
-                                    p.name       AS name,
-                                    p.brand,
-                                    SUM(cop.qty) AS qty
-                             FROM customer_order_product cop
-                                      INNER JOIN
-                                  product p ON cop.product_id = p.id
-                                      INNER JOIN
-                                  customer_order co ON co.id = cop.customer_order_id
-                                      INNER JOIN
-                                  user_persona up1 ON co.user_customer_id = up1.user_customer_id
-                             GROUP BY up1.age_range, p.brand,
-                                      p.name) AS t1 ON up.age_range = t1.age_range
-                 INNER JOIN (SELECT t2.age_range,
-                                    MAX(t2.qty) AS qty
-                             FROM (SELECT up2.age_range,
+        SELECT t2.age_group,
+               CONCAT(t2.brand, ' ', t2.name) AS name,
+               t2.qty
+        FROM (SELECT CASE
+                         WHEN up.age_range BETWEEN 0 AND 19 THEN 10
+                         WHEN up.age_range BETWEEN 20 AND 29 THEN 20
+                         WHEN up.age_range BETWEEN 30 AND 39 THEN 30
+                         WHEN up.age_range BETWEEN 40 AND 49 THEN 40
+                         WHEN up.age_range BETWEEN 50 AND 59 THEN 50
+                         WHEN up.age_range BETWEEN 60 AND 69 THEN 60
+                         ELSE 70 END           AS age_group,
+                     t1.brand,
+                     t1.name,
+                     t1.qty,
+                     ROW_NUMBER() OVER (PARTITION BY CASE
+                                                         WHEN up.age_range BETWEEN 0 AND 19 THEN 10
+                                                         WHEN up.age_range BETWEEN 20 AND 29 THEN 20
+                                                         WHEN up.age_range BETWEEN 30 AND 39 THEN 30
+                                                         WHEN up.age_range BETWEEN 40 AND 49 THEN 40
+                                                         WHEN up.age_range BETWEEN 50 AND 59 THEN 50
+                                                         WHEN up.age_range BETWEEN 60 AND 69 THEN 60
+                                                         ELSE 70 END
+                         ORDER BY t1.qty DESC) AS row_num
+              FROM user_persona up
+                       INNER JOIN (SELECT up1.age_range,
+                                          p.name       AS name,
+                                          p.brand,
                                           SUM(cop.qty) AS qty
                                    FROM customer_order_product cop
                                             INNER JOIN
@@ -50,34 +57,25 @@
                                             INNER JOIN
                                         customer_order co ON co.id = cop.customer_order_id
                                             INNER JOIN
-                                        user_persona up2 ON co.user_customer_id = up2.user_customer_id
-                                   GROUP BY up2.age_range,
-                                            p.name) AS t2
-                             GROUP BY t2.age_range) AS t3 ON up.age_range = t3.age_range AND t1.qty = t3.qty;
+                                        user_persona up1 ON co.user_customer_id = up1.user_customer_id
+                                   GROUP BY up1.age_range, p.brand,
+                                            p.name) AS t1 ON up.age_range = t1.age_range) AS t2
+        WHERE row_num = 1;
     </select>
 
     <select id="bestProductByGender">
-        SELECT up.gender,
-               CONCAT(t1.brand, ' ', t1.name) AS name,
-               t1.qty
-        FROM user_persona up
-                 INNER JOIN (SELECT up1.gender,
-                                    p.name       AS name,
-                                    p.brand,
-                                    SUM(cop.qty) AS qty
-                             FROM customer_order_product cop
-                                      INNER JOIN
-                                  product p ON cop.product_id = p.id
-                                      INNER JOIN
-                                  customer_order co ON co.id = cop.customer_order_id
-                                      INNER JOIN
-                                  user_persona up1 ON co.user_customer_id = up1.user_customer_id
-                             GROUP BY up1.gender,
-                                      p.brand,
-                                      p.name) AS t1 ON up.gender = t1.gender
-                 INNER JOIN (SELECT t2.gender,
-                                    MAX(t2.qty) AS qty
-                             FROM (SELECT up2.gender,
+        SELECT t2.gender,
+               CONCAT(t2.brand, ' ', t2.name) AS name,
+               t2.qty
+        FROM (SELECT up.gender,
+                     t1.brand,
+                     t1.name,
+                     t1.qty,
+                     ROW_NUMBER() OVER (PARTITION BY up.gender ORDER BY t1.qty DESC) AS row_num
+              FROM user_persona up
+                       INNER JOIN (SELECT up1.gender,
+                                          p.name       AS name,
+                                          p.brand,
                                           SUM(cop.qty) AS qty
                                    FROM customer_order_product cop
                                             INNER JOIN
@@ -85,9 +83,9 @@
                                             INNER JOIN
                                         customer_order co ON co.id = cop.customer_order_id
                                             INNER JOIN
-                                        user_persona up2 ON co.user_customer_id = up2.user_customer_id
-                                   GROUP BY up2.gender,
-                                            p.name) AS t2
-                             GROUP BY t2.gender) AS t3 ON up.gender = t3.gender AND t1.qty = t3.qty;
+                                        user_persona up1 ON co.user_customer_id = up1.user_customer_id
+                                   GROUP BY up1.gender, p.brand,
+                                            p.name) AS t1 ON up.gender = t1.gender) AS t2
+        WHERE row_num = 1;
     </select>
 </mapper>
