@@ -94,10 +94,10 @@
     </select>
 
     <!-- 사용자 ID로 포인트 사용 및 적립 내역 조회 -->
-    <select id="findPointHistoryByCustomerId" parameterType="java.lang.Integer" resultMap="customerOrderResultMap">
-        SELECT *
-        FROM customer_order
-        WHERE user_customer_id = #{userCustomerId}
-        ORDER BY ordered_at DESC
+    <select id="findPointHistoryByCustomerId" parameterType="java.lang.Integer" resultType="com.goldensnitch.qudditch.dto.point">
+        SELECT co.earn_point AS earnPoint, co.used_point AS usedPoint, co.ordered_at AS orderedAt, s.name
+        FROM customer_order co
+                 JOIN store s ON co.user_store_id = s.id
+        WHERE co.user_customer_id = #{userCustomerId}
     </select>
 </mapper>
