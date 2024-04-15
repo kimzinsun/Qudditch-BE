@@ -28,6 +28,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -267,7 +268,7 @@ public class AuthenticationController {
 
     // 점주 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/store")
-    public ResponseEntity<?> registerStore(@ModelAttribute RegisterStoreRequest request) {
+    public ResponseEntity<Map<String, Object>> registerStore(@ModelAttribute RegisterStoreRequest request) {
         try {
 //            String extractedBusinessNumber = ocrService.extractBusinessNumber(request.getBusinessLicenseFile());
 //
@@ -283,19 +284,19 @@ public class AuthenticationController {
             userStore.setEmail(request.getEmail());
             userStore.setPassword(request.getPassword());
             userStore.setName(request.getName());
-            userStore.setBnNumber(Integer.parseInt(request.getBusinessNumber().replaceAll("-", "")));
+            userStore.setBnNumber(request.getBusinessNumber().replaceAll("-", ""));
             try {
                 userService.registerUserStore(userStore);
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("점주 등록 중 오류가 발생했습니다.");
+                return ResponseEntity.ok(Map.of("message", "점주 등록에 실패했습니다.", "status", "fail"));
             }
 
-            return ResponseEntity.ok("점주 등록이 완료되었습니다.");
+            return ResponseEntity.ok(Map.of("message", "점주 등록이 완료되었습니다.", "status", "success"));
         } catch (Exception e) {
             // 에러 로깅
             Logger log = LoggerFactory.getLogger(AuthenticationController.class);
             log.error("회원가입 처리 중 오류 발생", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원가입 처리 중 오류가 발생했습니다.");
+            return ResponseEntity.ok(Map.of("message", "점주 등록에 실패했습니다.", "status", "fail"));
         }
     }
 
@@ -340,5 +341,24 @@ public class AuthenticationController {
         log.info("Admin authenticated successfully: {}", authResponse);
         return ResponseEntity.ok(authResponse);
     }
+
+    @PostMapping("/request-verification-store")
+    public ResponseEntity<Map<String, Object>> requestVerificationStore(@RequestBody Map<String, Object> body) throws IOException {
+        if (userService.requestVerificationStore(body.get("email").toString())) {
+            return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다.", "status", "success"));
+        } else {
+            return ResponseEntity.ok(Map.of("message", "인증 코드 발송에 실패했습니다.", "status", "fail"));
+        }
+    }
+
+    @PostMapping("/verify-store")
+    public ResponseEntity<Map<String, Object>> verifyStore(@RequestBody Map<String, Object> payload) {
+        if(userService.verifyStore(payload.get("email").toString(), payload.get("code").toString())) {
+            return ResponseEntity.ok(Map.of("message", "매장 인증이 완료되었습니다.", "status", "success"));
+        } else {
+            return ResponseEntity.ok(Map.of("message", "인증 코드가 틀렸습니다.", "status", "fail"));
+        }
+    }
+
 
 }
