@@ -68,24 +68,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http//  CSRF 비활성화
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            //  세션 관리 정책 설정
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll())
-            .oauth2Login(oauth2 -> oauth2
-                .redirectionEndpoint(redirection -> redirection
-                    .baseUri("/oauth2/callback/*"))
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(oauth2UserService())) // 이 메서드는 oauth2UserService를 참조합니다
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/login")
-                .deleteCookies("JSESSIONID")
-                .permitAll())
-            // JwtTokenFilter를 필터 체인에 추가합니다.
-            .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                //  세션 관리 정책 설정
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll())
+                .oauth2Login(oauth2 -> oauth2
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("/oauth2/callback/*"))
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oauth2UserService())) // 이 메서드는 oauth2UserService를 참조합니다
+                )
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login")
+                        .deleteCookies("JSESSIONID")
+                        .permitAll())
+                // JwtTokenFilter를 필터 체인에 추가합니다.
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

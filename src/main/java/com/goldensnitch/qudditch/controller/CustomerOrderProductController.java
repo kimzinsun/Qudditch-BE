@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.CustomerOrder;
+import com.goldensnitch.qudditch.dto.payment.OrderProductStoreInfo;
 import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
@@ -20,30 +21,32 @@ public class CustomerOrderProductController {
         this.customerOrderProductService = customerOrderProductService;
     }
 
-    @GetMapping("/receipt/{orderId}")
-    public ResponseEntity<?> generateReceipt(@PathVariable Integer orderId){
-        try{
-            OrderResponse order = customerOrderProductService.generateReceipt(orderId); // Adjust based on actual return type
-            return ResponseEntity.ok(order);
-        } catch (RuntimeException e) {
+    @GetMapping("/receipt")
+    public ResponseEntity<List<OrderProductStoreInfo>> getOrderDetails(@RequestParam String partnerOrderId) {
+        List<OrderProductStoreInfo> details = customerOrderProductService.getOrderProductsAndStoreInfo(partnerOrderId);
+        if (details.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(details);
     }
 
     // getId 변경 - 03.29
     @GetMapping("/history")
-    public ResponseEntity<List<?>> getMonthlyOrderHistory(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam String monthYear){
+    public ResponseEntity<List<OrderResponse>> getMonthlyOrderHistory(@RequestParam String monthYear, @RequestParam Integer status){
         try {
-            int userCustomerId = userDetails.getId();
 
-            List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(userCustomerId, monthYear);
+            List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(monthYear, status);
+            if (history.isEmpty()) {
+                // 비어 있는 경우 적절한 HTTP 상태 코드와 함께 빈 리스트 반환
+                return ResponseEntity.noContent().build();
+            }
             return ResponseEntity.ok(history);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
         }
     }
 
-    @GetMapping("/history/point/{userCustomerId}")
+    @GetMapping("/history/point")
     public ResponseEntity<List<CustomerOrder>> getPointHistoryByCustomerId(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
         try {
             int userCustomerId = userDetails.getId();

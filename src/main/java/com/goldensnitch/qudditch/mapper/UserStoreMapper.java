@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.mapper;
 
+import com.goldensnitch.qudditch.dto.Store;
 import com.goldensnitch.qudditch.dto.UserStore;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -23,4 +24,7 @@ public interface UserStoreMapper {
     Integer findUserStoreIdByStoreId(Integer storeId);
 
     Integer countUserStoreById(Integer userStoreId);
+
+    // 점포 키워드 검색반환
+    List<Store> searchByStoreName(String name);
 }

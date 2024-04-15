@@ -1,12 +1,13 @@
 package com.goldensnitch.qudditch.mapper;
 
-import java.util.List;
-
+import com.goldensnitch.qudditch.dto.CustomerOrder;
+import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import com.goldensnitch.qudditch.dto.payment.OrderProductStoreInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.goldensnitch.qudditch.dto.CustomerOrder;
-import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface CustomerOrderProductMapper  {
@@ -16,9 +17,11 @@ public interface CustomerOrderProductMapper  {
 
     // CustomerOrder findById(int id);
 
-    List<CustomerOrder> findByUserCustomerId(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear);
+    List<CustomerOrder> findByUserCustomerId(String monthYear);
 
-    CustomerOrder findById(int customerOrderId);
+     List<CustomerOrder> findByMonthYear(String monthYear, Integer status);
+
+     CustomerOrder findById(int customerOrderId);
 
     CustomerOrder findByPartnerOrderId(String partnerOrderId);
 
@@ -29,5 +32,11 @@ public interface CustomerOrderProductMapper  {
     List<CustomerOrderProduct> findOrderProductsByOrderId(int customerOrderId);
 
     // 사용자 ID로 포인트 사용 및 적립 내역 조회
-    List<CustomerOrder> findPointHistoryByCustomerId(@Param("userCustomerId") Integer userCustomerId);
+    List<CustomerOrder> findPointHistoryByCustomerId(Integer userCustomerId);
+
+    void updateOrderStatus(@Param("tid") Map<String, Object> tid);
+
+    List<OrderProductStoreInfo> findOrderProductsAndStoreInfoByPartnerOrderId(String partnerOrderId);
+
+    // List<CustomerOrder> findByMonthYear(Map<String, Object> params);
 }

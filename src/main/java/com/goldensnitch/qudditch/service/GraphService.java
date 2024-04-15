@@ -17,7 +17,7 @@ public class GraphService {
         this.mapper = mapper;
     }
 
-    public SalesGraphDto getSalesGraph(int userStoreId, String yearMonth){
+    public SalesGraphDto getSalesGraph(Integer userStoreId, String yearMonth) {
         SalesGraphDto dto = new SalesGraphDto();
 
         yearMonth = getMySqlDate(yearMonth);
@@ -26,7 +26,7 @@ public class GraphService {
 
         dto.setList(list);
 
-        if (!list.isEmpty()){
+        if (!list.isEmpty()) {
             dto.setStart(list.get(0).getDate());
             dto.setEnd(list.get(list.size() - 1).getDate());
         }
@@ -34,7 +34,7 @@ public class GraphService {
         return dto;
     }
 
-    public CategoryGraphDto getCategoryGraph(int userStoreId, String yearMonth){
+    public CategoryGraphDto getCategoryGraph(Integer userStoreId, String yearMonth) {
         CategoryGraphDto dto = new CategoryGraphDto();
 
         yearMonth = getMySqlDate(yearMonth);
@@ -50,7 +50,7 @@ public class GraphService {
         return dto;
     }
 
-    public VisitorGraphDto getVisitorGraph(int userStoreId, String yearMonth){
+    public VisitorGraphDto getVisitorGraph(Integer userStoreId, String yearMonth) {
         VisitorGraphDto dto = new VisitorGraphDto();
 
         yearMonth = getMySqlDate(yearMonth);
@@ -59,11 +59,11 @@ public class GraphService {
 
         dto.setList(dayList);
 
-        if(!dayList.isEmpty()){
-            for (DailyVisitorDto dayDto: dayList){
+        if (!dayList.isEmpty()) {
+            for (DailyVisitorDto dayDto : dayList) {
                 String date = dayDto.getDate();
 
-                List<DailyHourVisitorDto> hourList =  mapper.selectDailyHourVisitorList(userStoreId, date);
+                List<DailyHourVisitorDto> hourList = mapper.selectDailyHourVisitorList(userStoreId, date);
 
                 dayDto.setList(hourList);
             }
@@ -72,7 +72,7 @@ public class GraphService {
         return dto;
     }
 
-    private String getMySqlDate(String yearMonth){
+    private String getMySqlDate(String yearMonth) {
         String yearMonthDay;
 
         yearMonth += "-01";
@@ -81,7 +81,7 @@ public class GraphService {
         return yearMonthDay;
     }
 
-    private String getLastDate(String currentDate){
+    private String getLastDate(String currentDate) {
         LocalDate date = LocalDate.parse(currentDate);
         LocalDate lastMonthDate = date.minusMonths(1);
 

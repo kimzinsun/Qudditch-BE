@@ -7,12 +7,85 @@
     <!-- 가게별 베스트 판매상품 TOP5 -->
     <select id="BestProduct" resultType="BestProduct" parameterType="Integer">
         SELECT concat(p.brand, ' ', p.name) name, ssr.out_qty
-        FROM user_store us
-                 JOIN store_stock_report ssr ON us.id = ssr.user_store_id
-                 JOIN product p ON ssr.product_id = p.id
-        WHERE us.id = #{Id}
+        # Id 가 null 일 경우 전체 가게의 베스트 상품을 조회
+        <if test="Id != null">
+            FROM user_store us
+            JOIN store_stock_report ssr ON us.id = ssr.user_store_id
+            JOIN product p ON ssr.product_id = p.id
+            WHERE us.id = #{Id}
+        </if>
+        <if test="Id == null">
+            FROM store_stock_report ssr
+            JOIN product p ON ssr.product_id = p.id
+        </if>
         ORDER BY ssr.out_qty DESC
         LIMIT 5;
     </select>
 
+    <select id="bestProductByAge">
+        SELECT t2.age_group,
+               CONCAT(t2.brand, ' ', t2.name) AS name,
+               t2.qty
+        FROM (SELECT CASE
+                         WHEN up.age_range BETWEEN 0 AND 19 THEN 10
+                         WHEN up.age_range BETWEEN 20 AND 29 THEN 20
+                         WHEN up.age_range BETWEEN 30 AND 39 THEN 30
+                         WHEN up.age_range BETWEEN 40 AND 49 THEN 40
+                         WHEN up.age_range BETWEEN 50 AND 59 THEN 50
+                         WHEN up.age_range BETWEEN 60 AND 69 THEN 60
+                         ELSE 70 END           AS age_group,
+                     t1.brand,
+                     t1.name,
+                     t1.qty,
+                     ROW_NUMBER() OVER (PARTITION BY CASE
+                                                         WHEN up.age_range BETWEEN 0 AND 19 THEN 10
+                                                         WHEN up.age_range BETWEEN 20 AND 29 THEN 20
+                                                         WHEN up.age_range BETWEEN 30 AND 39 THEN 30
+                                                         WHEN up.age_range BETWEEN 40 AND 49 THEN 40
+                                                         WHEN up.age_range BETWEEN 50 AND 59 THEN 50
+                                                         WHEN up.age_range BETWEEN 60 AND 69 THEN 60
+                                                         ELSE 70 END
+                         ORDER BY t1.qty DESC) AS row_num
+              FROM user_persona up
+                       INNER JOIN (SELECT up1.age_range,
+                                          p.name       AS name,
+                                          p.brand,
+                                          SUM(cop.qty) AS qty
+                                   FROM customer_order_product cop
+                                            INNER JOIN
+                                        product p ON cop.product_id = p.id
+                                            INNER JOIN
+                                        customer_order co ON co.id = cop.customer_order_id
+                                            INNER JOIN
+                                        user_persona up1 ON co.user_customer_id = up1.user_customer_id
+                                   GROUP BY up1.age_range, p.brand,
+                                            p.name) AS t1 ON up.age_range = t1.age_range) AS t2
+        WHERE row_num = 1;
+    </select>
+
+    <select id="bestProductByGender">
+        SELECT t2.gender,
+               CONCAT(t2.brand, ' ', t2.name) AS name,
+               t2.qty
+        FROM (SELECT up.gender,
+                     t1.brand,
+                     t1.name,
+                     t1.qty,
+                     ROW_NUMBER() OVER (PARTITION BY up.gender ORDER BY t1.qty DESC) AS row_num
+              FROM user_persona up
+                       INNER JOIN (SELECT up1.gender,
+                                          p.name       AS name,
+                                          p.brand,
+                                          SUM(cop.qty) AS qty
+                                   FROM customer_order_product cop
+                                            INNER JOIN
+                                        product p ON cop.product_id = p.id
+                                            INNER JOIN
+                                        customer_order co ON co.id = cop.customer_order_id
+                                            INNER JOIN
+                                        user_persona up1 ON co.user_customer_id = up1.user_customer_id
+                                   GROUP BY up1.gender, p.brand,
+                                            p.name) AS t1 ON up.gender = t1.gender) AS t2
+        WHERE row_num = 1;
+    </select>
 </mapper>

@@ -13,13 +13,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class FCMNotificationService {
+
+    private HashMap<Integer, SseEmitter> container = new HashMap<>();
 
     private final FirebaseMessaging firebaseMessaging;
 
@@ -32,8 +37,11 @@ public class FCMNotificationService {
         boolean isNotDuplicate = mapper.countCustomerDevice(dto.getUserCustomerId()) == 0;
 
         if(isNotDuplicate){
+            dto.setState(true);
+            dto.setLoggedIn(true);
             result = mapper.insertCustomerDevice(dto);
         }else{
+            dto.setLoggedIn(true);
             result = mapper.updateCustomerDeviceToken(dto);
         }
 
@@ -44,6 +52,14 @@ public class FCMNotificationService {
         return mapper.deleteCustomerDevice(userCustomerId) > 0;
     }
 
+    public boolean loggedOutCustomerDevie(int userCustomerId){
+        CustomerDevice customerDevice = new CustomerDevice();
+        customerDevice.setUserCustomerId(userCustomerId);
+        customerDevice.setLoggedIn(false);
+
+        return mapper.updateCustomerLoggedIn(customerDevice) > 0;
+    }
+
     public String sendNotificationByToken(FCMNotificationRequestDto requestDto) {
         CustomerDevice customerDevice = mapper.selectCustomerDevice(requestDto.getTargetUserId());
 
@@ -51,6 +67,14 @@ public class FCMNotificationService {
             String token = customerDevice.getToken();
 
             if (token!= null && !token.isEmpty()) {
+                if(!customerDevice.getState()){
+                    return "알림을 허용하지 않고 있습니다. targetUserId=" + requestDto.getTargetUserId();
+                }
+
+                if(!customerDevice.getLoggedIn()){
+                    return "로그아웃 상태입니다. targetUserId=" + requestDto.getTargetUserId();
+                }
+
                 Notification notification = Notification.builder()
                         .setTitle(requestDto.getTitle())
                         .setBody(requestDto.getBody())
@@ -61,6 +85,7 @@ public class FCMNotificationService {
                         .setNotification(notification)
                         .build();
                 try {
+                    sendEventById(customerDevice.getUserCustomerId());
                     firebaseMessaging.send(message);
 
                     CustomerAlertLog alertLog = new CustomerAlertLog();
@@ -84,11 +109,63 @@ public class FCMNotificationService {
         }
     }
 
+    public boolean setNotificationOnOff(CustomerDevice active){
+        return mapper.updateCustomerState(active) > 0;
+    }
+
+    public CustomerDevice getCustomerDevice(int userCustomerId){
+        return mapper.selectCustomerDevice(userCustomerId);
+    }
+
     public List<CustomerAlertLog> getCustomerAlertLogs(int userCustomerId){
         return mapper.selectCustomerAlertLogs(userCustomerId);
     }
 
     public UserCustomer getUserCustomerByEmail(String email){
         return mapper.selectUserCustomerByEmail(email);
+    }
+
+    public boolean setAlertReadedAt(CustomerAlertLog dto){
+        return mapper.updateCustomerAlertLogReadedAt(dto) > 0;
+    }
+
+    public boolean removeCustomerAlertLog(int id){
+        return  mapper.deleteCustomerAlertLog(id) > 0;
+    }
+
+    public SseEmitter connect(final int customerUserId) {
+        SseEmitter sseEmitter = new SseEmitter(300_000L);
+
+        // timeOut 시 처리
+        sseEmitter.onTimeout(() -> {
+            container.remove(customerUserId);
+        });
+
+        sseEmitter.onCompletion(() -> {
+                container.remove(customerUserId);
+        });
+
+        container.put(customerUserId, sseEmitter);
+
+        return sseEmitter;
+    }
+
+    public void sendEventById(int userCustomerId){
+
+        SseEmitter sseEmitter = container.get(userCustomerId);
+
+        if(sseEmitter == null){
+            return;
+        }
+
+        final SseEmitter.SseEventBuilder sseEventBuilder = SseEmitter.event()
+                .name("connect")
+                .data("NOTIFY_FCM")
+                .reconnectTime(3000L);
+        try {
+            sseEmitter.send(sseEventBuilder);
+        } catch (IOException e) {
+            sseEmitter.complete();
+        }
     }
 }

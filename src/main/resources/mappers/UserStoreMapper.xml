@@ -70,5 +70,10 @@
         WHERE name LIKE CONCAT('%', #{name}, '%')
     </select>
 
-
+    <!-- store명 검색 -->
+    <select id="searchByStoreName" resultType="com.goldensnitch.qudditch.dto.Store">
+        SELECT *
+        FROM store
+        WHERE name LIKE CONCAT('%', #{name}, '%')
+    </select>
 </mapper>

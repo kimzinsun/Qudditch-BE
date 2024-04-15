@@ -10,8 +10,11 @@ import java.util.List;
 
 @Mapper
 public interface GraphMapper {
-    List<DailySalesDto> selectSalesList(int userStoreId, String yearMonth);
-    List<CategorySalesDto> selectCategoryList(int userStoreId, String yearMonth);
-    List<DailyVisitorDto> selectDailyVisitorList(int userStoreId, String yearMonth);
-    List<DailyHourVisitorDto> selectDailyHourVisitorList(int userStoreId, String date);
+    List<DailySalesDto> selectSalesList(Integer userStoreId, String yearMonth);
+
+    List<CategorySalesDto> selectCategoryList(Integer userStoreId, String yearMonth);
+
+    List<DailyVisitorDto> selectDailyVisitorList(Integer userStoreId, String yearMonth);
+
+    List<DailyHourVisitorDto> selectDailyHourVisitorList(Integer userStoreId, String date);
 }

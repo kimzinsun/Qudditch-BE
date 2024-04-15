@@ -56,6 +56,29 @@
     <select id="getDisposeLogCount" parameterType="int" resultType="int">
         SELECT COUNT(*) FROM store_stock_disuse WHERE user_store_id = #{userStoreId}
     </select>
+    <select id="getDisposeItemList" resultType="DisposalItem">
+        SELECT s.*, p.name as productName, p.brand as brand, p.price as productPrice
+        FROM store_stock s,
+             product p
+        WHERE s.user_store_id = ${userStoreId}
+          and s.product_id = p.id
+          and s.expired_at <![CDATA[ <= ]]> now()
+          and s.qty > 0
+        limit #{recordSize} offset #{offset}
+    </select>
+    <select id="cntDisposeItem" resultType="int">
+        SELECT COUNT(*)
+        FROM store_stock s, product p
+        WHERE s.user_store_id = ${userStoreId} and s.product_id = p.id and s.expired_at <![CDATA[ <= ]]> now()
+    </select>
+    <update id="updateDispose">
+        update store_stock
+        set qty = qty - 1
+        where user_store_id = ${userStoreId} and id=${storeStockId}
+    </update>
+    <select id="getDisposeItemByStoreStockId">
+        SELECT * FROM store_stock WHERE product_id = ${productId} and user_store_id = ${userStoreId} and expired_at <![CDATA[ <= ]]> now() and qty > 0
+    </select>
     <select id="getDisposeLog" parameterType="int" resultType="DisposeLog">
         SELECT * FROM store_stock_disuse WHERE user_store_id = #{userStoreId} limit #{recordSize} offset #{offset}
     </select>
@@ -140,6 +163,15 @@
     <!-- userStoreId와 productId로 가게의 상품재고 수 확인 -->
     <select id="selectStockQtyByProductIdAndUserStoreId" resultType="Integer">
         SELECT ss.qty
+        FROM store_stock ss
+        WHERE ss.product_id = #{productId} AND ss.user_store_id = #{userStoreId}
+        ORDER BY ss.receipt_at ASC
+            LIMIT 1
+    </select>
+
+    <!-- userStoreId와 productId로 전체 가게의 상품재고 수 합계 확인 -->
+    <select id="selectTotalStockQtyByProductIdAndUserStoreId" resultType="Integer">
+        SELECT SUM(ss.qty) AS totalQty
         FROM store_stock ss
         WHERE ss.product_id = #{productId} AND ss.user_store_id = #{userStoreId}
     </select>

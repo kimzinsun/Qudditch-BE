@@ -5,15 +5,33 @@
         select cnt
         from store_visitor_daily
         where ymd = ${date}
-          and user_store_id = ${storeId}
+        <if test="storeId != null">
+            and user_store_id = ${storeId}
+        </if>
     </select>
 
     <select id="getMonthVisitor" resultType="Integer">
         select sum(cnt)
         from store_visitor_daily
         where substring(ymd, 1, 7) = '${yearMonth}'
-        and user_store_id = ${storeId}
+        <if test="storeId != null">
+            and user_store_id = ${storeId}
+        </if>
     </select>
 
+    <select id="getAgeGenderVisitor" resultType="java.util.Map">
+        SELECT user_persona.age_range, user_persona.gender, COUNT(*) AS count
+        FROM store_visitor_log
+                 INNER JOIN user_persona ON store_visitor_log.user_customer_id = user_persona.user_customer_id
+        GROUP BY user_persona.age_range, user_persona.gender
+        ORDER BY count DESC;
+    </select>
 
+    <select id="getGenderVisitor" resultType="java.util.Map">
+        SELECT user_persona.gender, COUNT(*) AS count
+        FROM store_visitor_log
+                 INNER JOIN user_persona ON store_visitor_log.user_customer_id = user_persona.user_customer_id
+        GROUP BY user_persona.gender
+        ORDER BY count DESC;
+    </select>
 </mapper>

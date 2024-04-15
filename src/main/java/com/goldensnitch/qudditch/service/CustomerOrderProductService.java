@@ -2,6 +2,7 @@ package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import com.goldensnitch.qudditch.dto.payment.OrderProductStoreInfo;
 import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,25 +21,28 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
         this.customerOrderProductMapper = customerOrderProductMapper;
     }
 
-    public OrderResponse generateReceipt(Integer orderId) {
-        // 주문 정보 조회
-        CustomerOrder customerOrder = customerOrderProductMapper.findById(orderId);
-        if (customerOrder == null) {
-            throw new RuntimeException("Order not found with ID: " + orderId);
-        }
-        // 해당 주문의 상품 정보 조회
-        List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findOrderProductsByOrderId(orderId);
+//    public OrderResponse generateReceipt(Integer orderId) {
+//        // 주문 정보 조회
+//        CustomerOrder customerOrder = customerOrderProductMapper.findById(orderId);
+//        if (customerOrder == null) {
+//            throw new RuntimeException("Order not found with ID: " + orderId);
+//        }
+//        // 해당 주문의 상품 정보 조회
+//        List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findOrderProductsByOrderId(orderId);
+//
+//        OrderResponse receipt = new OrderResponse();
+//        receipt.setCustomerOrder(customerOrder);
+//        receipt.setCustomerOrderProducts(customerOrderProducts);
+//
+//        return receipt;
+//    }
 
-        OrderResponse receipt = new OrderResponse();
-        receipt.setCustomerOrder(customerOrder);
-        receipt.setCustomerOrderProducts(customerOrderProducts);
-
-        return receipt;
-    }
-
-    public List<OrderResponse> getMonthlyOrderHistory(Integer userCustomerId, String monthYear) {
+    public List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status) {
         // 주문 내역 조회
-        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByUserCustomerId(userCustomerId, monthYear);
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("monthYear", monthYear);
+//        params.put("status", status);
+        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByMonthYear(monthYear, status);
         List<OrderResponse> monthlyOrderHistory = customerOrders.stream().map(order -> {
             List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());
             OrderResponse orderResponse = new OrderResponse();
@@ -52,5 +56,13 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
 
     public List<CustomerOrder> getPointHistoryByCustomerId(Integer userCustomerId) {
         return customerOrderProductMapper.findPointHistoryByCustomerId(userCustomerId);
+    }
+
+//    public OrderResponse getDetailedOrderInfo(String partnerOrderId) {
+//        return customerOrderProductMapper.findOrderProductsAndStoreInfoByPartnerOrderId(partnerOrderId);
+//    }
+
+    public List<OrderProductStoreInfo> getOrderProductsAndStoreInfo(String partnerOrderId) {
+        return customerOrderProductMapper.findOrderProductsAndStoreInfoByPartnerOrderId(partnerOrderId);
     }
 }

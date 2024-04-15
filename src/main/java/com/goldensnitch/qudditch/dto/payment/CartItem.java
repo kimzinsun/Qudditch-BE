@@ -10,8 +10,8 @@ public class CartItem { /* 장바구니에 담길 아이템 관리(DB에서 조�
     private Integer productId;              // 상품코드(최대 100자)      === item_code
     private Integer qty;                    // 상품 수량                === quantity
     private Integer price;                  // 상품 총액                === total_amount
-//    private Integer tax_free_amount;        // 상품 비과세 금액
-//    private Integer vat_amount;             // 상품 부가세 금액: 값을 보내지 않을 경우 (상품총액-상품 비과세 금액)/1.1 소숫점 이하 반올림
+    private Integer tax_free_amount;        // 상품 비과세 금액
+    private Integer vat_amount;             // 상품 부가세 금액: 값을 보내지 않을 경우 (상품총액-상품 비과세 금액)/1.1 소숫점 이하 반올림
 //    private Integer green_deposit;          // 컵 보증금
 //    private String approval_url;            // 결제 성공 시 redirect url, 최대 255자
 //    private String cancel_url;              // 결제 취소 시 redirect url, 최대 255자
@@ -23,8 +23,11 @@ public class CartItem { /* 장바구니에 담길 아이템 관리(DB에서 조�
 //    private Map<String, String> custom_json;// 사전에 정의된 기능
 
     // 추가
-//    private Integer usedPoint;              // 포인트 사용금액
-//    private Integer totalPay;               // 실제 지불금액
-//    private Integer earnPoint;              // 포인트 모으기
-//    private Integer userCustomerId;         // 고객 ID 추가
+    private Integer usedPoint;              // 포인트 사용금액
+    private Integer totalPay;               // 실제 지불금액
+    private Integer earnPoint;              // 포인트 모으기
+    private Integer userCustomerId;         // 고객 ID 추가
+
+    private String image;
+    private Integer maxQty;
 }

@@ -16,7 +16,7 @@
 
     <select id="bookmarkList">
         select c.* , s.name
-        from customer_bookmark_store c , store s
+        from customer_bookmark_store c  join store s on c.store_id = s.id
         where user_customer_id = #{userCustomerId}
     </select>
 
