@@ -42,53 +42,92 @@ public class UserService {
         this.emailService = emailService;
     }
 
-    // 일반유저 회원가입 로직
-    public ResponseEntity<String> registerUserCustomer(UserCustomer userCustomer) {
-        try {
-            // 입력된 이메일이 이미 사용중인지 검사합니다.
-            if (userCustomerMapper.findByEmail(userCustomer.getEmail()) != null) {
-                log.error("이미 존재하는 이메일입니다: {}", userCustomer.getEmail());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 이메일입니다.");
-            }
-
-            // 비밀번호를 암호화하고 신규 사용자 속성을 설정합니다.
-            userCustomer.setPassword(passwordEncoder.encode(userCustomer.getPassword()));
-            userCustomer.setState(0); // 미인증 사용자 상태로 가정합니다.
-            userCustomer.setVerificationCode(UUID.randomUUID().toString()); // 인증 코드를 생성합니다.
-
-            // 사용자 정보를 데이터베이스에 저장합니다.
-            userCustomerMapper.insertUserCustomer(userCustomer);
-            log.info("고객 등록이 성공적으로 완료되었습니다: {}", userCustomer.getEmail());
-            return ResponseEntity.ok("고객 등록이 성공적으로 완료되었습니다.");
-        } catch (DataAccessException e) {
-            log.error("데이터베이스 접근 중 오류가 발생했습니다.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 접근 중 오류가 발생했습니다.");
-        } catch (Exception e) {
-            log.error("알 수 없는 오류가 발생했습니다.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("알 수 없는 오류가 발생했습니다.");
+     // 일반유저 회원가입 로직
+    public ResponseEntity<?> registerUserCustomer(UserCustomer userCustomer) {
+        UserCustomer existingUser = userCustomerMapper.findByEmail(userCustomer.getEmail());
+        
+        if (existingUser != null && existingUser.getState() == 1) {
+            existingUser.setPassword(passwordEncoder.encode(userCustomer.getPassword()));
+            existingUser.setName(userCustomer.getName());
+            userCustomerMapper.updateUserCustomer(existingUser);
+            return ResponseEntity.ok("회원가입이 완료되었습니다.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증이 완료되지 않았습니다.");
         }
     }
+    // 기타 메서드들...
+
     // 이메일 인증 코드를 생성하고 이메일을 전송하는 메서드
     public void sendEmailVerification(String email) {
+        String verificationCode = RandomStringUtils.randomAlphanumeric(6);
+        userCustomerMapper.updateVerificationCode(email, verificationCode); // DB에 코드 저장
         try {
-            String verificationCode = VerificationCodeGenerator.generate();
-            userCustomerMapper.updateVerificationCode(email, verificationCode); // DB에 코드 저장
             emailService.sendVerificationEmail(email, verificationCode); // 이메일 전송
         } catch (IOException e) {
             log.error("이메일 전송 중 에러 발생", e);
-            // 필요하다면 여기서 사용자에게 오류를 알리는 처리를 하세요.
+            // 오류 처리 로직...
         }
     }
 
-    // 인증 코드를 검증하고 사용자 상태를 업데이트하는 메서드
-    public boolean verifyUser(String verificationCode) {
-        UserCustomer user = userCustomerMapper.findByVerificationCode(verificationCode);
+        
+    // 이메일 인증 요청을 처리하는 메서드
+    public ResponseEntity<?> requestVerification(String email) {
+        UserCustomer user = userCustomerMapper.findByEmail(email);
+        
         if (user != null) {
-            user.setState(1); // '1'은 '인증 완료' 상태를 나타낸다고 가정
-            userCustomerMapper.updateUserCustomer(user); // DB에 상태 업데이트
-            return true;
+            if (user.getVerificationCode() != null && !user.getVerificationCode().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 인증 코드가 발송되었습니다.");
+            }
+            // 새 인증 코드 생성 및 저장
+            String verificationCode = RandomStringUtils.randomAlphanumeric(6);
+            user.setVerificationCode(verificationCode);
+            userCustomerMapper.updateUserCustomer(user);
+        } else {
+            user = new UserCustomer();
+            user.setEmail(email);
+            user.setState(0); // 미인증 상태로 설정
+            user.setVerificationCode(RandomStringUtils.randomAlphanumeric(6));
+            userCustomerMapper.insertUserCustomer(user);
         }
-        return false;
+        
+        // 인증 이메일 전송
+        try {
+            emailService.sendVerificationEmail(email, user.getVerificationCode());
+            return ResponseEntity.ok("인증 이메일을 발송하였습니다.");
+        } catch (IOException e) {
+            log.error("이메일 전송 중 에러 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이메일 전송 중 에러가 발생하였습니다.");
+        }
+    }
+    
+
+
+
+    // 인증 코드를 검증하는 메서드
+public ResponseEntity<?> verifyAccount(String email, String code) {
+    UserCustomer user = userCustomerMapper.findByEmail(email);
+
+    if (user != null && code.equals(user.getVerificationCode())) {
+        // 상태를 '인증됨'으로 변경하지만, 사용자를 삭제하지는 않습니다.
+        user.setState(1);
+        user.setVerificationCode(null);
+        userCustomerMapper.updateUserCustomer(user);
+        return ResponseEntity.ok("계정이 인증되었습니다.");
+    } else {
+        return ResponseEntity.badRequest().body("인증 코드가 일치하지 않습니다.");
+    }
+}
+
+    // 사용자의 비밀번호와 이름을 업데이트하는 메서드
+    public ResponseEntity<?> updateUserCredentials(Integer userId, String password, String name) {
+        UserCustomer user = userCustomerMapper.selectUserById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사용자를 찾을 수 없습니다.");
+        }
+        user.setPassword(passwordEncoder.encode(password)); // 비밀번호 암호화하여 업데이트
+        user.setName(name); // 이름 업데이트
+        userCustomerMapper.updateUserCustomer(user); // DB에 업데이트
+        return ResponseEntity.ok("사용자 정보가 성공적으로 업데이트 되었습니다.");
     }
 
     // 해당 이름으로 사용자를 찾고 이메일을 반환하는 메서드

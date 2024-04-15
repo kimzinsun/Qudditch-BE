@@ -10,15 +10,17 @@ import com.goldensnitch.qudditch.dto.UserCustomer;
 public interface UserCustomerMapper {
     UserCustomer selectUserByEmail(String email);
 
-    Integer insertUserCustomer(UserCustomer user);
+    int insertUserCustomer(UserCustomer user);
 
     UserCustomer findByVerificationCode(String verificationCode);
 
     int  updateUserCustomer(UserCustomer user);
 
-    Object findByEmail(String email);
+    UserCustomer  findByEmail(String email);
 
     UserCustomer selectUserByName(String name);
+
+    UserCustomer selectUserById(Integer id);
 
     // 이메일로 사용자의 인증 코드를 업데이트하는 메서드
     void updateVerificationCode(String email, String verificationCode);
