@@ -66,8 +66,9 @@ public class StoreOrderController {
     }
 
     @PostMapping("")
-    public ResponseEntity<String> insertOrder(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestBody List<ProductWithQty> products) {
+    public ResponseEntity<Map<String, String>> insertOrder(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestBody List<ProductWithQty> products) {
         int storeId = userDetails.getId();
+        System.out.println(storeId);
 
         try {
             StoreOrder storeOrder = new StoreOrder();
@@ -86,10 +87,10 @@ public class StoreOrderController {
 
                 storeOrderService.insertId(storeOrderProduct);
             }
-            return ResponseEntity.ok("주문이 성공적으로 추가되었습니다.");
+            return ResponseEntity.ok().body(Map.of("message", "주문이 성공적으로 추가되었습니다."));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("주문을 추가하는 중에 오류가 발생했습니다.");
+            return ResponseEntity.badRequest().body(Map.of("message", "주문이 추가되지 않았습니다."));
         }
     }
 

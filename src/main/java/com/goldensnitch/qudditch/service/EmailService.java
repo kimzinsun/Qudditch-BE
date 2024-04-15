@@ -1,5 +1,12 @@
 package com.goldensnitch.qudditch.service;
 
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
 import com.sendgrid.Method;
 import com.sendgrid.Request;
 import com.sendgrid.Response;
@@ -7,12 +14,8 @@ import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 
 
 
@@ -67,6 +70,7 @@ public class EmailService {
     private final SendGrid sendGrid;
     private final String fromEmail;
 
+    @Autowired
     public EmailService(@Value("${spring.sendgrid.api-key}") String apiKey,
                         @Value("${twilio.sendgrid.from-email}") String fromEmail) {
         this.sendGrid = new SendGrid(apiKey);
@@ -86,6 +90,20 @@ public class EmailService {
         sendEmail(mail);
     }
 
+    public void sendPasswordResetEmail(String toEmail, String temporaryPassword) throws IOException {
+        String subject = "Password Reset Request";
+        String contentText = "Here is your temporary password: " + temporaryPassword +
+                            "\nPlease change your password after logging in.";
+        
+        Email from = new Email(this.fromEmail);
+        Email to = new Email(toEmail);
+        Content content = new Content("text/plain", contentText);
+        Mail mail = new Mail(from, subject, to, content);
+
+        sendEmail(mail); // 메일 전송
+    }
+
+    // 메일을 실제로 전송하는 메서드
     private void sendEmail(Mail mail) throws IOException {
         Request request = new Request();
         request.setMethod(Method.POST);
@@ -94,8 +112,10 @@ public class EmailService {
 
         Response response = sendGrid.api(request);
         if (response.getStatusCode() != HttpStatus.OK.value()) {
-            log.error("Email sending failed: {}", response.getBody());
-            throw new RuntimeException("Failed to send email. Status code: " + response.getStatusCode());
+            log.error("Failed to send email: {}", response.getBody());
+            throw new EmailSendingException("Failed to send email. Status code: " + response.getStatusCode());
         }
     }
+
+    // 기타 메서드...
 }

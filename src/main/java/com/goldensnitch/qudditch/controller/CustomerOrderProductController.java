@@ -4,6 +4,7 @@ import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -20,23 +21,26 @@ public class CustomerOrderProductController {
         this.customerOrderProductService = customerOrderProductService;
     }
 
-    @GetMapping("/receipt/{orderId}")
-    public ResponseEntity<?> generateReceipt(@PathVariable Integer orderId){
-        try{
-            OrderResponse order = customerOrderProductService.generateReceipt(orderId); // Adjust based on actual return type
-            return ResponseEntity.ok(order);
+    @GetMapping("/receipt")
+    public ResponseEntity<?> getReceiptByPartnerOrderId(@RequestParam String partnerOrderId) {
+        try {
+            OrderResponse orderResponse = customerOrderProductService.generateReceiptByPartnerOrderId(partnerOrderId);
+            return ResponseEntity.ok(orderResponse);
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found for partner_order_id: " + partnerOrderId);
         }
     }
 
     // getId 변경 - 03.29
     @GetMapping("/history")
-    public ResponseEntity<List<?>> getMonthlyOrderHistory(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam String monthYear){
+    public ResponseEntity<List<OrderResponse>> getMonthlyOrderHistory(@RequestParam String monthYear, @RequestParam Integer status){
         try {
-            int userCustomerId = userDetails.getId();
 
-            List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(userCustomerId, monthYear);
+            List<OrderResponse> history = customerOrderProductService.getMonthlyOrderHistory(monthYear, status);
+            if (history.isEmpty()) {
+                // 비어 있는 경우 적절한 HTTP 상태 코드와 함께 빈 리스트 반환
+                return ResponseEntity.noContent().build();
+            }
             return ResponseEntity.ok(history);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);

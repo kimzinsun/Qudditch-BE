@@ -12,6 +12,7 @@
         <result column="earn_point" property="earnPoint"/>
         <result column="ordered_at" property="orderedAt" jdbcType="DATE"/>
         <result column="tid" property="tid"/>
+        <result column="cid" property="cid"/>
     </resultMap>
 
     <resultMap id="customerOrderProductResultMap" type="com.goldensnitch.qudditch.dto.CustomerOrderProduct">
@@ -27,8 +28,8 @@
     <!-- localdate를 사용해서 바꿔야하는지 확인: #{orderedAt, jdbcType=DATE} -->
     <insert id="insertCustomerOrder" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder"
         useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO customer_order (partner_order_id, user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid, cid)
-        VALUES (#{partnerOrderId}, #{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid}, #{cid})
+        INSERT INTO customer_order (partner_order_id, user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid, cid, status)
+        VALUES (#{partnerOrderId}, #{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid}, #{cid}, 1)
     </insert>
 
     <!-- CustomerOrderProduct에 추가 -->
@@ -56,7 +57,14 @@
         FROM customer_order
         WHERE user_customer_id = #{userCustomerId}
         AND DATE_FORMAT(ordered_at, '%Y-%m') = #{monthYear}
-        <!-- 필요한 경우 날짜 범위 조건을 추가 -->
+    </select>
+
+    <!-- 점주가 월별 주문 내역 조회 -->
+    <select id="findByMonthYear" parameterType="map" resultMap="customerOrderResultMap">
+        SELECT *
+        FROM customer_order
+        WHERE DATE_FORMAT(ordered_at, '%Y-%m') = #{monthYear}
+        AND status = #{status}
     </select>
 
     <!-- 주문 ID로 주문 상품 정보 조회 -->
@@ -70,6 +78,15 @@
         FROM customer_order_product cop
                  JOIN product p ON cop.product_id = p.id
         WHERE cop.customer_order_id = #{customerOrderId}
+    </select>
+
+    <!-- partner_order_id로 주문 상품 정보 조회 -->
+    <select id="findOrderProductsByPartnerOrderId" parameterType="java.lang.String" resultMap="customerOrderProductResultMap">
+        SELECT cop.*, p.name, p.price
+        FROM customer_order_product cop
+                 JOIN customer_order co ON co.id = cop.customer_order_id
+                 JOIN product p ON cop.product_id = p.id
+        WHERE co.partner_order_id = #{partnerOrderId}
     </select>
 
     <update id="update" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder">
@@ -100,4 +117,11 @@
                  JOIN store s ON co.user_store_id = s.id
         WHERE co.user_customer_id = #{userCustomerId}
     </select>
+
+    <!-- customerOrderMapper.xml -->
+    <update id="updateOrderStatus" parameterType="map">
+        UPDATE customer_order
+        SET status = #{status}
+        WHERE tid = #{tid}
+    </update>
 </mapper>

@@ -16,9 +16,6 @@
         <if test = "limit != null">
             limit #{limit}
         </if>
-        <if test = "limit != null">
-            limit #{limit}
-        </if>
     </select>
 
     <!--userStore에 등록된 스토어만 들고오기 위해-->

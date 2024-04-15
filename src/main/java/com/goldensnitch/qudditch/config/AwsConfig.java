@@ -7,8 +7,12 @@ import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.amazonaws.services.kinesisvideo.AmazonKinesisVideo;
 import com.amazonaws.services.kinesisvideo.AmazonKinesisVideoClient;
+import com.amazonaws.services.kinesisvideosignalingchannels.AmazonKinesisVideoSignalingChannelsClient;
+import com.amazonaws.services.kinesisvideosignalingchannels.AmazonKinesisVideoSignalingChannelsClientBuilder;
 import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.AmazonRekognitionClient;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +35,14 @@ public class AwsConfig {
     }
 
     @Bean
+    public AmazonS3 s3Client() {
+        return AmazonS3Client.builder()
+            .withRegion(Regions.fromName(region))
+            .withCredentials(staticCredentialsProvider())
+            .build();
+    }
+
+    @Bean
     public AmazonRekognition rekognitionClient() {
         return AmazonRekognitionClient.builder()
             .withRegion(Regions.fromName(region))
@@ -44,6 +56,12 @@ public class AwsConfig {
             .withRegion(Regions.fromName(region))
             .withCredentials(staticCredentialsProvider())
             .build();
+    }
+
+    @Bean
+    public AmazonKinesisVideoSignalingChannelsClientBuilder kinesisVideoSignalingChannelsClient() {
+        return AmazonKinesisVideoSignalingChannelsClient.builder()
+            .withCredentials(staticCredentialsProvider());
     }
 
     @Bean
