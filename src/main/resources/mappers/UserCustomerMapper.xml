@@ -2,9 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.goldensnitch.qudditch.mapper.UserCustomerMapper">
 
-    <insert id="insertUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
+    <!-- <insert id="insertUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
         INSERT INTO user_customer (email, password, name, state)
         VALUES (#{email}, #{password}, #{name}, #{state})
+    </insert> -->
+    <insert id="insertUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
+        INSERT INTO user_customer (email, verification_code)
+        VALUES (#{email}, #{verificationCode})
     </insert>
 
 
@@ -29,10 +33,9 @@
         WHERE name = #{name}
     </select>
 
-    <!-- 이메일 인증 코드로 사용자 조회-->
-    <select id="findByVerificationCode" parameterType="String" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
-        SELECT *
-        FROM user_customer
+    <!-- 인증 코드로 사용자 조회 -->
+    <select id="findByVerificationCode" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
+        SELECT * FROM user_customer WHERE verification_code = #{verificationCode}
     </select>
 
     <!-- 전체 사용자 조회 -->
@@ -82,13 +85,18 @@
 
     <!-- update쿼리 -->
     <!-- 사용자 정보 업데이트 -->
-    <update id="updateUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
-        UPDATE user_customer
-        SET password = #{password},
-            name = #{name},
-            state = #{state},
-            modifiedAt = NOW() <!-- 현재 시간으로 수정 시간 업데이트 -->
-        WHERE id = #{id}
+<update id="updateUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
+    UPDATE user_customer
+    SET password = #{password},
+        name = #{name},
+        state = #{state},
+        modified_at = NOW(),
+        verification_code = #{verificationCode} <!-- 필드 추가 -->
+    WHERE email = #{email}
+</update>
+    <!-- 이메일로 사용자의 인증 코드를 업데이트 -->
+    <update id="updateVerificationCode" parameterType="map">
+        UPDATE user_customer SET verification_code = #{verificationCode} WHERE email = #{email}
     </update>
 
 

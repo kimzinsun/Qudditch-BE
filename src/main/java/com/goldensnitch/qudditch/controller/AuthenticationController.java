@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +37,7 @@ import com.goldensnitch.qudditch.dto.UserStore;
 import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
 import com.goldensnitch.qudditch.mapper.UserAdminMapper;
 import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.service.EmailSendingException;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.OCRService;
 import com.goldensnitch.qudditch.service.UserService;
@@ -188,11 +191,87 @@ public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody
         }
     }
 
+    // 이메일 중복 체크
+    @PostMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        boolean exists = userService.checkEmailExists(email); // 가정한 사용자 이메일 체크 로직
+        Map<String, String> response = new HashMap<>();
+        if (exists) {
+            response.put("message", "이미 사용 중인 이메일입니다.");
+        } else {
+            response.put("message", "사용 가능한 이메일입니다.");
+        }
+        return ResponseEntity.ok(response); // JSON 형식으로 반환
+    }
+
+    // 이메일 인증 요청 처리
+    @PostMapping("/request-verification")
+    public ResponseEntity<?> requestVerification(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        return userService.requestVerification(email);
+    }
+    
+    // 계정 인증
+    @PostMapping("/verify-account")
+public ResponseEntity<?> verifyAccount(@RequestBody Map<String, String> payload) {
+    String email = payload.get("email");
+    String code = payload.get("code");
+    UserCustomer user = userCustomerMapper.findByEmail(email);
+    if (user != null && code.equals(user.getVerificationCode())) {
+        user.setVerificationCode(null);
+        user.setState(1);
+        userCustomerMapper.updateUserCustomer(user);
+        return ResponseEntity.ok("계정이 인증되었습니다.");
+    } else {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 코드가 틀렸습니다.");
+    }
+}
+
     // 일반 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/customer")
-    public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
-        // UserService의 회원가입 로직을 호출하여 처리결과를 반환한다.
-        return userService.registerUserCustomer(userCustomer);
+public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
+    UserCustomer existingUser = userCustomerMapper.findByEmail(userCustomer.getEmail());
+
+    // 이미 인증된 사용자인지 확인 (state == 1)
+    if (existingUser != null && existingUser.getState() == 1) {
+        // 인증된 사용자라면 비밀번호와 이름을 업데이트
+        existingUser.setPassword(passwordEncoder.encode(userCustomer.getPassword()));
+        existingUser.setName(userCustomer.getName());
+        userCustomerMapper.updateUserCustomer(existingUser);
+        return ResponseEntity.ok("회원가입이 완료되었습니다.");
+    } else if (existingUser != null) {
+        // 사용자가 존재하지만 인증되지 않은 경우 (state != 1)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증이 완료되지 않았습니다.");
+    } else {
+        // 사용자가 없는 경우 (새 사용자)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입을 진행할 수 없습니다. 먼저 이메일 인증을 진행해주세요.");
+    }
+}
+
+    // 일반 유저 이메일 찾기
+    @PostMapping("/find-email")
+    public ResponseEntity<?> findEmail(@RequestBody Map<String, String> payload) {
+        String name = payload.get("name");
+        try {
+            String email = userService.findEmailByName(name);
+            return ResponseEntity.ok(Collections.singletonMap("email", email));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 이름으로 등록된 이메일이 없습니다.");
+        }
+    }
+    // 일반 유저 비밀번호 재설정
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        try {
+            userService.sendPasswordResetEmail(email);
+            return ResponseEntity.ok(Collections.singletonMap("message", "비밀번호 재설정 이메일이 발송되었습니다."));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 전송에 실패했습니다.");
+        } catch (EmailSendingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @Autowired
