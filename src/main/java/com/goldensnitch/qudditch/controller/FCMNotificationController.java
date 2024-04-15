@@ -42,11 +42,12 @@ public class FCMNotificationController {
     }
 
     @PostMapping("/test")
-    public String test(){
+    public String test(@RequestBody Map<String, Object> body){
         FCMNotificationRequestDto dto = new FCMNotificationRequestDto();
-        dto.setTargetUserId(21);
-        dto.setTitle("[제목]알람이 왔습니다. 알람옴");
-        dto.setBody("[내용]환영합니다.");
+        dto.setTargetUserId((int)body.get("customerId"));
+        dto.setTitle((String)body.get("title"));
+        dto.setBody((String)body.get("body"));
+
         service.sendNotificationByToken(dto);
 
         return "SUCCESS";
