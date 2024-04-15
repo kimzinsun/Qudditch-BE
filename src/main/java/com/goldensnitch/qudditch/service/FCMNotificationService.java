@@ -13,13 +13,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class FCMNotificationService {
+
+    private HashMap<Integer, SseEmitter> container = new HashMap<>();
 
     private final FirebaseMessaging firebaseMessaging;
 
@@ -80,6 +85,7 @@ public class FCMNotificationService {
                         .setNotification(notification)
                         .build();
                 try {
+                    sendEventById(customerDevice.getUserCustomerId());
                     firebaseMessaging.send(message);
 
                     CustomerAlertLog alertLog = new CustomerAlertLog();
@@ -125,5 +131,41 @@ public class FCMNotificationService {
 
     public boolean removeCustomerAlertLog(int id){
         return  mapper.deleteCustomerAlertLog(id) > 0;
+    }
+
+    public SseEmitter connect(final int customerUserId) {
+        SseEmitter sseEmitter = new SseEmitter(300_000L);
+
+        // timeOut 시 처리
+        sseEmitter.onTimeout(() -> {
+            container.remove(customerUserId);
+        });
+
+        sseEmitter.onCompletion(() -> {
+                container.remove(customerUserId);
+        });
+
+        container.put(customerUserId, sseEmitter);
+
+        return sseEmitter;
+    }
+
+    public void sendEventById(int userCustomerId){
+
+        SseEmitter sseEmitter = container.get(userCustomerId);
+
+        if(sseEmitter == null){
+            return;
+        }
+
+        final SseEmitter.SseEventBuilder sseEventBuilder = SseEmitter.event()
+                .name("connect")
+                .data("NOTIFY_FCM")
+                .reconnectTime(3000L);
+        try {
+            sseEmitter.send(sseEventBuilder);
+        } catch (IOException e) {
+            sseEmitter.complete();
+        }
     }
 }
