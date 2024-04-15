@@ -85,13 +85,14 @@
 
     <!-- update쿼리 -->
     <!-- 사용자 정보 업데이트 -->
+<!-- 사용자 정보 업데이트 -->
 <update id="updateUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
     UPDATE user_customer
     SET password = #{password},
         name = #{name},
         state = #{state},
         modified_at = NOW(),
-        verification_code = #{verificationCode} <!-- 필드 추가 -->
+        verification_code = #{verificationCode}
     WHERE email = #{email}
 </update>
     <!-- 이메일로 사용자의 인증 코드를 업데이트 -->
