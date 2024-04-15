@@ -1,6 +1,7 @@
 package com.goldensnitch.qudditch.service;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,15 +32,19 @@ public class UserService {
     private final UserAdminMapper userAdminMapper;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final RedisService redisService;
+    private static final String REDIS_KEY_EMAIL_PREFIX = "email-";
+
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
-    public UserService(UserCustomerMapper userCustomerMapper, UserStoreMapper userStoreMapper, UserAdminMapper userAdminMapper, PasswordEncoder passwordEncoder, EmailService emailService) {
+    public UserService(UserCustomerMapper userCustomerMapper, UserStoreMapper userStoreMapper, UserAdminMapper userAdminMapper, PasswordEncoder passwordEncoder, EmailService emailService, RedisService redisService) {
         this.userCustomerMapper = userCustomerMapper;
         this.userStoreMapper = userStoreMapper;
         this.userAdminMapper = userAdminMapper;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.redisService = redisService;
     }
 
      // 일반유저 회원가입 로직
@@ -339,5 +344,23 @@ public ResponseEntity<?> verifyAccount(String email, String code) {
         } else {
             return false;
         }
+    }
+
+    public boolean requestVerificationStore(String email) throws IOException {
+        String verificationCode = VerificationCodeGenerator.generate();
+        redisService.setValues(REDIS_KEY_EMAIL_PREFIX+email, verificationCode, Duration.ofMinutes(300));
+        if(redisService.getValues(REDIS_KEY_EMAIL_PREFIX+email).equals(verificationCode)){
+            emailService.sendVerificationEmail(email, verificationCode);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean verifyStore(String email, String code) {
+        if(redisService.getValues(REDIS_KEY_EMAIL_PREFIX+email).equals(code)){
+            redisService.deleteValues(REDIS_KEY_EMAIL_PREFIX+email);
+            return true;
+        }
+        return false;
     }
 }
