@@ -26,5 +26,7 @@ public interface UserStoreMapper {
     Integer countUserStoreById(Integer userStoreId);
 
     // 점포 키워드 검색반환
-    List<Store> searchByStoreName(String name);
+    List<Store> searchByStoreName(String name, int recordSize, int offset);
+
+    int countByStoreName(String name);
 }
