@@ -1,10 +1,17 @@
 package com.goldensnitch.qudditch.controller;
 
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
+import com.goldensnitch.qudditch.mapper.UserAdminMapper;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.service.EmailSendingException;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+import com.goldensnitch.qudditch.service.OCRService;
+import com.goldensnitch.qudditch.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,43 +22,28 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.goldensnitch.qudditch.dto.AuthResponse;
-import com.goldensnitch.qudditch.dto.LoginRequest;
-import com.goldensnitch.qudditch.dto.RegisterStoreRequest;
-import com.goldensnitch.qudditch.dto.SocialLoginDto;
-import com.goldensnitch.qudditch.dto.UserAdmin;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
-import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
-import com.goldensnitch.qudditch.mapper.UserAdminMapper;
-import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
-import com.goldensnitch.qudditch.service.ExtendedUserDetails;
-import com.goldensnitch.qudditch.service.OCRService;
-import com.goldensnitch.qudditch.service.UserService;
-
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 public class AuthenticationController {
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider; // JWT 토큰 제공자 의존성 주입
     private final UserCustomerMapper userCustomerMapper;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final UserAdminMapper userAdminMapper; // 생성자 주입 추가
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
+    @Autowired
+    private OCRService ocrService;
 
     @Autowired
     public AuthenticationController(
@@ -72,37 +64,25 @@ public class AuthenticationController {
 
     //일반 유저 로그인 처리(http-only쿠키 사용)
     @PostMapping("/login")
-public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
-    // 회원 여부 확인 로직, 비밀번호 검증 로직 추가
-    Authentication authentication = authenticationManager
-        .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-    String jwtToken = jwtTokenProvider.generateToken(authentication);
-
-    // HTTP-Only 쿠키 생성 및 설정
-    boolean secureCookie = false; // 로컬 환경을 위한 설정 변경
-    Cookie cookie = new Cookie("jwt", jwtToken);
-    cookie.setHttpOnly(true);
-    cookie.setSecure(secureCookie); 
-    cookie.setPath("/");
-    response.addCookie(cookie);
-
-    // 토큰 대신 간단한 성공 메시지를 선택적으로 반환
-    // return ResponseEntity.ok("사용자 인증에 성공했습니다.");
-    return ResponseEntity.ok(new AuthResponse(jwtToken));
-}
-
-    
-
-    @PostMapping("/store/login")
-    public ResponseEntity<?> authenticateStore(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
+        // 회원 여부 확인 로직, 비밀번호 검증 로직 추가
         Authentication authentication = authenticationManager
             .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        // 토큰 생성 및 반환
-        String token = jwtTokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new AuthResponse(token));
+
+        String jwtToken = jwtTokenProvider.generateToken(authentication);
+
+        // HTTP-Only 쿠키 생성 및 설정
+        boolean secureCookie = false; // 로컬 환경을 위한 설정 변경
+        Cookie cookie = new Cookie("jwt", jwtToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(secureCookie);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+
+        // 토큰 대신 간단한 성공 메시지를 선택적으로 반환
+        // return ResponseEntity.ok("사용자 인증에 성공했습니다.");
+        return ResponseEntity.ok(new AuthResponse(jwtToken));
     }
 
     // @PostMapping("/social-login/{provider}")
@@ -120,22 +100,31 @@ public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest
     //     }
     // }
 
+    @PostMapping("/store/login")
+    public ResponseEntity<?> authenticateStore(@RequestBody LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager
+            .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 토큰 생성 및 반환
+        String token = jwtTokenProvider.generateToken(authentication);
+        return ResponseEntity.ok(new AuthResponse(token));
+    }
+
     @PostMapping("/social-login/{provider}")
-public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto, HttpServletResponse response) {
-    // 기존의 소셜 로그인 로직...
-    String jwtToken = "소셜_로그인_로직으로부터_토큰";
+    public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto, HttpServletResponse response) {
+        // 기존의 소셜 로그인 로직...
+        String jwtToken = "소셜_로그인_로직으로부터_토큰";
 
-    // HTTP-Only 쿠키 생성 및 설정
-    Cookie cookie = new Cookie("jwt", jwtToken);
-    cookie.setHttpOnly(true);
-    cookie.setSecure(true); // 프로덕션 환경에서 HTTPS를 위해 true로 설정하세요.
-    cookie.setPath("/");
-    response.addCookie(cookie);
+        // HTTP-Only 쿠키 생성 및 설정
+        Cookie cookie = new Cookie("jwt", jwtToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // 프로덕션 환경에서 HTTPS를 위해 true로 설정하세요.
+        cookie.setPath("/");
+        response.addCookie(cookie);
 
-    // 토큰 대신 간단한 성공 메시지를 선택적으로 반환
-    return ResponseEntity.ok("소셜 로그인에 성공했습니다.");
-}
-
+        // 토큰 대신 간단한 성공 메시지를 선택적으로 반환
+        return ResponseEntity.ok("소셜 로그인에 성공했습니다.");
+    }
 
     @GetMapping("/loginSuccess")
     public String loginSuccess(@AuthenticationPrincipal OAuth2User user) {
@@ -188,26 +177,103 @@ public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody
         }
     }
 
-    // 일반 유저 회원가입을 위한 엔드포인트
-    @PostMapping("/register/customer")
-    public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
-        // UserService의 회원가입 로직을 호출하여 처리결과를 반환한다.
-        return userService.registerUserCustomer(userCustomer);
+    // 이메일 중복 체크
+    @PostMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        boolean exists = userService.checkEmailExists(email); // 가정한 사용자 이메일 체크 로직
+        Map<String, String> response = new HashMap<>();
+        if (exists) {
+            response.put("message", "이미 사용 중인 이메일입니다.");
+        } else {
+            response.put("message", "사용 가능한 이메일입니다.");
+        }
+        return ResponseEntity.ok(response); // JSON 형식으로 반환
     }
 
-    @Autowired
-    private OCRService ocrService;
+    // 이메일 인증 요청 처리
+    @PostMapping("/request-verification")
+    public ResponseEntity<?> requestVerification(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        return userService.requestVerification(email);
+    }
 
+    // 계정 인증
+    @PostMapping("/verify-account")
+    public ResponseEntity<?> verifyAccount(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String code = payload.get("code");
+        UserCustomer user = userCustomerMapper.findByEmail(email);
+        if (user != null && code.equals(user.getVerificationCode())) {
+
+            user.setState(1); // 사용자의 상태를 '인증됨'으로 설정
+            userCustomerMapper.updateUserCustomer(user);
+            return ResponseEntity.ok("계정이 인증되었습니다.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 코드가 틀렸습니다.");
+        }
+    }
+
+    @PostMapping("/register/customer")
+    public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
+        UserCustomer existingUser = userCustomerMapper.findByEmail(userCustomer.getEmail());
+
+        if (existingUser != null && existingUser.getState() == 1) {
+            existingUser.setPassword(passwordEncoder.encode(userCustomer.getPassword()));
+            existingUser.setName(userCustomer.getName());
+            existingUser.setVerificationCode(null); // 인증 후 코드를 삭제합니다.
+            userCustomerMapper.updateUserCustomer(existingUser); // 이메일 인증이 완료된 사용자의 정보를 업데이트합니다.
+            return ResponseEntity.ok("회원가입이 완료되었습니다.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증이 완료되지 않았습니다.");
+        }
+    }
+
+    // 일반 유저 이메일 찾기
+    @PostMapping("/find-email")
+    public ResponseEntity<?> findEmail(@RequestBody Map<String, String> payload) {
+        String name = payload.get("name");
+        try {
+            String email = userService.findEmailByName(name);
+            return ResponseEntity.ok(Collections.singletonMap("email", email));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("해당 이름으로 등록된 이메일이 없습니다.");
+        }
+    }
+
+    // 일반 유저 비밀번호 재설정
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        try {
+            userService.sendPasswordResetEmail(email);
+            return ResponseEntity.ok(Collections.singletonMap("message", "비밀번호 재설정 이메일이 발송되었습니다."));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 전송에 실패했습니다.");
+        } catch (EmailSendingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/business-number")
+    public ResponseEntity<?> extractBusinessNumber(@RequestParam("file") MultipartFile file) {
+        try {
+            String extractedBusinessNumber = ocrService.extractBusinessNumber(file);
+            return ResponseEntity.ok(Collections.singletonMap("businessNumber", extractedBusinessNumber));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("OCR 처리 중 오류가 발생했습니다.");
+        }
+    }
 
     // 점주 유저 회원가입을 위한 엔드포인트
     @PostMapping("/register/store")
     public ResponseEntity<?> registerStore(@ModelAttribute RegisterStoreRequest request) {
         try {
-            String extractedBusinessNumber = ocrService.extractBusinessNumber(request.getBusinessLicenseFile());
-
-            if (!request.getBusinessNumber().equals(extractedBusinessNumber)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사업자 등록증 번호가 일치하지 않습니다.");
-            }
+//            String extractedBusinessNumber = ocrService.extractBusinessNumber(request.getBusinessLicenseFile());
+//
+//            if (!request.getBusinessNumber().equals(extractedBusinessNumber)) {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사업자 등록증 번호가 일치하지 않습니다.");
+//            }
 
             // 여기에서 나머지 회원가입 로직을 추가...
             // 예: UserStore 객체 생성 및 userService.registerUserStore 호출

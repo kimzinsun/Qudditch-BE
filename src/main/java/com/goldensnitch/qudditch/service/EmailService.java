@@ -78,9 +78,8 @@ public class EmailService {
     }
 
     public void sendVerificationEmail(String toEmail, String verificationCode) throws IOException {
-        String subject = "계정 인증을 완료해주세요";
-        String verificationUrl = "http://yourdomain.com/verify?code=" + verificationCode;
-        String contentText = String.format("아래 링크를 클릭하여 계정 인증을 완료해주세요: %s", verificationUrl);
+        String subject = "계정 인증 코드";
+        String contentText = "귀하의 인증 코드는 다음과 같습니다: " + verificationCode;
 
         Email from = new Email(this.fromEmail);
         Email to = new Email(toEmail);
@@ -100,9 +99,9 @@ public class EmailService {
     
 
     public void sendPasswordResetEmail(String toEmail, String temporaryPassword) throws IOException {
-        String subject = "Password Reset Request";
-        String contentText = "Here is your temporary password: " + temporaryPassword +
-                            "\nPlease change your password after logging in.";
+        String subject = "비밀번호 재설정 요청";
+        String contentText = "임시 비밀번호: " + temporaryPassword +
+                            "\n로그인 후 비밀번호를 변경해 주세요.";
         
         Email from = new Email(this.fromEmail);
         Email to = new Email(toEmail);
@@ -120,9 +119,13 @@ public class EmailService {
         request.setBody(mail.build());
 
         Response response = sendGrid.api(request);
-        if (response.getStatusCode() != HttpStatus.OK.value()) {
-            log.error("Failed to send email: {}", response.getBody());
-            throw new EmailSendingException("Failed to send email. Status code: " + response.getStatusCode());
+        int statusCode = response.getStatusCode();
+        // 202를 성공으로 처리
+        if (statusCode == HttpStatus.ACCEPTED.value() || statusCode == HttpStatus.OK.value()) {
+            log.info("성공적으로 이메일을 보냈습니다.: {}", response.getBody());
+        } else {
+            log.error("이메일 보내기에 실패하였습니다.: {}", response.getBody());
+            throw new EmailSendingException("이메일 보내기에 실패하였습니다. Status code: " + response.getStatusCode());
         }
     }
 
