@@ -219,8 +219,8 @@ public ResponseEntity<?> verifyAccount(@RequestBody Map<String, String> payload)
     String code = payload.get("code");
     UserCustomer user = userCustomerMapper.findByEmail(email);
     if (user != null && code.equals(user.getVerificationCode())) {
-        user.setVerificationCode(null);
-        user.setState(1);
+        
+        user.setState(1); // 사용자의 상태를 '인증됨'으로 설정
         userCustomerMapper.updateUserCustomer(user);
         return ResponseEntity.ok("계정이 인증되었습니다.");
     } else {
@@ -228,24 +228,18 @@ public ResponseEntity<?> verifyAccount(@RequestBody Map<String, String> payload)
     }
 }
 
-    // 일반 유저 회원가입을 위한 엔드포인트
-    @PostMapping("/register/customer")
+@PostMapping("/register/customer")
 public ResponseEntity<?> registerCustomer(@RequestBody UserCustomer userCustomer) {
     UserCustomer existingUser = userCustomerMapper.findByEmail(userCustomer.getEmail());
 
-    // 이미 인증된 사용자인지 확인 (state == 1)
     if (existingUser != null && existingUser.getState() == 1) {
-        // 인증된 사용자라면 비밀번호와 이름을 업데이트
         existingUser.setPassword(passwordEncoder.encode(userCustomer.getPassword()));
         existingUser.setName(userCustomer.getName());
-        userCustomerMapper.updateUserCustomer(existingUser);
+        existingUser.setVerificationCode(null); // 인증 후 코드를 삭제합니다.
+        userCustomerMapper.updateUserCustomer(existingUser); // 이메일 인증이 완료된 사용자의 정보를 업데이트합니다.
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
-    } else if (existingUser != null) {
-        // 사용자가 존재하지만 인증되지 않은 경우 (state != 1)
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증이 완료되지 않았습니다.");
     } else {
-        // 사용자가 없는 경우 (새 사용자)
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입을 진행할 수 없습니다. 먼저 이메일 인증을 진행해주세요.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증이 완료되지 않았습니다.");
     }
 }
 

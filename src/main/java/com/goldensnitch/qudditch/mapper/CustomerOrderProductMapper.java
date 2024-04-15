@@ -1,11 +1,12 @@
 package com.goldensnitch.qudditch.mapper;
 
-import com.goldensnitch.qudditch.dto.CustomerOrder;
-import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
+import com.goldensnitch.qudditch.dto.CustomerOrder;
+import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
 
 @Mapper
 public interface CustomerOrderProductMapper  {
@@ -17,7 +18,7 @@ public interface CustomerOrderProductMapper  {
 
     List<CustomerOrder> findByUserCustomerId(@Param("userCustomerId") Integer userCustomerId, @Param("monthYear") String monthYear);
 
-     CustomerOrder findById(int customerOrderId);
+    CustomerOrder findById(int customerOrderId);
 
     CustomerOrder findByPartnerOrderId(String partnerOrderId);
 
