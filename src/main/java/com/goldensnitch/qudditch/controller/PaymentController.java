@@ -42,8 +42,10 @@ public class PaymentController {
     }
 
     @PostMapping("/approve")
-    public ResponseEntity<?> approvePayment(@RequestParam("pg_token") String pg_token, @RequestParam("order_id") String partnerOrderId) {
+    public ResponseEntity<?> approvePayment(@RequestBody Map<String, String> payload) {
         try {
+            String pg_token = payload.get("pg_token");
+            String partnerOrderId = payload.get("order_id");
             PaymentResponse paymentResponse = paymentService.approvePayment(pg_token, partnerOrderId);
             return ResponseEntity.ok(paymentResponse);
         } catch (Exception e) {

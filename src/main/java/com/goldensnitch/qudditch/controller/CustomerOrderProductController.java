@@ -1,10 +1,10 @@
 package com.goldensnitch.qudditch.controller;
 
 import com.goldensnitch.qudditch.dto.CustomerOrder;
+import com.goldensnitch.qudditch.dto.payment.OrderProductStoreInfo;
 import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import com.goldensnitch.qudditch.service.CustomerOrderProductService;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +22,12 @@ public class CustomerOrderProductController {
     }
 
     @GetMapping("/receipt")
-    public ResponseEntity<?> getReceiptByPartnerOrderId(@RequestParam String partnerOrderId) {
-        try {
-            OrderResponse orderResponse = customerOrderProductService.generateReceiptByPartnerOrderId(partnerOrderId);
-            return ResponseEntity.ok(orderResponse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found for partner_order_id: " + partnerOrderId);
+    public ResponseEntity<List<OrderProductStoreInfo>> getOrderDetails(@RequestParam String partnerOrderId) {
+        List<OrderProductStoreInfo> details = customerOrderProductService.getOrderProductsAndStoreInfo(partnerOrderId);
+        if (details.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(details);
     }
 
     // getId 변경 - 03.29
@@ -47,7 +46,7 @@ public class CustomerOrderProductController {
         }
     }
 
-    @GetMapping("/history/point/{userCustomerId}")
+    @GetMapping("/history/point")
     public ResponseEntity<List<CustomerOrder>> getPointHistoryByCustomerId(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
         try {
             int userCustomerId = userDetails.getId();

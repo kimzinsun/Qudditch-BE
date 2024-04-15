@@ -1,5 +1,6 @@
 package com.goldensnitch.qudditch.service;
 
+import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.Store;
 import com.goldensnitch.qudditch.mapper.UserStoreMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,11 @@ public class UserStoreService {
         return count != null && count > 0;
     }
 
-    public List<Store> searchByStoreName(String name){
-        return userStoreMapper.searchByStoreName(name);
+    public List<Store> searchByStoreName(String name, PaginationParam paginationParam){
+        return userStoreMapper.searchByStoreName(name, paginationParam.getRecordSize(), paginationParam.getOffset());
+    }
+
+    public int countByStoreName(String name) {
+        return userStoreMapper.countByStoreName(name);
     }
 }

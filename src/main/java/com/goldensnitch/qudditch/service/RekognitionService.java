@@ -4,7 +4,9 @@ import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.goldensnitch.qudditch.dto.StoreVisitorLog;
+import com.goldensnitch.qudditch.dto.UserPersona;
 import com.goldensnitch.qudditch.mapper.AccessMapper;
+import com.goldensnitch.qudditch.mapper.PersonaMapper;
 import com.goldensnitch.qudditch.util.AwsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,12 +19,18 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class RekognitionService {
     private static final int MAX_USERS = 1;
     private static final int USER_ENTER_TIMEOUT = 1;
     private static final Float USER_MATCH_THRESHOLD = 95.0f;
+    private static final String REDIS_KEY_PREFIX = "face-";
+    private static final String REDIS_KEY_EMOTION_PREFIX = "emotion-";
+    private static final int USER_EMOTION_TIMEOUT = 1440;
+
     private final RedisService redisService;
     private final AmazonRekognition rekognitionClient;
     private final AmazonS3 s3Client;
@@ -38,20 +46,22 @@ public class RekognitionService {
     private String DETECTION_ATTRIBUTE;
     @Value("${aws.rekognition.collection-id}")
     private String COLLECTION_ID;
+    private final PersonaMapper personaMapper;
 
     @Autowired
     public RekognitionService(
-        RedisService redisService,
-        AmazonRekognition rekognitionClient,
-        AmazonS3 s3Client,
-        AwsUtil awsUtil,
-        AccessMapper accessMapper
+            RedisService redisService,
+            AmazonRekognition rekognitionClient,
+            AmazonS3 s3Client,
+            AwsUtil awsUtil,
+            AccessMapper accessMapper, PersonaMapper personaMapper
     ) {
         this.redisService = redisService;
         this.rekognitionClient = rekognitionClient;
         this.s3Client = s3Client;
         this.awsUtil = awsUtil;
         this.accessMapper = accessMapper;
+        this.personaMapper = personaMapper;
     }
 
     public String createSession() {
@@ -115,6 +125,57 @@ public class RekognitionService {
             )
         );
         return indexFacesResults;
+    }
+
+    private DetectFacesRequest createDetectFacesRequest(Image imageFromS3) {
+        return new DetectFacesRequest()
+                .withImage(imageFromS3)
+                .withAttributes(Attribute.ALL);
+    }
+
+
+    public Image createImage(GetFaceLivenessSessionResultsResult livenessSessionResult) {
+        return getImageFromS3(livenessSessionResult.getReferenceImage().getS3Object().getName());
+    }
+
+    public void detectFaceEmotion(MultipartFile file, Integer userId, Integer storeId) {
+        Image image = getImageFromFormFile(file);
+
+        DetectFacesResult result = rekognitionClient.detectFaces(new DetectFacesRequest().withImage(image).withAttributes(Attribute.ALL));
+        List<FaceDetail> faceDetails = result.getFaceDetails();
+
+        Map<String, Object> map = Map.of(
+                "emotion", faceDetails.get(0).getEmotions().get(0).getType(),
+                "storeId", storeId
+        );
+
+        redisService.deleteHashOps(REDIS_KEY_EMOTION_PREFIX + userId, "emotion");
+        redisService.setHashOps(REDIS_KEY_EMOTION_PREFIX + userId, map, Duration.ofMinutes(USER_EMOTION_TIMEOUT));
+    }
+
+
+    public void createDetectFacesResult(GetFaceLivenessSessionResultsResult livenessSessionResult, Integer userId) {
+        try {
+            Image imageFromS3 = createImage(livenessSessionResult);
+            DetectFacesResult result = rekognitionClient.detectFaces(new DetectFacesRequest().withImage(imageFromS3).withAttributes(Attribute.ALL));
+            List<FaceDetail> faceDetails = result.getFaceDetails();
+
+            UserPersona userPersona = new UserPersona();
+            userPersona.setAgeRange((
+                    faceDetails.get(0).getAgeRange().getLow() +
+                            faceDetails.get(0).getAgeRange().getHigh()) / 2
+            );
+            userPersona.setGender(faceDetails.get(0).getGender().getValue());
+            userPersona.setUserCustomerId(userId);
+            personaMapper.insertPersona(userPersona);
+
+
+            System.out.println(faceDetails);
+
+
+        } catch (AmazonRekognitionException e) {
+            e.printStackTrace();
+        }
     }
 
     private IndexFacesRequest createIndexFacesRequest(String key, String collectionId) {
@@ -185,7 +246,8 @@ public class RekognitionService {
     }
 
     public SearchUsersByImageResult searchUsersByImage(MultipartFile file) {
-        SearchUsersByImageRequest request = createSearchUsersByImageRequest(getImageFromFormFile(file));
+        Image image = getImageFromFormFile(file);
+        SearchUsersByImageRequest request = createSearchUsersByImageRequest(image);
 
         return rekognitionClient.searchUsersByImage(request);
     }
@@ -210,9 +272,9 @@ public class RekognitionService {
     @Transactional
     public List<Integer> enteredCustomers(Integer userStoreId, List<Integer> userIds) {
         ArrayList<Integer> enteredCustomers = new ArrayList<>();
-        userIds.stream().filter(userId -> !redisService.checkExistsKey(userId.toString())).distinct()
+        userIds.stream().filter(userId -> !redisService.checkExistsKey(REDIS_KEY_PREFIX + userId)).distinct()
             .forEach(userId -> {
-                redisService.setValues(userId.toString(), userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT));
+                redisService.setValues(REDIS_KEY_PREFIX + userId, userStoreId.toString(), Duration.ofMinutes(USER_ENTER_TIMEOUT));
                 accessMapper.insertVisitLog(new StoreVisitorLog(userStoreId, userId));
                 enteredCustomers.add(userId);
             });

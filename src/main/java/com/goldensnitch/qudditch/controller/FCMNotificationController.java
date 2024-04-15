@@ -3,13 +3,16 @@ package com.goldensnitch.qudditch.controller;
 import com.goldensnitch.qudditch.dto.CustomerAlertLog;
 import com.goldensnitch.qudditch.dto.CustomerDevice;
 import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.fcm.FCMNotificationRequestDto;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.FCMNotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.Map;
@@ -36,6 +39,18 @@ public class FCMNotificationController {
         service.registerCustomerDevice(customerDevice);
 
         return ResponseEntity.ok("SUCCESS");
+    }
+
+    @PostMapping("/test")
+    public String test(@RequestBody Map<String, Object> body){
+        FCMNotificationRequestDto dto = new FCMNotificationRequestDto();
+        dto.setTargetUserId((int)body.get("customerId"));
+        dto.setTitle((String)body.get("title"));
+        dto.setBody((String)body.get("body"));
+
+        service.sendNotificationByToken(dto);
+
+        return "SUCCESS";
     }
 
     @PutMapping("/logout-device")
@@ -106,5 +121,13 @@ public class FCMNotificationController {
         } else {
             return ResponseEntity.ok("user:" + userName + " 디바이스 토큰의 조회정보가 업데이트되지 않았습니다.");
         }
+    }
+
+    @GetMapping(value="/connect", produces= MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<SseEmitter> connect(String userEmail){
+        UserCustomer userCustomer = service.getUserCustomerByEmail(userEmail);
+        SseEmitter emitter = service.connect(userCustomer.getId());
+
+        return ResponseEntity.ok(emitter);
     }
 }

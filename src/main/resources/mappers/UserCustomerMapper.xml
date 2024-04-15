@@ -2,9 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.goldensnitch.qudditch.mapper.UserCustomerMapper">
 
-    <insert id="insertUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
+    <!-- <insert id="insertUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
         INSERT INTO user_customer (email, password, name, state)
         VALUES (#{email}, #{password}, #{name}, #{state})
+    </insert> -->
+    <insert id="insertUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
+        INSERT INTO user_customer (email, verification_code)
+        VALUES (#{email}, #{verificationCode})
     </insert>
 
 
@@ -29,10 +33,9 @@
         WHERE name = #{name}
     </select>
 
-    <!-- 이메일 인증 코드로 사용자 조회-->
-    <select id="findByVerificationCode" parameterType="String" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
-        SELECT *
-        FROM user_customer
+    <!-- 인증 코드로 사용자 조회 -->
+    <select id="findByVerificationCode" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
+        SELECT * FROM user_customer WHERE verification_code = #{verificationCode}
     </select>
 
     <!-- 전체 사용자 조회 -->
@@ -47,26 +50,6 @@
         FROM user_customer
         WHERE name = #{name}
     </select>
-
-
-    <!-- update쿼리 -->
-    <!-- 사용자 정보 업데이트 -->
-    <update id="updateUserCustomer">
-        update user_customer
-        set email = #{email},
-            password = #{password},
-            name  = #{name},
-            state = #{state}
-        where id = #{id}
-    </update>
-
-    <!-- delete쿼리 -->
-    <!-- 사용자 삭제 -->
-    <delete id="deleteUser" parameterType="int">
-        delete
-        from user_customer
-        where id = #{id}
-    </delete>
 
     <!-- 조건부 검색: 상태(state)에 따른 사용자 조회-->
     <select id="selectUsersByState" parameterType="int" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
@@ -88,6 +71,7 @@
                 JOIN user_store us ON uc.id = us.id
         WHERE uc.id = #{id}
     </select>
+
     <select id="findByEmail" resultType="com.goldensnitch.qudditch.dto.UserCustomer">
         SELECT *
         FROM user_customer
@@ -98,6 +82,34 @@
         FROM user_customer
         WHERE email = #{email}
     </select>
+
+    <!-- update쿼리 -->
+    <!-- 사용자 정보 업데이트 -->
+<!-- 사용자 정보 업데이트 -->
+<update id="updateUserCustomer" parameterType="com.goldensnitch.qudditch.dto.UserCustomer">
+    UPDATE user_customer
+    SET password = #{password},
+        name = #{name},
+        state = #{state},
+        modified_at = NOW(),
+        verification_code = #{verificationCode}
+    WHERE email = #{email}
+</update>
+    <!-- 이메일로 사용자의 인증 코드를 업데이트 -->
+    <update id="updateVerificationCode" parameterType="map">
+        UPDATE user_customer SET verification_code = #{verificationCode} WHERE email = #{email}
+    </update>
+
+
+    <!-- delete쿼리 -->
+    <!-- 사용자 삭제 -->
+    <delete id="deleteUser" parameterType="int">
+        delete
+        from user_customer
+        where id = #{id}
+    </delete>
+
+    
 
 
 </mapper>

@@ -93,21 +93,44 @@ public class CartService { // 장바구니 기능 (추가, 조회, 수량변경,
 
     // 장바구니 조회
     public List<CartItem> getCartItem(Integer userCustomerId){
-        return userCarts.getOrDefault(userCustomerId, new ArrayList<>());
-        // getOrDefault: 찾는 키가 존재하면 키값을 반환하고, 없으면 기본 값을 반환
-        // Collections.emptyList: static으로 이미 만들어진 객체, 값을 변경해야하면 new ArrayList()를 사용하는 것이 편리
+        // 기존에 userCarts에서 가져오던 방식 대신 새로운 메소드를 호출
+        List<CartItem> cartItems = userCarts.getOrDefault(userCustomerId, new ArrayList<>());
+        for (CartItem item : cartItems) {
+            int stockQty = storeStockMapper.selectStockQtyByProductIdAndUserStoreId(item.getProductId(), item.getUserStoreId());
+            item.setMaxQty(stockQty);  // CartItem 객체에 최대 수량 설정
+        }
+        return cartItems;
     }
 
     // 장바구니 아이템 수량 변경
     public void updateItemQty(int userCustomerId, CartItem item){
         List<CartItem> cartItems = userCarts.get(userCustomerId);
         if (cartItems != null) {
-            cartItems.forEach(cartItem -> {
-                if(cartItem.getProductId().equals(item.getProductId())){
-                    cartItem.setQty(item.getQty());
+            for (CartItem cartItem : cartItems) {
+                if (cartItem.getProductId().equals(item.getProductId())) {
+                    int stockQty = storeStockMapper.selectStockQtyByProductIdAndUserStoreId(item.getProductId(), cartItem.getUserStoreId());
+                    if (item.getQty() <= stockQty) {
+                        cartItem.setQty(item.getQty());
+                    } else {
+                        String errorMessage = String.format("Requested quantity %d exceeds stock limit %d for product ID %d.",
+                                item.getQty(), stockQty, item.getProductId());
+                        System.err.println(errorMessage);
+
+                        throw new RuntimeException("Requested quantity exceeds stock limit.");
+                    }
                 }
-            });
+            }
         }
+    }
+
+    // 상품 정보 조회 시, 최대 수량도 함께 조회하여 설정하는 메소드 예시
+    public List<CartItem> fetchCartItemsWithMaxQty(int userCustomerId) {
+        List<CartItem> cartItems = userCarts.get(userCustomerId);
+        for (CartItem item : cartItems) {
+            int stockQty = storeStockMapper.selectStockQtyByProductIdAndUserStoreId(item.getProductId(), item.getUserStoreId());
+            item.setMaxQty(stockQty);  // CartItem 객체에 최대 수량 설정
+        }
+        return cartItems;
     }
 
     // 장바구니 아이템 삭제

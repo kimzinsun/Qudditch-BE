@@ -1,5 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.goldensnitch.qudditch.dto.Pagination;
+import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.Store;
 import com.goldensnitch.qudditch.service.UserStoreService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/userstore")
@@ -27,19 +30,20 @@ public class UserStoreController {
     public ResponseEntity<?> selectStore(@RequestParam Integer storeId){
         Integer userStoreId = userStoreService.selectUserStore(storeId);
         if(userStoreId != null) {
-            return ResponseEntity.ok().body("userStore ID: " + userStoreId);
+            return ResponseEntity.ok().body("{\"userStoreId\": \"" + userStoreId + "\"}");
         } else {
-            return ResponseEntity.badRequest().body("Invalid store ID or store could not be selected.");
+            return ResponseEntity.ok().body("{\"userStoreId\": null}");
         }
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchByStoreName(@RequestParam String name){
+    public ResponseEntity<Map<String, Object>> searchByStoreName(@RequestParam String name, PaginationParam paginationParam){
         try{
-            List<Store> stores = userStoreService.searchByStoreName(name);
-            return ResponseEntity.ok(stores);
+            int count = userStoreService.countByStoreName(name);
+            List<Store> stores = userStoreService.searchByStoreName(name, paginationParam);
+            return ResponseEntity.ok(Map.of("status","success","data", stores, "pagination", new Pagination(count, paginationParam)));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("매장 검색 중 오류가 발생했습니다.");
+            return ResponseEntity.ok(Map.of("status", "fail", "message", e.getMessage()));
 
         }
     }

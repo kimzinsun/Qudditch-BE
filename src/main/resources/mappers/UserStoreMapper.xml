@@ -75,5 +75,13 @@
         SELECT *
         FROM store
         WHERE name LIKE CONCAT('%', #{name}, '%')
+        limit #{recordSize} OFFSET #{offset};
+
+    </select>
+
+    <select id="countByStoreName">
+        SELECT COUNT(*)
+        FROM store
+        WHERE name LIKE CONCAT('%', #{name}, '%')
     </select>
 </mapper>

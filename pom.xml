@@ -196,6 +196,17 @@
             <artifactId>android-util</artifactId>
             <version>2.7.1</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.14.0</version> <!-- 버전은 최신으로 확인 후 적용 -->
+        </dependency>
     </dependencies>
 
     <build>
