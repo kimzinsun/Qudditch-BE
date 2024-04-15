@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,11 +30,14 @@ public class PaymentController {
         try {
             int userCustomerId = userDetails.getId();
 
-            String redirectUrl = paymentService.initiatePayment(cartItems, userCustomerId);
-            if (!"Error".equals(redirectUrl)) {
-                return ResponseEntity.ok().body(Map.of("redirectUrl", redirectUrl));
-            }
-            else {
+            PaymentResponse response = paymentService.initiatePayment(cartItems, userCustomerId);
+            if (response != null && response.getNext_redirect_pc_url() != null) {
+                // 응답 객체에 주문번호를 추가
+                Map<String, Object> result = new HashMap<>();
+                result.put("redirectUrl", response.getNext_redirect_pc_url());
+                result.put("partner_order_id", response.getNext_redirect_pc_url()); // 결제 요청에서 생성된 주문번호
+                return ResponseEntity.ok(result);
+            } else {
                 return ResponseEntity.badRequest().body("Failed to initiate payment");
             }
         } catch (Exception e) {
