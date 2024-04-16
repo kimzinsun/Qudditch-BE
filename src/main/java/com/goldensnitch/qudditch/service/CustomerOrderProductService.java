@@ -65,4 +65,8 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
     public List<OrderProductStoreInfo> getOrderProductsAndStoreInfo(String partnerOrderId) {
         return customerOrderProductMapper.findOrderProductsAndStoreInfoByPartnerOrderId(partnerOrderId);
     }
+
+    public CustomerOrder test(Integer userId) {
+        return customerOrderProductMapper.test(userId);
+    }
 }
