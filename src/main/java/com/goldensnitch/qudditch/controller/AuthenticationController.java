@@ -196,7 +196,8 @@ public class AuthenticationController {
     @PostMapping("/request-verification")
     public ResponseEntity<?> requestVerification(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
-        return userService.requestVerification(email);
+        userService.requestVerification(email);
+        return ResponseEntity.ok(Map.of("status", "success"));
     }
 
     // 계정 인증
@@ -226,9 +227,9 @@ public class AuthenticationController {
             existingUser.setName(userCustomer.getName());
             existingUser.setVerificationCode(null); // 인증 후 코드를 삭제합니다.
             userCustomerMapper.updateUserCustomer(existingUser); // 이메일 인증이 완료된 사용자의 정보를 업데이트합니다.
-            return ResponseEntity.ok("회원가입이 완료되었습니다.");
+            return ResponseEntity.ok(Map.of("message", "회원가입이 완료되었습니다", "status", "success"));
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증이 완료되지 않았습니다.");
+            return ResponseEntity.ok(Map.of("message", "회원가입에 실패했습니다.", "status", "fail"));
         }
     }
 
