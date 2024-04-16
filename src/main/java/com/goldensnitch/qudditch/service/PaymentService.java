@@ -62,7 +62,7 @@ public class PaymentService {
     }
 
     // 결제 준비를 시작하고 사용자를 결제 페이지로 리디렉션하는 URL을 반환하는 메소드
-    public String initiatePayment(List<CartItem> cartItems, Integer userCustomerId) {
+    public PaymentResponse initiatePayment(List<CartItem> cartItems, Integer userCustomerId) {
         HttpHeaders headers = new HttpHeaders();
         // "Authorization" 헤더에 카카오페이 인증 키 추가
         headers.add("Authorization", kakaoPayAuthorization);
@@ -110,14 +110,15 @@ public class PaymentService {
                     customerOrderProductMapper.insertCustomerOrderProduct(orderProduct);
                 }
 
-                System.out.println("initiatePayment 3");
-                return response.getNext_redirect_pc_url();
+                // PaymentResponse 객체에 주문 ID 추가
+                response.setPartner_order_id(request.getPartner_order_id());
+
+                return response; // 수정된 PaymentResponse 반환
             }
         } catch (Exception e) {
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~paymentResopnse에서 Exception");
             e.printStackTrace();
         }
-        return "error";
+        return null; // 실패 시 null 반환
     }
 
     public PaymentResponse approvePayment(String pgToken, String partnerOrderId) throws Exception {

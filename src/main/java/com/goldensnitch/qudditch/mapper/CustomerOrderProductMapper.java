@@ -19,9 +19,9 @@ public interface CustomerOrderProductMapper  {
 
     List<CustomerOrder> findByUserCustomerId(String monthYear);
 
-     List<CustomerOrder> findByMonthYear(String monthYear, Integer status);
+    List<CustomerOrder> findByMonthYear(String monthYear, Integer status);
 
-     CustomerOrder findById(int customerOrderId);
+    CustomerOrder findById(int customerOrderId);
 
     CustomerOrder findByPartnerOrderId(String partnerOrderId);
 
@@ -38,5 +38,8 @@ public interface CustomerOrderProductMapper  {
 
     List<OrderProductStoreInfo> findOrderProductsAndStoreInfoByPartnerOrderId(String partnerOrderId);
 
+    CustomerOrder test(Integer userId);
+
     // List<CustomerOrder> findByMonthYear(Map<String, Object> params);
+
 }

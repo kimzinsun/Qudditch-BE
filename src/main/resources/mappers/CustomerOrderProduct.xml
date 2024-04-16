@@ -34,12 +34,14 @@
         <result property="storeAddress" column="store_address"/>
         <result property="storePhone" column="store_phone"/>
         <result property="businessNumber" column="business_number"/>
+        <result property="usedPoint" column="used_point"/>
+        <result property="earnPoint" column="earn_point"/>
     </resultMap>
 
     <!-- CustomerOrder에 추가 -->
     <!-- localdate를 사용해서 바꿔야하는지 확인: #{orderedAt, jdbcType=DATE} -->
     <insert id="insertCustomerOrder" parameterType="com.goldensnitch.qudditch.dto.CustomerOrder"
-        useGeneratedKeys="true" keyProperty="id">
+            useGeneratedKeys="true" keyProperty="id">
         INSERT INTO customer_order (partner_order_id, user_customer_id, user_store_id, total_amount, used_point, total_pay, earn_point, ordered_at, tid, cid, status)
         VALUES (#{partnerOrderId}, #{userCustomerId}, #{userStoreId}, #{totalAmount}, #{usedPoint}, #{totalPay}, #{earnPoint}, now(), #{tid}, #{cid}, 1)
     </insert>
@@ -49,6 +51,10 @@
         INSERT INTO customer_order_product (customer_order_id, product_id, qty)
         VALUES (#{customerOrderId}, #{productId}, #{qty})
     </insert>
+
+    <select id="test" parameterType="Integer">
+        SELECT * FROM customer_order where user_customer_id = #{userId} ORDER BY id DESC LIMIT 1;
+    </select>
 
     <!-- 주문 정보 조회 -->
     <select id="findById" parameterType="java.lang.Integer" resultMap="customerOrderResultMap">
@@ -68,7 +74,7 @@
         SELECT *
         FROM customer_order
         WHERE user_customer_id = #{userCustomerId}
-        AND DATE_FORMAT(ordered_at, '%Y-%m') = #{monthYear}
+          AND DATE_FORMAT(ordered_at, '%Y-%m') = #{monthYear}
     </select>
 
     <!-- 점주가 월별 주문 내역 조회 -->
@@ -76,7 +82,7 @@
         SELECT *
         FROM customer_order
         WHERE DATE_FORMAT(ordered_at, '%Y-%m') = #{monthYear}
-        AND status = #{status}
+          AND status = #{status}
     </select>
 
     <!-- 주문 ID로 주문 상품 정보 조회 -->
@@ -104,8 +110,8 @@
     <!-- partner_order_id로 주문 상품 정보 및 매장 정보 조회 -->
     <select id="findOrderProductsAndStoreInfoByPartnerOrderId" parameterType="java.lang.String" resultMap="orderProductStoreInfoResultMap">
         SELECT
-            cop.product_id, cop.qty, p.price as product_price,
-            p.name as product_name,
+            cop.product_id, cop.qty, co.used_point as used_point, co.earn_point as earn_point,
+            p.price as product_price, p.name as product_name,
             s.id as store_id, s.name as store_name, s.address as store_address, s.phone as store_phone,
             us.bn_number as business_number
         FROM customer_order_product cop

@@ -13,4 +13,6 @@ public class OrderProductStoreInfo {
     private String storeAddress;
     private String storePhone;
     private String businessNumber;
+    private Integer usedPoint;
+    private Integer earnPoint;
 }
