@@ -204,15 +204,17 @@ public class AuthenticationController {
     public ResponseEntity<?> verifyAccount(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
         String code = payload.get("code");
+        Map<String, String> response = new HashMap<>();
         UserCustomer user = userCustomerMapper.findByEmail(email);
         if (user != null && code.equals(user.getVerificationCode())) {
 
             user.setState(1); // 사용자의 상태를 '인증됨'으로 설정
             userCustomerMapper.updateUserCustomer(user);
-            return ResponseEntity.ok("계정이 인증되었습니다.");
+            response.put("status","success");
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 코드가 틀렸습니다.");
+            response.put("status","fail");
         }
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register/customer")
