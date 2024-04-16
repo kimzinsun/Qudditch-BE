@@ -111,7 +111,7 @@ public class PaymentService {
                 }
 
                 System.out.println("initiatePayment 3");
-                return response.getNext_redirect_pc_url();
+                return response.getNext_redirect_app_url();
             }
         } catch (Exception e) {
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~paymentResopnse에서 Exception");
@@ -278,9 +278,12 @@ public class PaymentService {
         paymentRequest.setTotal_amount(total_amount);
         paymentRequest.setTax_free_amount(0);
         paymentRequest.setVat_amount(vat_amount);
-        paymentRequest.setApproval_url("http://localhost:3000/m/store-select/payResult");
-        paymentRequest.setCancel_url("http://localhost:3000/m/store-select/payResult");
-        paymentRequest.setFail_url("http://localhost:3000/m/store-select/payResult");
+//        paymentRequest.setApproval_url("http://localhost:3000/m/store-select/payResult");
+//        paymentRequest.setCancel_url("http://localhost:3000/m/store-select/payResult");
+//        paymentRequest.setFail_url("http://localhost:3000/m/store-select/payResult");
+        paymentRequest.setApproval_url("https://vercel.qudditch.dawoony.com/m/store-select/payResult");
+        paymentRequest.setCancel_url("https://vercel.qudditch.dawoony.com/m/store-select/payResult");
+        paymentRequest.setFail_url("https://vercel.qudditch.dawoony.com/m/store-select/payResult");
         paymentRequest.setUsedPoint(usedPoints);
         paymentRequest.setTotalPay(totalPay);
         paymentRequest.setEarnPoint(earnPoints);
