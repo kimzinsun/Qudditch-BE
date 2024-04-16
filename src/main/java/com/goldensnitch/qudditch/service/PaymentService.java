@@ -62,7 +62,7 @@ public class PaymentService {
     }
 
     // 결제 준비를 시작하고 사용자를 결제 페이지로 리디렉션하는 URL을 반환하는 메소드
-    public PaymentResponse initiatePayment(List<CartItem> cartItems, Integer userCustomerId) {
+    public String initiatePayment(List<CartItem> cartItems, Integer userCustomerId) {
         HttpHeaders headers = new HttpHeaders();
         // "Authorization" 헤더에 카카오페이 인증 키 추가
         headers.add("Authorization", kakaoPayAuthorization);
@@ -110,15 +110,14 @@ public class PaymentService {
                     customerOrderProductMapper.insertCustomerOrderProduct(orderProduct);
                 }
 
-                // PaymentResponse 객체에 주문 ID 추가
-                response.setPartner_order_id(request.getPartner_order_id());
-
-                return response; // 수정된 PaymentResponse 반환
+                System.out.println("initiatePayment 3");
+                return response.getNext_redirect_pc_url();
             }
         } catch (Exception e) {
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~paymentResopnse에서 Exception");
             e.printStackTrace();
         }
-        return null; // 실패 시 null 반환
+        return "error";
     }
 
     public PaymentResponse approvePayment(String pgToken, String partnerOrderId) throws Exception {
@@ -279,9 +278,9 @@ public class PaymentService {
         paymentRequest.setTotal_amount(total_amount);
         paymentRequest.setTax_free_amount(0);
         paymentRequest.setVat_amount(vat_amount);
-        paymentRequest.setApproval_url("https://vercel.qudditch.dawoony.com/m/store-select/cart");
-        paymentRequest.setCancel_url("https://vercel.qudditch.dawoony.com/m/store-select/cart");
-        paymentRequest.setFail_url("https://vercel.qudditch.dawoony.com/m/store-select/cart");
+        paymentRequest.setApproval_url("http://localhost:3000/m/store-select/payResult");
+        paymentRequest.setCancel_url("http://localhost:3000/m/store-select/payResult");
+        paymentRequest.setFail_url("http://localhost:3000/m/store-select/payResult");
         paymentRequest.setUsedPoint(usedPoints);
         paymentRequest.setTotalPay(totalPay);
         paymentRequest.setEarnPoint(earnPoints);
