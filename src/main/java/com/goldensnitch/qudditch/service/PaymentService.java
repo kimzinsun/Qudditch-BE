@@ -111,7 +111,7 @@ public class PaymentService {
                 }
 
                 System.out.println("initiatePayment 3");
-                return response.getNext_redirect_app_url();
+                return response.getNext_redirect_mobile_url();
             }
         } catch (Exception e) {
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~paymentResopnse에서 Exception");
