@@ -363,5 +363,14 @@ public class AuthenticationController {
         }
     }
 
+    @PostMapping("/find-store-email")
+    public ResponseEntity<Map<String, Object>> findStoreEmail(@RequestBody Map<String, Object> payload) {
+        if(userService.findStoreEmailCnt(payload.get("email").toString())>0) {
+            return ResponseEntity.ok(Map.of("status", "fail"));
+        } else {
+            return ResponseEntity.ok(Map.of("status", "succcess"));
+        }
+    }
+
 
 }

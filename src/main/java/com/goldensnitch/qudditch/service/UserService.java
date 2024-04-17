@@ -363,4 +363,8 @@ public ResponseEntity<?> verifyAccount(String email, String code) {
         }
         return false;
     }
+
+    public int findStoreEmailCnt(String email) {
+        return userStoreMapper.findStoreEmailCnt(email);
+    }
 }

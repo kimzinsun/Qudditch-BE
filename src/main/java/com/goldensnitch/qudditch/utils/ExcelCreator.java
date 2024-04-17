@@ -4,7 +4,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,23 +11,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
 @Component
 public class ExcelCreator {
-//    @Value("${excel.file.directory}")
-//    private String excelFileDirectory;
 
-    public void downloadOrderDataAsExcel(String fileName, List<String> Excelheaders, List<List<String>> datas) throws IOException {
+    public ResponseEntity<ByteArrayResource> downloadOrderDataAsExcel(String fileName, List<String> Excelheaders, List<List<String>> datas) throws IOException {
 
         byte[] excelBytes = createExcelFile(Excelheaders, datas);
 
-        fileName += ".xlsx";
-//        String filePath = excelFileDirectory + File.separator + fileName;
-//        saveExcelFile(excelBytes, filePath);
 
         ByteArrayResource resource = new ByteArrayResource(excelBytes);
         HttpHeaders headers = new HttpHeaders();
@@ -36,10 +28,12 @@ public class ExcelCreator {
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
 
-        ResponseEntity.ok()
+        return ResponseEntity.ok()
                 .headers(headers)
                 .contentLength(excelBytes.length)
                 .body(resource);
+
+
     }
 
 
@@ -69,12 +63,6 @@ public class ExcelCreator {
         return outputStream.toByteArray();
     }
 
-//    private void saveExcelFile(byte[] excelBytes, String filePath) throws IOException {
-//        File file = new File(filePath);
-//        FileOutputStream fos = new FileOutputStream(file);
-//        fos.write(excelBytes);
-//        fos.close();
-//    }
 
 
 }

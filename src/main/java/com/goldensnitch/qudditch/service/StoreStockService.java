@@ -10,6 +10,8 @@ import com.goldensnitch.qudditch.mapper.ProductMapper;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
 import com.goldensnitch.qudditch.utils.ExcelCreator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -108,7 +110,6 @@ public class StoreStockService {
             fcmNotificationRequestDto.setTitle("입고 알림");
             fcmNotificationRequestDto.setBody(productName+"이 입고되었습니다!");
 
-            System.out.println(fcmNotificationService.sendNotificationByToken(fcmNotificationRequestDto));
         }
         InputRepoReq inputRepoReq = new InputRepoReq();
         inputRepoReq.setUserStoreId(userStoreId);
@@ -129,21 +130,16 @@ public class StoreStockService {
     }
 
 
-    public Date getInputDate(Integer inputId) {
-        return storeStockMapper.getInputDate(inputId);
-    }
 
-    public void downloadInputList(Integer inputId) throws IOException {
-        SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd");
-        String date = formatter.format(storeStockMapper.getInputDate(inputId));
-        String fileName = date + "_입고내역서";
+
+    public ResponseEntity<ByteArrayResource> downloadInputList(Integer inputId) throws IOException {
+        String fileName = "input";
         List<String> headers = new ArrayList<>();
         String[] headerArray = {"상품id", "브랜드", "상품명", "가격", "수량", "검수", "유통기한"};
         Collections.addAll(headers, headerArray);
 
         List<InputDetailRes> list = storeStockMapper.getOrderDetailByStoreInputId(inputId);
         List<List<String>> request = new ArrayList<>();
-        List<String> list2 = new ArrayList<>();
         for (InputDetailRes inputDetailRes : list) {
             List<String> innerList = new ArrayList<>();
             innerList.add(String.valueOf(inputDetailRes.getProductId()));
@@ -156,7 +152,7 @@ public class StoreStockService {
             request.add(innerList);
         }
 
-        excelCreator.downloadOrderDataAsExcel(fileName, headers, request);
+         return excelCreator.downloadOrderDataAsExcel(fileName, headers, request);
     }
 
     public DisposalItem getDisposeItemByStoreStockId(Integer productId, Integer userStoreId) {
