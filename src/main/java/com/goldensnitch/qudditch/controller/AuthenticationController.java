@@ -1,17 +1,12 @@
 package com.goldensnitch.qudditch.controller;
 
 
-import com.goldensnitch.qudditch.dto.*;
-import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
-import com.goldensnitch.qudditch.mapper.UserAdminMapper;
-import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
-import com.goldensnitch.qudditch.service.EmailSendingException;
-import com.goldensnitch.qudditch.service.ExtendedUserDetails;
-import com.goldensnitch.qudditch.service.OCRService;
-import com.goldensnitch.qudditch.service.UserService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +20,35 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.goldensnitch.qudditch.dto.AuthResponse;
+import com.goldensnitch.qudditch.dto.LoginRequest;
+import com.goldensnitch.qudditch.dto.RegisterStoreRequest;
+import com.goldensnitch.qudditch.dto.SocialLogin;
+import com.goldensnitch.qudditch.dto.UserAdmin;
+import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.UserStore;
+import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
+import com.goldensnitch.qudditch.mapper.UserAdminMapper;
+import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
+import com.goldensnitch.qudditch.service.CustomOAuth2UserService;
+import com.goldensnitch.qudditch.service.EmailSendingException;
+import com.goldensnitch.qudditch.service.ExtendedUserDetails;
+import com.goldensnitch.qudditch.service.OCRService;
+import com.goldensnitch.qudditch.service.UserService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 public class AuthenticationController {
@@ -81,6 +97,7 @@ public class AuthenticationController {
         cookie.setPath("/");
         response.addCookie(cookie);
 
+
         // 토큰 대신 간단한 성공 메시지를 선택적으로 반환
         // return ResponseEntity.ok("사용자 인증에 성공했습니다.");
         return ResponseEntity.ok(new AuthResponse(jwtToken));
@@ -112,7 +129,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/social-login/{provider}")
-    public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto, HttpServletResponse response) {
+    public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLogin socialLogin, HttpServletResponse response) {
         // 기존의 소셜 로그인 로직...
         String jwtToken = "소셜_로그인_로직으로부터_토큰";
 
@@ -126,6 +143,35 @@ public class AuthenticationController {
         // 토큰 대신 간단한 성공 메시지를 선택적으로 반환
         return ResponseEntity.ok("소셜 로그인에 성공했습니다.");
     }
+    
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @ResponseBody
+@GetMapping("/kakao")
+public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code, HttpServletResponse response) {
+    try {
+        // 카카오 API를 통해 accessToken 획득
+        String accessToken = customOAuth2UserService.getAccessToken(code);
+        
+        // accessToken을 이용하여 카카오로부터 유저 정보 획득
+        HashMap<String, Object> kakaoUserInfo = customOAuth2UserService.getUserInfo(accessToken);
+
+
+        // 이메일과 이름을 기준으로 사용자 확인 또는 등록
+        String email = kakaoUserInfo.get("account_email").toString();
+        String name = kakaoUserInfo.get("name").toString(); // 혹은 적절한 이름 키 사용
+
+        // 유저 서비스에 이메일이 등록되어 있는지 확인
+        UserCustomer existingUser = userCustomerMapper.findByEmail(email);
+
+        // 회원가입이 완료된 사용자를 위한 추가 처리...
+        return ResponseEntity.ok("카카오 로그인 처리 완료");
+    } catch (Exception e) {
+        log.error("카카오 로그인 처리 중 오류 발생", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("카카오 로그인 처리 실패");
+    }
+}
 
     @GetMapping("/loginSuccess")
     public String loginSuccess(@AuthenticationPrincipal OAuth2User user) {
@@ -133,6 +179,8 @@ public class AuthenticationController {
         // 'user' 객체에는 네이버로부터 받은 사용자 정보가 들어 있습니다.
         return "로그인에 성공했습니다.";
     }
+
+    
 
     @GetMapping("/loginFailure")
     public String loginFailure() {

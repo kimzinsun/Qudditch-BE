@@ -48,21 +48,19 @@ public class JwtTokenProvider {
     public String generateToken(Authentication authentication) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_IN_MS);
-
+    
         // 'Authentication' 객체에서 'Principal'을 얻습니다.
         String userId = ((UserDetails) authentication.getPrincipal()).getUsername();
-
+    
         // 권한(역할)을 토큰에 포함시키기 위해 변경
         String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
-
+    
         return Jwts.builder().subject(userId) // 'subject'를 사용자 ID로 설정
             .claim("roles", authorities)    // claim에 권한을 포함시킨다.
             .claim("name", ((ExtendedUserDetails) authentication.getPrincipal()).getName())
             .issuedAt(now).expiration(expiryDate)
-            // .signWith(Jwts.SIG.HS256, secretKey)
             .signWith(SignatureAlgorithm.HS256, JWT_SECRET).compact();
     }
-
     public boolean validateToken(String authToken) {
         try {
             Jwts.parser()
