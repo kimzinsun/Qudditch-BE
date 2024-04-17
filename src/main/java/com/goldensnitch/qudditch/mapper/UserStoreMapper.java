@@ -29,4 +29,6 @@ public interface UserStoreMapper {
     List<Store> searchByStoreName(String name, int recordSize, int offset);
 
     int countByStoreName(String name);
+
+    int findStoreEmailCnt(String email);
 }

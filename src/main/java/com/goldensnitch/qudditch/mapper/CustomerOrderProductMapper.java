@@ -40,6 +40,8 @@ public interface CustomerOrderProductMapper  {
 
     CustomerOrder test(Integer userId);
 
+    List<CustomerOrder> findMonthlyOrdersByCustomerId(Integer userCustomerId, String monthYear, Integer status);
+
     // List<CustomerOrder> findByMonthYear(Map<String, Object> params);
 
 }

@@ -244,7 +244,8 @@ public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code, HttpServl
     @PostMapping("/request-verification")
     public ResponseEntity<?> requestVerification(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
-        return userService.requestVerification(email);
+        userService.requestVerification(email);
+        return ResponseEntity.ok(Map.of("status", "success"));
     }
 
     // 계정 인증
@@ -252,15 +253,17 @@ public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code, HttpServl
     public ResponseEntity<?> verifyAccount(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
         String code = payload.get("code");
+        Map<String, String> response = new HashMap<>();
         UserCustomer user = userCustomerMapper.findByEmail(email);
         if (user != null && code.equals(user.getVerificationCode())) {
 
             user.setState(1); // 사용자의 상태를 '인증됨'으로 설정
             userCustomerMapper.updateUserCustomer(user);
-            return ResponseEntity.ok("계정이 인증되었습니다.");
+            response.put("status","success");
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 코드가 틀렸습니다.");
+            response.put("status","fail");
         }
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register/customer")
@@ -272,9 +275,9 @@ public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code, HttpServl
             existingUser.setName(userCustomer.getName());
             existingUser.setVerificationCode(null); // 인증 후 코드를 삭제합니다.
             userCustomerMapper.updateUserCustomer(existingUser); // 이메일 인증이 완료된 사용자의 정보를 업데이트합니다.
-            return ResponseEntity.ok("회원가입이 완료되었습니다.");
+            return ResponseEntity.ok(Map.of("message", "회원가입이 완료되었습니다", "status", "success"));
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증이 완료되지 않았습니다.");
+            return ResponseEntity.ok(Map.of("message", "회원가입에 실패했습니다.", "status", "fail"));
         }
     }
 
@@ -405,6 +408,15 @@ public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code, HttpServl
             return ResponseEntity.ok(Map.of("message", "매장 인증이 완료되었습니다.", "status", "success"));
         } else {
             return ResponseEntity.ok(Map.of("message", "인증 코드가 틀렸습니다.", "status", "fail"));
+        }
+    }
+
+    @PostMapping("/find-store-email")
+    public ResponseEntity<Map<String, Object>> findStoreEmail(@RequestBody Map<String, Object> payload) {
+        if(userService.findStoreEmailCnt(payload.get("email").toString())>0) {
+            return ResponseEntity.ok(Map.of("status", "fail"));
+        } else {
+            return ResponseEntity.ok(Map.of("status", "succcess"));
         }
     }
 
