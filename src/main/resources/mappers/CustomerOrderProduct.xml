@@ -157,4 +157,13 @@
         SET status = #{status}
         WHERE tid = #{tid}
     </update>
+
+    <!-- 사용자 ID와 월별로 주문 내역 조회 -->
+    <select id="findMonthlyOrdersByCustomerId" parameterType="map" resultMap="customerOrderResultMap">
+        SELECT *
+        FROM customer_order
+        WHERE user_customer_id = #{userId}
+          AND DATE_FORMAT(ordered_at, '%Y-%m') = #{monthYear}
+          AND status = #{status}
+    </select>
 </mapper>

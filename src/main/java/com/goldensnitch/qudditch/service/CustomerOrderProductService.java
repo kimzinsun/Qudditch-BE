@@ -69,4 +69,8 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
     public CustomerOrder test(Integer userId) {
         return customerOrderProductMapper.test(userId);
     }
+
+    public List<CustomerOrder> findMonthlyOrdersByCustomerId(Integer userCustomerId, String monthYear, Integer status) {
+    return customerOrderProductMapper.findMonthlyOrdersByCustomerId(userCustomerId, monthYear, status);
+    }
 }
