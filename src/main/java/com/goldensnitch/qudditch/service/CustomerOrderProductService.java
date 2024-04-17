@@ -37,21 +37,22 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
 //        return receipt;
 //    }
 
-    public List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status) {
-        // 주문 내역 조회
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("monthYear", monthYear);
-//        params.put("status", status);
-        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByMonthYear(monthYear, status);
-        List<OrderResponse> monthlyOrderHistory = customerOrders.stream().map(order -> {
-            List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());
-            OrderResponse orderResponse = new OrderResponse();
-            orderResponse.setCustomerOrder(order);
-            orderResponse.setCustomerOrderProducts(orderProducts);
-            return orderResponse;
-        }).collect(Collectors.toList());
+    private OrderResponse createOrderResponse(Integer orderId) {
+        CustomerOrder customerOrder = customerOrderProductMapper.findById(orderId);
+        List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findOrderProductsByOrderId(orderId);
 
-        return monthlyOrderHistory;
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setCustomerOrder(customerOrder);
+        orderResponse.setCustomerOrderProducts(customerOrderProducts);
+
+        return orderResponse;
+    }
+
+    public List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status) {
+        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByMonthYear(monthYear, status);
+        return customerOrders.stream()
+                .map(order -> createOrderResponse(order.getId()))
+                .collect(Collectors.toList());
     }
 
     public List<CustomerOrder> getPointHistoryByCustomerId(Integer userCustomerId) {
@@ -70,7 +71,10 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
         return customerOrderProductMapper.test(userId);
     }
 
-    public List<CustomerOrder> findMonthlyOrdersByCustomerId(Integer userCustomerId, String monthYear, Integer status) {
-    return customerOrderProductMapper.findMonthlyOrdersByCustomerId(userCustomerId, monthYear, status);
+    public List<OrderResponse> findMonthlyOrdersByCustomerId(Integer userCustomerId, String monthYear, Integer status) {
+        List<CustomerOrder> customerOrders = customerOrderProductMapper.findMonthlyOrdersByCustomerId(userCustomerId, monthYear, status);
+        return customerOrders.stream()
+                .map(order -> createOrderResponse(order.getId()))
+                .collect(Collectors.toList());
     }
 }
