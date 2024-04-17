@@ -278,12 +278,12 @@ public class PaymentService {
         paymentRequest.setTotal_amount(total_amount);
         paymentRequest.setTax_free_amount(0);
         paymentRequest.setVat_amount(vat_amount);
-        paymentRequest.setApproval_url("http://localhost:3000/m/store-select/payResult");
-        paymentRequest.setCancel_url("http://localhost:3000/m/store-select/payResult");
-        paymentRequest.setFail_url("http://localhost:3000/m/store-select/payResult");
-//        paymentRequest.setApproval_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
-//        paymentRequest.setCancel_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
-//        paymentRequest.setFail_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
+//        paymentRequest.setApproval_url("http://localhost:3000/m/store-select/payResult");
+//        paymentRequest.setCancel_url("http://localhost:3000/m/store-select/payResult");
+//        paymentRequest.setFail_url("http://localhost:3000/m/store-select/payResult");
+        paymentRequest.setApproval_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
+        paymentRequest.setCancel_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
+        paymentRequest.setFail_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
         paymentRequest.setUsedPoint(usedPoints);
         paymentRequest.setTotalPay(totalPay);
         paymentRequest.setEarnPoint(earnPoints);
