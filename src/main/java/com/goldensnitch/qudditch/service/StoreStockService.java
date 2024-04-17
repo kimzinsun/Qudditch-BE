@@ -110,7 +110,6 @@ public class StoreStockService {
             fcmNotificationRequestDto.setTitle("입고 알림");
             fcmNotificationRequestDto.setBody(productName+"이 입고되었습니다!");
 
-            System.out.println(fcmNotificationService.sendNotificationByToken(fcmNotificationRequestDto));
         }
         InputRepoReq inputRepoReq = new InputRepoReq();
         inputRepoReq.setUserStoreId(userStoreId);
