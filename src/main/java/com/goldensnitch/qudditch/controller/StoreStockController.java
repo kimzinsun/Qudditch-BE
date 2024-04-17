@@ -7,6 +7,7 @@ import com.goldensnitch.qudditch.dto.storeInput.StockInputReq;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.StoreStockService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -159,20 +160,17 @@ public class StoreStockController {
     }
 
     @GetMapping("/stock/input/download/{inputId}")
-    public ResponseEntity<Map<String, Object>> downloadInputList(@PathVariable Integer inputId, @AuthenticationPrincipal ExtendedUserDetails userDetails) throws IOException {
+    public ResponseEntity<ByteArrayResource> downloadInputList(@PathVariable Integer inputId, @AuthenticationPrincipal ExtendedUserDetails userDetails) throws IOException {
         Map<String, Object> response = new HashMap<>();
-        Integer userstoreId = userDetails.getId();
-        if (storeStockService.getOrderDetailByStoreInputId(inputId).isEmpty() || storeStockService.getUserStoreIdByInputId(inputId) != userstoreId) {
+        Integer userStoreId = userDetails.getId();
+        if (userStoreId == null || storeStockService.getUserStoreIdByInputId(inputId) != userStoreId) {
             response.put("status", "fail");
             response.put("message", "잘못된 접근입니다.");
-
         } else {
-            storeStockService.downloadInputList(inputId);
             response.put("status", "success");
-            response.put("message", "입고내역서가 다운로드 되었습니다.");
-
+            return storeStockService.downloadInputList(inputId);
         }
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().body(null);
     }
 
     @GetMapping("/stock/input/{inputId}")
