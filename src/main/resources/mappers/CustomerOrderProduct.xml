@@ -162,7 +162,7 @@
     <select id="findMonthlyOrdersByCustomerId" parameterType="map" resultMap="customerOrderResultMap">
         SELECT *
         FROM customer_order
-        WHERE user_customer_id = #{userId}
+        WHERE user_customer_id = #{userCustomerId}
           AND DATE_FORMAT(ordered_at, '%Y-%m') = #{monthYear}
           AND status = #{status}
     </select>

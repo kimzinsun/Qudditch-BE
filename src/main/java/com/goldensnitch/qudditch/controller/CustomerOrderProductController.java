@@ -48,16 +48,16 @@ public class CustomerOrderProductController {
         }
     }
 
-    @GetMapping("/{userId}/history")
-    public ResponseEntity<List<CustomerOrder>> getUserMonthlyOrderHistory(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam String monthYear, @RequestParam Integer status) {
+    @GetMapping("/history/c")
+    public ResponseEntity<List<OrderResponse>> getUserMonthlyOrderHistory(@AuthenticationPrincipal ExtendedUserDetails userDetails, @RequestParam String monthYear, @RequestParam Integer status) {
         try {
             int userCustomerId = userDetails.getId();
 
-            List<CustomerOrder> orders = customerOrderProductService.findMonthlyOrdersByCustomerId(userCustomerId, monthYear, status);
-            if (orders.isEmpty()) {
+            List<OrderResponse> history = customerOrderProductService.findMonthlyOrdersByCustomerId(userCustomerId, monthYear, status);
+            if (history.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
-            return ResponseEntity.ok(orders);
+            return ResponseEntity.ok(history);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
         }
