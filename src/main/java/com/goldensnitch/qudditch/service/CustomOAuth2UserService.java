@@ -1,7 +1,5 @@
 package com.goldensnitch.qudditch.service;
 
-import java.util.HashMap;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -91,21 +89,21 @@ public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2Authentic
     return new CustomOAuth2User(oAuth2User.getAttributes(), oAuth2User.getAuthorities(), "name");
 }
 
-    public  String getAccessToken(String code) {
-        // code를 사용하여 카카오 API로부터 액세스 토큰을 받아오는 로직 구현
-        // 이 부분에 HTTP 요청을 통해 카카오 API에 액세스 토큰을 요청하고
-        // 응답에서 액세스 토큰을 추출하여 반환하는 코드를 작성합니다.
-        String accessToken = "가상의_액세스_토큰";
-        return accessToken;
-    }
+    // public  String getAccessToken(String code) {
+    //     // code를 사용하여 카카오 API로부터 액세스 토큰을 받아오는 로직 구현
+    //     // 이 부분에 HTTP 요청을 통해 카카오 API에 액세스 토큰을 요청하고
+    //     // 응답에서 액세스 토큰을 추출하여 반환하는 코드를 작성합니다.
+    //     String accessToken = "가상의_액세스_토큰";
+    //     return accessToken;
+    // }
 
-    public  HashMap<String, Object> getUserInfo(String accessToken) {
-        // accessToken을 사용하여 카카오 API로부터 사용자 정보를 받아오는 로직 구현
-        // 이 부분에 HTTP 요청을 통해 카카오 API에 사용자 정보를 요청하고
-        // 응답을 HashMap<String, Object> 형태로 변환하여 반환하는 코드를 작성합니다.
-        HashMap<String, Object> userInfo = new HashMap<>();
-        userInfo.put("email", "");
-        userInfo.put("name", "가상의_이름");
-        return userInfo;
-}
+//     public  HashMap<String, Object> getUserInfo(String accessToken) {
+//         // accessToken을 사용하여 카카오 API로부터 사용자 정보를 받아오는 로직 구현
+//         // 이 부분에 HTTP 요청을 통해 카카오 API에 사용자 정보를 요청하고
+//         // 응답을 HashMap<String, Object> 형태로 변환하여 반환하는 코드를 작성합니다.
+//         HashMap<String, Object> userInfo = new HashMap<>();
+//         userInfo.put("email", "");
+//         userInfo.put("name", "가상의_이름");
+//         return userInfo;
+// }
 }

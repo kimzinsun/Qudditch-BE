@@ -80,6 +80,8 @@ public class TestService {
             return accessToken;
         }
 
+    
+
     public HashMap<String, Object> getUserInfo(String accessToken) {
         HashMap<String, Object> userInfo = new HashMap<>();
         String reqUrl = "https://kapi.kakao.com/v2/user/me";
@@ -155,4 +157,6 @@ public class TestService {
             log.error("Exception occurred while logging out", e);
         }
     }
+
+    
 }

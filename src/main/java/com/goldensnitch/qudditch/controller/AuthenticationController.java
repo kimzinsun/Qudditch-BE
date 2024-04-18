@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -180,15 +181,16 @@ public class AuthenticationController {
 
             // 이메일과 이름을 기준으로 기존사용자 확인 또는 등록
             String email = kakaoUserInfo.get("email").toString();
-            String name = kakaoUserInfo.get("name").toString(); // 혹은 적절한 이름 키 사용
             System.out.println(email);
             // 유저 서비스에 이메일이 등록되어 있는지 확인
             UserCustomer existingUser = userCustomerMapper.findByEmail(email);
+            System.out.println("------------------------------------------------------");
+            System.out.println(existingUser);
 
             if (existingUser != null) {
                 // 사용자가 존재하면 JWT 토큰을 생성하고 쿠키에 저장
                 // Test test = new Test(existingUser.getId().toString());
-                Test test = new Test(existingUser.getId().toString(), existingUser.getEmail());
+                Test test = new Test(existingUser.getId().toString(), existingUser.getName(),existingUser.getEmail());
                 Authentication authentication = new UsernamePasswordAuthenticationToken(test, null,
                         AuthorityUtils.createAuthorityList("ROLE_USER"));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -202,10 +204,11 @@ public class AuthenticationController {
 
                 return ResponseEntity.ok(new AuthResponse(jwtToken));
             } else {
+                System.out.println("No User!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 // 사용자가 존재하지 않는 경우, 회원가입 페이지로 리다이렉션
                 // return ResponseEntity.status(HttpStatus.FOUND).header("Location",
                 // "/register").build();
-                return ResponseEntity.status(HttpStatus.FOUND)
+                return ResponseEntity.status(HttpStatusCode.valueOf(301))
                         .header("Location", "http://localhost:3000/mobile/register").build();
             }
         } catch (Exception e) {
