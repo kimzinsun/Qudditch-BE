@@ -25,6 +25,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.goldensnitch.qudditch.controller.Test;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 
 import io.jsonwebtoken.Claims;
@@ -33,7 +34,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
-
 
 @Component
 public class JwtTokenProvider {
@@ -48,21 +48,32 @@ public class JwtTokenProvider {
     public String generateToken(Authentication authentication) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_IN_MS);
-
+    
         // 'Authentication' 객체에서 'Principal'을 얻습니다.
-        String userId = ((UserDetails) authentication.getPrincipal()).getUsername();
-
+        String userId;
+        try {
+            userId = ((UserDetails) authentication.getPrincipal()).getUsername();
+        } catch(ClassCastException e) {
+            userId = ((Test) authentication.getPrincipal()).getEmail();
+        }
+    
         // 권한(역할)을 토큰에 포함시키기 위해 변경
         String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
-
-        return Jwts.builder().subject(userId) // 'subject'를 사용자 ID로 설정
+        try {
+            return Jwts.builder().subject(userId) // 'subject'를 사용자 ID로 설정
             .claim("roles", authorities)    // claim에 권한을 포함시킨다.
             .claim("name", ((ExtendedUserDetails) authentication.getPrincipal()).getName())
             .issuedAt(now).expiration(expiryDate)
-            // .signWith(Jwts.SIG.HS256, secretKey)
             .signWith(SignatureAlgorithm.HS256, JWT_SECRET).compact();
+        } catch(ClassCastException e) {
+            return Jwts.builder().subject(userId) // 'subject'를 사용자 ID로 설정
+            .claim("roles", authorities)    // claim에 권한을 포함시킨다.
+            .claim("name", ((Test) authentication.getPrincipal()).getName())
+            .issuedAt(now).expiration(expiryDate)
+            .signWith(SignatureAlgorithm.HS256, JWT_SECRET).compact();
+        }
+        
     }
-
     public boolean validateToken(String authToken) {
         try {
             Jwts.parser()
