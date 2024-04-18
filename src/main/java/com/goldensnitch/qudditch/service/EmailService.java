@@ -78,19 +78,18 @@ public class EmailService {
     }
 
     public void sendVerificationEmail(String toEmail, String verificationCode) throws IOException {
-        String subject = "계정 인증 코드";
-        String contentText = "귀하의 인증 코드는 다음과 같습니다: " + verificationCode;
+        String subject = "SSGmart24 계정 인증 코드";
 
-        Email from = new Email(this.fromEmail);
+        Email fromEmail = new Email(this.fromEmail);
         Email to = new Email(toEmail);
-        Content content = new Content("text/plain", contentText);
-        Mail mail = new Mail(from, subject, to, content);
-
-        
+        Content content = new Content("text/html", "code");
+        Mail email = new Mail(fromEmail, subject, to, content);
+        email.setTemplateId("d-409af09df5c049dea3dbd6f2759c688f");
+        email.personalization.get(0).addDynamicTemplateData("token", verificationCode);
 
         // 이메일 구성 및 전송 로직
         try {
-            sendEmail(mail);
+            sendEmail(email);
         } catch (IOException e) {
             log.error("이메일 인증 보내기에 실패하였습니다.", e);
             throw new EmailSendingException("이메일 보내기에 실패했습니다: " + e.getMessage());
