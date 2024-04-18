@@ -18,12 +18,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,8 +43,6 @@ public class AuthenticationController {
     private final UserAdminMapper userAdminMapper; // 생성자 주입 추가
     @Autowired
     private OCRService ocrService;
-    @Autowired
-    private CustomOAuth2UserService customOAuth2UserService;
     @Autowired
     private TestService testService;
 
@@ -197,12 +193,6 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/loginSuccess")
-    public String loginSuccess(@AuthenticationPrincipal OAuth2User user) {
-        // 로그인 성공 후 사용자 정보 처리
-        // 'user' 객체에는 네이버로부터 받은 사용자 정보가 들어 있습니다.
-        return "로그인에 성공했습니다.";
-    }
 
     @GetMapping("/loginFailure")
     public String loginFailure() {
