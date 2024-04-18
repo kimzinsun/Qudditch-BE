@@ -156,6 +156,8 @@ public class ChatbotController {
 
                     StringBuilder sb = new StringBuilder();
 
+                    sb.append("사용자 근처의 편의점 리스트" + "\n");
+
                     for(Store store : nearStores){
                         sb.append("가게이름: " + store.getName() + ", 주소: " + store.getAddress()).append("\n");
                     }
