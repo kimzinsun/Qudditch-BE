@@ -1,17 +1,15 @@
 package com.goldensnitch.qudditch.controller;
 
-
+import com.goldensnitch.qudditch.dto.SocialLogin;
 import com.goldensnitch.qudditch.dto.*;
 import com.goldensnitch.qudditch.jwt.JwtTokenProvider;
 import com.goldensnitch.qudditch.mapper.UserAdminMapper;
 import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
-import com.goldensnitch.qudditch.service.EmailSendingException;
-import com.goldensnitch.qudditch.service.ExtendedUserDetails;
-import com.goldensnitch.qudditch.service.OCRService;
-import com.goldensnitch.qudditch.service.UserService;
+import com.goldensnitch.qudditch.service.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +18,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @RestController
 public class AuthenticationController {
@@ -45,6 +43,28 @@ public class AuthenticationController {
     private final UserAdminMapper userAdminMapper; // 생성자 주입 추가
     @Autowired
     private OCRService ocrService;
+    @Autowired
+    private TestService testService;
+
+    // @PostMapping("/social-login/{provider}")
+    // public ResponseEntity<?> socialLogin(@PathVariable String provider,
+    // @RequestBody SocialLoginDto socialLoginDto) {
+    // // UserService의 계정 통합 로직 호출
+    // ExtendedUserDetails user = (ExtendedUserDetails)
+    // userService.processUserIntegration(provider, socialLoginDto);
+
+    // if (user != null) {
+    // // 계정 통합 또는 생성 후 성공적으로 처리된 경우, JWT 토큰 발급 및 반환
+    // String token = jwtTokenProvider.generateToken(new
+    // UsernamePasswordAuthenticationToken(user.getEmail(), null,
+    // user.getAuthorities()));
+    // return ResponseEntity.ok(new AuthResponse(token));
+    // } else {
+    // // 처리 중 오류 발생 시
+    // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계정 처리 중
+    // 오류 발생");
+    // }
+    // }
 
     @Autowired
     public AuthenticationController(
@@ -63,12 +83,14 @@ public class AuthenticationController {
         this.userAdminMapper = userAdminMapper; // 초기화 추가
     }
 
-    //일반 유저 로그인 처리(http-only쿠키 사용)
+    // 일반 유저 로그인 처리(http-only쿠키 사용)
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response,
+                                              HttpServletRequest request) {
         // 회원 여부 확인 로직, 비밀번호 검증 로직 추가
         Authentication authentication = authenticationManager
-            .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+            .authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwtToken = jwtTokenProvider.generateToken(authentication);
@@ -86,25 +108,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(new AuthResponse(jwtToken));
     }
 
-    // @PostMapping("/social-login/{provider}")
-    // public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto) {
-    //     // UserService의 계정 통합 로직 호출
-    //     ExtendedUserDetails user = (ExtendedUserDetails) userService.processUserIntegration(provider, socialLoginDto);
-
-    //     if (user != null) {
-    //         // 계정 통합 또는 생성 후 성공적으로 처리된 경우, JWT 토큰 발급 및 반환
-    //         String token = jwtTokenProvider.generateToken(new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities()));
-    //         return ResponseEntity.ok(new AuthResponse(token));
-    //     } else {
-    //         // 처리 중 오류 발생 시
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계정 처리 중 오류 발생");
-    //     }
-    // }
-
     @PostMapping("/store/login")
     public ResponseEntity<?> authenticateStore(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
-            .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+            .authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // 토큰 생성 및 반환
         String token = jwtTokenProvider.generateToken(authentication);
@@ -112,7 +120,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/social-login/{provider}")
-    public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLoginDto socialLoginDto, HttpServletResponse response) {
+    public ResponseEntity<?> socialLogin(@PathVariable String provider, @RequestBody SocialLogin socialLogin,
+                                         HttpServletResponse response) {
         // 기존의 소셜 로그인 로직...
         String jwtToken = "소셜_로그인_로직으로부터_토큰";
 
@@ -127,12 +136,63 @@ public class AuthenticationController {
         return ResponseEntity.ok("소셜 로그인에 성공했습니다.");
     }
 
-    @GetMapping("/loginSuccess")
-    public String loginSuccess(@AuthenticationPrincipal OAuth2User user) {
-        // 로그인 성공 후 사용자 정보 처리
-        // 'user' 객체에는 네이버로부터 받은 사용자 정보가 들어 있습니다.
-        return "로그인에 성공했습니다.";
+    @ResponseBody
+    @GetMapping("/kakao")
+    public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code, HttpServletResponse response) {
+        try {
+            // 카카오 API를 통해 accessToken 획득
+            String accessToken = testService.getAccessToken(code);
+            if (accessToken == null) {
+                log.error("엑세스 토큰 획득 실패");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("카카오 로그인 실패");
+            }
+
+            // 카카오 API에서 받은 accessToken을 이용하여 카카오로부터 유저 정보 획득
+            HashMap<String, Object> kakaoUserInfo = testService.getUserInfo(accessToken);
+            if (kakaoUserInfo.isEmpty()) {
+                log.error("사용자 정보를 가져오는 데 실패했습니다.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사용자 정보를 확인할 수 없습니다.");
+            }
+
+            // 이메일과 이름을 기준으로 기존사용자 확인 또는 등록
+            String email = kakaoUserInfo.get("email").toString();
+            // 유저 서비스에 이메일이 등록되어 있는지 확인
+            UserCustomer existingUser = userCustomerMapper.findByEmail(email);
+
+            if (existingUser == null) {
+                UserCustomer user = new UserCustomer();
+                user.setEmail(email);
+                user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(6)));
+                user.setName(kakaoUserInfo.get("name").toString());
+                user.setState(1); // 사용자 상태를 '일반'(1)으로 설정
+                userCustomerMapper.insertUserCustomerKakao(user);
+            }
+
+            UserCustomer user = userCustomerMapper.findByEmail(email);
+
+            Test test = new Test(user.getName(), user.getEmail());
+            Authentication authentication = new UsernamePasswordAuthenticationToken(test, null,
+                AuthorityUtils.createAuthorityList("ROLE_USER"));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwtToken = jwtTokenProvider.generateToken(authentication);
+
+            Cookie cookie = new Cookie("jwt", jwtToken);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true); // 프로덕션 환경에서는 true로 설정
+            cookie.setPath("/");
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok(new AuthResponse(jwtToken));
+        } catch (Exception e) {
+            log.error("카카오 로그인 처리 중 오류 발생", e);
+            return ResponseEntity.ok(Map.of(
+                "message", "카카오 로그인에 실패했습니다.",
+                "status", "fail"
+            ));
+        }
     }
+
 
     @GetMapping("/loginFailure")
     public String loginFailure() {
@@ -169,7 +229,8 @@ public class AuthenticationController {
                 return ResponseEntity.ok(userInfo);
             } else {
                 // 여기서 principal의 실제 클래스 타입을 로깅하여 더 많은 정보를 얻을 수 있습니다.
-                log.error("Expected principal to be an instance of ExtendedUserDetails but found: {}", principal.getClass().getName());
+                log.error("Expected principal to be an instance of ExtendedUserDetails but found: {}",
+                    principal.getClass().getName());
                 // 'principal'이 'ExtendedUserDetails'의 인스턴스가 아닌 경우 처리
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User details not found");
             }
@@ -211,9 +272,9 @@ public class AuthenticationController {
 
             user.setState(1); // 사용자의 상태를 '인증됨'으로 설정
             userCustomerMapper.updateUserCustomer(user);
-            response.put("status","success");
+            response.put("status", "success");
         } else {
-            response.put("status","fail");
+            response.put("status", "fail");
         }
         return ResponseEntity.ok(response);
     }
@@ -273,11 +334,13 @@ public class AuthenticationController {
     @PostMapping("/register/store")
     public ResponseEntity<Map<String, Object>> registerStore(@ModelAttribute RegisterStoreRequest request) {
         try {
-//            String extractedBusinessNumber = ocrService.extractBusinessNumber(request.getBusinessLicenseFile());
-//
-//            if (!request.getBusinessNumber().equals(extractedBusinessNumber)) {
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사업자 등록증 번호가 일치하지 않습니다.");
-//            }
+            // String extractedBusinessNumber =
+            // ocrService.extractBusinessNumber(request.getBusinessLicenseFile());
+            //
+            // if (!request.getBusinessNumber().equals(extractedBusinessNumber)) {
+            // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사업자 등록증 번호가 일치하지
+            // 않습니다.");
+            // }
 
             // 여기에서 나머지 회원가입 로직을 추가...
             // 예: UserStore 객체 생성 및 userService.registerUserStore 호출
@@ -332,8 +395,8 @@ public class AuthenticationController {
         }
 
         // 인증 로직
-        Authentication authentication =
-            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
+            loginRequest.getPassword());
         authentication = authenticationManager.authenticate(authentication);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -346,7 +409,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/request-verification-store")
-    public ResponseEntity<Map<String, Object>> requestVerificationStore(@RequestBody Map<String, Object> body) throws IOException {
+    public ResponseEntity<Map<String, Object>> requestVerificationStore(@RequestBody Map<String, Object> body)
+        throws IOException {
         if (userService.requestVerificationStore(body.get("email").toString())) {
             return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다.", "status", "success"));
         } else {
@@ -356,7 +420,7 @@ public class AuthenticationController {
 
     @PostMapping("/verify-store")
     public ResponseEntity<Map<String, Object>> verifyStore(@RequestBody Map<String, Object> payload) {
-        if(userService.verifyStore(payload.get("email").toString(), payload.get("code").toString())) {
+        if (userService.verifyStore(payload.get("email").toString(), payload.get("code").toString())) {
             return ResponseEntity.ok(Map.of("message", "매장 인증이 완료되었습니다.", "status", "success"));
         } else {
             return ResponseEntity.ok(Map.of("message", "인증 코드가 틀렸습니다.", "status", "fail"));
@@ -365,12 +429,11 @@ public class AuthenticationController {
 
     @PostMapping("/find-store-email")
     public ResponseEntity<Map<String, Object>> findStoreEmail(@RequestBody Map<String, Object> payload) {
-        if(userService.findStoreEmailCnt(payload.get("email").toString())>0) {
+        if (userService.findStoreEmailCnt(payload.get("email").toString()) > 0) {
             return ResponseEntity.ok(Map.of("status", "fail"));
         } else {
             return ResponseEntity.ok(Map.of("status", "succcess"));
         }
     }
-
 
 }
