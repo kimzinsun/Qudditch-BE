@@ -1,22 +1,18 @@
 package com.goldensnitch.qudditch.controller;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import java.security.Principal;
 
+@Data
+@AllArgsConstructor
 public class Test implements Principal {
-    private String userName;
+    private String name;
     private String email;
-
-    public Test(String username, String email) {
-        this.userName = username;
-        this.email = email;
-    }
 
     @Override
     public String getName() {
-        return userName;
+        return name;
     }
-
-   public String getEmail(){
-    return email;
-   }
 }
