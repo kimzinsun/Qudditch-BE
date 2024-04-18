@@ -3,6 +3,7 @@ package com.goldensnitch.qudditch.mapper;
 import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
 import com.goldensnitch.qudditch.dto.payment.OrderProductStoreInfo;
+import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -40,6 +41,10 @@ public interface CustomerOrderProductMapper  {
 
     CustomerOrder test(Integer userId);
 
-    // List<CustomerOrder> findByMonthYear(Map<String, Object> params);
+    List<CustomerOrder> findMonthlyOrdersByCustomerId(Integer userCustomerId, String monthYear, Integer status);
+
+    int countOrdersByMonthYear(String monthYear, Integer status);
+
+    List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status, Integer recordSize, Integer offset);
 
 }

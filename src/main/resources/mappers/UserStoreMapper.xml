@@ -25,6 +25,11 @@
         SELECT MAX(store_id)
         FROM user_store
     </select>
+    <select id="findStoreEmailCnt" resultType="int" parameterType="String">
+        SELECT COUNT(*)
+        FROM user_store
+        WHERE email = #{email}
+    </select>
 
     <!-- 가게유저 수정 -->
     <!-- <update id="updateUserStore" parameterType="com.goldensnitch.qudditch.dto.UserStore">

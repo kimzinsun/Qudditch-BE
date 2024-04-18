@@ -2,12 +2,14 @@ package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.CustomerOrderProduct;
+import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.payment.OrderProductStoreInfo;
 import com.goldensnitch.qudditch.dto.payment.OrderResponse;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,21 +39,24 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
 //        return receipt;
 //    }
 
-    public List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status) {
-        // 주문 내역 조회
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("monthYear", monthYear);
-//        params.put("status", status);
-        List<CustomerOrder> customerOrders = customerOrderProductMapper.findByMonthYear(monthYear, status);
-        List<OrderResponse> monthlyOrderHistory = customerOrders.stream().map(order -> {
-            List<CustomerOrderProduct> orderProducts = customerOrderProductMapper.findOrderProductsByOrderId(order.getId());
-            OrderResponse orderResponse = new OrderResponse();
-            orderResponse.setCustomerOrder(order);
-            orderResponse.setCustomerOrderProducts(orderProducts);
-            return orderResponse;
-        }).collect(Collectors.toList());
+    private OrderResponse createOrderResponse(Integer orderId) {
+        CustomerOrder customerOrder = customerOrderProductMapper.findById(orderId);
+        List<CustomerOrderProduct> customerOrderProducts = customerOrderProductMapper.findOrderProductsByOrderId(orderId);
 
-        return monthlyOrderHistory;
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setCustomerOrder(customerOrder);
+        orderResponse.setCustomerOrderProducts(customerOrderProducts);
+
+        return orderResponse;
+    }
+
+    public List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status, PaginationParam paginationParam) {
+        List<OrderResponse> orders = customerOrderProductMapper.getMonthlyOrderHistory(monthYear, status, paginationParam.getRecordSize(), paginationParam.getOffset());
+        return orders != null ? orders : new ArrayList<>();
+    }
+
+    public int countOrdersByMonthYear(String monthYear, Integer status) {
+        return customerOrderProductMapper.countOrdersByMonthYear(monthYear, status);
     }
 
     public List<CustomerOrder> getPointHistoryByCustomerId(Integer userCustomerId) {
@@ -69,4 +74,13 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
     public CustomerOrder test(Integer userId) {
         return customerOrderProductMapper.test(userId);
     }
+
+    public List<OrderResponse> findMonthlyOrdersByCustomerId(Integer userCustomerId, String monthYear, Integer status) {
+        List<CustomerOrder> customerOrders = customerOrderProductMapper.findMonthlyOrdersByCustomerId(userCustomerId, monthYear, status);
+        return customerOrders.stream()
+                .map(order -> createOrderResponse(order.getId()))
+                .collect(Collectors.toList());
+    }
+
+
 }

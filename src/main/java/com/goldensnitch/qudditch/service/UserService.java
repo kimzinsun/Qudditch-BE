@@ -18,7 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.goldensnitch.qudditch.dto.SocialLoginDto;
+import com.goldensnitch.qudditch.dto.SocialLogin;
 import com.goldensnitch.qudditch.dto.UserAdmin;
 import com.goldensnitch.qudditch.dto.UserCustomer;
 import com.goldensnitch.qudditch.dto.UserStore;
@@ -224,8 +224,8 @@ public ResponseEntity<?> verifyAccount(String email, String code) {
         }
     }
 
-    public UserDetails processUserIntegration(String provider, SocialLoginDto socialLoginDto) {
-        String email = socialLoginDto.getEmail();
+    public UserDetails processUserIntegration(String provider, SocialLogin socialLogin) {
+        String email = socialLogin.getEmail();
         UserCustomer userCustomer = userCustomerMapper.selectUserByEmail(email);
         ExtendedUserDetails userDetails;
 
@@ -362,5 +362,9 @@ public ResponseEntity<?> verifyAccount(String email, String code) {
             return true;
         }
         return false;
+    }
+
+    public int findStoreEmailCnt(String email) {
+        return userStoreMapper.findStoreEmailCnt(email);
     }
 }

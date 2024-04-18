@@ -1,7 +1,9 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.goldensnitch.qudditch.dto.CustomerOrder;
 import com.goldensnitch.qudditch.dto.payment.CartItem;
 import com.goldensnitch.qudditch.dto.payment.PaymentResponse;
+import com.goldensnitch.qudditch.service.CustomerOrderProductService;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,9 +20,12 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    private final CustomerOrderProductService customerOrderProductService;
+
     @Autowired
-    public PaymentController(PaymentService paymentService) {
+    public PaymentController(PaymentService paymentService, CustomerOrderProductService customerOrderProductService) {
         this.paymentService = paymentService;
+        this.customerOrderProductService = customerOrderProductService;
     }
 
     // getId 변경 - 03.29
@@ -30,14 +34,11 @@ public class PaymentController {
         try {
             int userCustomerId = userDetails.getId();
 
-            PaymentResponse response = paymentService.initiatePayment(cartItems, userCustomerId);
-            if (response != null && response.getNext_redirect_pc_url() != null) {
-                // 응답 객체에 주문번호를 추가
-                Map<String, Object> result = new HashMap<>();
-                result.put("redirectUrl", response.getNext_redirect_pc_url());
-                result.put("partner_order_id", response.getNext_redirect_pc_url()); // 결제 요청에서 생성된 주문번호
-                return ResponseEntity.ok(result);
-            } else {
+            String redirectUrl = paymentService.initiatePayment(cartItems, userCustomerId);
+            if (!"Error".equals(redirectUrl)) {
+                return ResponseEntity.ok().body(Map.of("redirectUrl", redirectUrl));
+            }
+            else {
                 return ResponseEntity.badRequest().body("Failed to initiate payment");
             }
         } catch (Exception e) {
@@ -46,10 +47,13 @@ public class PaymentController {
     }
 
     @PostMapping("/approve")
-    public ResponseEntity<?> approvePayment(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> approvePayment(@AuthenticationPrincipal ExtendedUserDetails user, @RequestBody Map<String, String> payload) {
         try {
-            String pg_token = payload.get("pg_token");
-            String partnerOrderId = payload.get("order_id");
+            System.out.println(payload);
+            CustomerOrder co = customerOrderProductService.test(user.getId());
+            String pg_token = payload.get("pg");
+            String partnerOrderId = co.getPartnerOrderId().toString();
+//            String partnerOrderId = payload.get("order_id");
             PaymentResponse paymentResponse = paymentService.approvePayment(pg_token, partnerOrderId);
             return ResponseEntity.ok(paymentResponse);
         } catch (Exception e) {
