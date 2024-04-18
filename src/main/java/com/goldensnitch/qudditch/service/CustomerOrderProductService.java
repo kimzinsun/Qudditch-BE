@@ -9,7 +9,6 @@ import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,8 +50,10 @@ public class CustomerOrderProductService { // 영수증 정보 생성, 월별 �
     }
 
     public List<OrderResponse> getMonthlyOrderHistory(String monthYear, Integer status, PaginationParam paginationParam) {
-        List<OrderResponse> orders = customerOrderProductMapper.getMonthlyOrderHistory(monthYear, status, paginationParam.getRecordSize(), paginationParam.getOffset());
-        return orders != null ? orders : new ArrayList<>();
+        List<CustomerOrder> orders = customerOrderProductMapper.getMonthlyOrderHistory(monthYear, status, paginationParam.getRecordSize(), paginationParam.getOffset());
+        return orders.stream()
+                .map(order -> createOrderResponse(order.getId()))
+                .collect(Collectors.toList());
     }
 
     public int countOrdersByMonthYear(String monthYear, Integer status) {
