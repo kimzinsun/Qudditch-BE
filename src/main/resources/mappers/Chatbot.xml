@@ -24,7 +24,7 @@
                       *COS(RADIANS(s.wgs84_x))
                       *COS(radians(s.wgs84_y)-RADIANS(#{currentWgs84Y}))
                 +SIN(RADIANS(#{currentWgs84X}))*SIN(RADIANS(s.wgs84_x))))
-        limit 3
+        limit 1
     </select>
 
     <select id="selectSimilarProductNames" parameterType="String" resultType="String">
