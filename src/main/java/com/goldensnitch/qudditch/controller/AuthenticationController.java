@@ -421,7 +421,7 @@ public class AuthenticationController {
     @PostMapping("/verify-store")
     public ResponseEntity<Map<String, Object>> verifyStore(@RequestBody Map<String, Object> payload) {
         if (userService.verifyStore(payload.get("email").toString(), payload.get("code").toString())) {
-            return ResponseEntity.ok(Map.of("message", "매장 인증이 완료되었습니다.", "status", "success"));
+            return ResponseEntity.ok(Map.of("message", "인증이 완료되었습니다.", "status", "success"));
         } else {
             return ResponseEntity.ok(Map.of("message", "인증 코드가 틀렸습니다.", "status", "fail"));
         }
@@ -433,6 +433,48 @@ public class AuthenticationController {
             return ResponseEntity.ok(Map.of("status", "fail"));
         } else {
             return ResponseEntity.ok(Map.of("status", "succcess"));
+        }
+    }
+
+    @PostMapping("/request-verification-user")
+    public ResponseEntity<Map<String, Object>> requestVerificationUser(@RequestBody Map<String, Object> body)
+            throws IOException {
+        if (userService.requestVerificationUser(body.get("email").toString())) {
+            return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다.", "status", "success"));
+        } else {
+            return ResponseEntity.ok(Map.of("message", "인증 코드 발송에 실패했습니다.", "status", "fail"));
+        }
+    }
+
+    @PostMapping("/verify-user")
+    public ResponseEntity<Map<String, Object>> verifyUser(@RequestBody Map<String, Object> payload) {
+        if (userService.verifyUser(payload.get("email").toString(), payload.get("code").toString())) {
+            return ResponseEntity.ok(Map.of("message", "인증이 완료되었습니다.", "status", "success"));
+        } else {
+            return ResponseEntity.ok(Map.of("message", "인증 코드가 틀렸습니다.", "status", "fail"));
+        }
+    }
+
+    @PostMapping("/find-user-email")
+    public ResponseEntity<Map<String, Object>> findUserEmail(@RequestBody Map<String, Object> payload) {
+        if (userService.findUserEmailCnt(payload.get("email").toString()) > 0) {
+            return ResponseEntity.ok(Map.of("status", "fail"));
+        } else {
+            return ResponseEntity.ok(Map.of("status", "succcess"));
+        }
+    }
+
+    @PostMapping("/register/user")
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody newUser users) {
+        newUser user = new newUser();
+        user.setEmail(users.getEmail());
+        user.setPassword(passwordEncoder.encode(users.getPassword()));
+        user.setName(users.getName());
+        user.setState(1);
+        if (userService.insertUser(user)) {
+            return ResponseEntity.ok(Map.of("message", "회원가입이 완료되었습니다.", "status", "success"));
+        } else {
+            return ResponseEntity.ok(Map.of("message", "회원가입에 실패했습니다.", "status", "fail"));
         }
     }
 

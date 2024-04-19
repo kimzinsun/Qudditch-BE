@@ -5,6 +5,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
+import com.goldensnitch.qudditch.dto.*;
+import com.goldensnitch.qudditch.dto.SocialLogin;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +20,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.goldensnitch.qudditch.dto.SocialLogin;
-import com.goldensnitch.qudditch.dto.UserAdmin;
-import com.goldensnitch.qudditch.dto.UserCustomer;
-import com.goldensnitch.qudditch.dto.UserStore;
 import com.goldensnitch.qudditch.mapper.UserAdminMapper;
 import com.goldensnitch.qudditch.mapper.UserCustomerMapper;
 import com.goldensnitch.qudditch.mapper.UserStoreMapper;
@@ -366,5 +364,67 @@ public ResponseEntity<?> verifyAccount(String email, String code) {
 
     public int findStoreEmailCnt(String email) {
         return userStoreMapper.findStoreEmailCnt(email);
+    }
+
+    public boolean requestVerificationUser(String email) {
+        String verificationCode = VerificationCodeGenerator.generate();
+        redisService.setValues(REDIS_KEY_EMAIL_PREFIX+email, verificationCode, Duration.ofMinutes(300));
+        if(redisService.getValues(REDIS_KEY_EMAIL_PREFIX+email).equals(verificationCode)){
+            try {
+                emailService.sendVerificationEmail(email, verificationCode);
+                return true;
+            } catch (IOException e) {
+                log.error("인증 이메일 보내기에 실패하였습니다.", e);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public boolean verifyUser(String email, String code) {
+        if(redisService.getValues(REDIS_KEY_EMAIL_PREFIX+email).equals(code)){
+            redisService.deleteValues(REDIS_KEY_EMAIL_PREFIX+email);
+            return true;
+        }
+        return false;
+    }
+
+    public int findUserEmailCnt(String email) {
+        return userCustomerMapper.findUserEmailCnt(email);
+    }
+
+    public boolean registerUser(UserCustomer userCustomer) {
+        try {
+            if (userCustomerMapper.findByEmail(userCustomer.getEmail()) != null) {
+                log.error("이미 존재하는 이메일입니다: {}", userCustomer.getEmail());
+                return false;
+            }
+
+            userCustomer.setPassword(passwordEncoder.encode(userCustomer.getPassword()));
+            userCustomer.setState(0);
+
+            userCustomerMapper.insertUserCustomer(userCustomer);
+            log.info("사용자 등록에 성공했습니다: {}", userCustomer.getEmail());
+            return true;
+        } catch (DataAccessException e) {
+            log.error("데이터베이스 접근 중 오류가 발생했습니다.", e);
+            return false;
+        } catch (Exception e) {
+            log.error("사용자 등록 중 알 수 없는 오류가 발생했습니다.", e);
+            return false;
+        }
+    }
+
+    public boolean insertUser(newUser user) {
+        try {
+            userCustomerMapper.insertUser(user);
+            return true;
+        } catch (DataAccessException e) {
+            log.error("데이터베이스 접근 중 오류가 발생했습니다.", e);
+            return false;
+        } catch (Exception e) {
+            log.error("사용자 등록 중 알 수 없는 오류가 발생했습니다.", e);
+            return false;
+        }
     }
 }

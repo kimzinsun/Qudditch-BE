@@ -3,6 +3,7 @@
 package com.goldensnitch.qudditch.mapper;
 
 import com.goldensnitch.qudditch.dto.UserCustomer;
+import com.goldensnitch.qudditch.dto.newUser;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper // Mybatis 사용 시 @Mapper 어노테이션 사용
@@ -25,4 +26,8 @@ public interface UserCustomerMapper {
 
     // 이메일로 사용자의 인증 코드를 업데이트하는 메서드
     void updateVerificationCode(String email, String verificationCode);
+
+    int findUserEmailCnt(String email);
+
+    int insertUser(newUser user);
 }
