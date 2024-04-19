@@ -25,6 +25,8 @@ public class TestService {
     private String kakaoClientSecret;
     @Value("${kakao.redirect-uri}")
     private String kakaoRedirectUri;
+    @Value("${kakao.name}")
+    private String kakaoName;
 
     public String getAccessToken(String code) {
         String accessToken = "";
@@ -115,7 +117,7 @@ public class TestService {
             Map<String, Object> kakaoAccount = objectMapper.convertValue(responseMap.get("kakao_account"), Map.class);
 
             userInfo.put("email", kakaoAccount.get("email"));
-            userInfo.put("name", kakaoAccount.get("name"));
+            userInfo.put("name", kakaoAccount.get(kakaoName));
         } catch (Exception e) {
             log.error("Exception occurred while getting user info", e);
         }
