@@ -36,6 +36,7 @@ public class RekognitionService {
     private final AmazonS3 s3Client;
     private final AwsUtil awsUtil;
     private final AccessMapper accessMapper;
+    private final PersonaMapper personaMapper;
     @Value("${aws.rekognition.liveness.output.config.s3-bucket-name}")
     private String LIVENESS_BUCKET_NAME;
     @Value("${aws.rekognition.liveness.setting.audit-images-limit}")
@@ -46,15 +47,14 @@ public class RekognitionService {
     private String DETECTION_ATTRIBUTE;
     @Value("${aws.rekognition.collection-id}")
     private String COLLECTION_ID;
-    private final PersonaMapper personaMapper;
 
     @Autowired
     public RekognitionService(
-            RedisService redisService,
-            AmazonRekognition rekognitionClient,
-            AmazonS3 s3Client,
-            AwsUtil awsUtil,
-            AccessMapper accessMapper, PersonaMapper personaMapper
+        RedisService redisService,
+        AmazonRekognition rekognitionClient,
+        AmazonS3 s3Client,
+        AwsUtil awsUtil,
+        AccessMapper accessMapper, PersonaMapper personaMapper
     ) {
         this.redisService = redisService;
         this.rekognitionClient = rekognitionClient;
@@ -129,8 +129,8 @@ public class RekognitionService {
 
     private DetectFacesRequest createDetectFacesRequest(Image imageFromS3) {
         return new DetectFacesRequest()
-                .withImage(imageFromS3)
-                .withAttributes(Attribute.ALL);
+            .withImage(imageFromS3)
+            .withAttributes(Attribute.ALL);
     }
 
 
@@ -145,8 +145,8 @@ public class RekognitionService {
         List<FaceDetail> faceDetails = result.getFaceDetails();
 
         Map<String, Object> map = Map.of(
-                "emotion", faceDetails.get(0).getEmotions().get(0).getType(),
-                "storeId", storeId
+            "emotion", faceDetails.get(0).getEmotions().get(0).getType(),
+            "storeId", storeId
         );
 
         redisService.deleteHashOps(REDIS_KEY_EMOTION_PREFIX + userId, "emotion");
@@ -162,8 +162,8 @@ public class RekognitionService {
 
             UserPersona userPersona = new UserPersona();
             userPersona.setAgeRange((
-                    faceDetails.get(0).getAgeRange().getLow() +
-                            faceDetails.get(0).getAgeRange().getHigh()) / 2
+                faceDetails.get(0).getAgeRange().getLow() +
+                    faceDetails.get(0).getAgeRange().getHigh()) / 2
             );
             userPersona.setGender(faceDetails.get(0).getGender().getValue());
             userPersona.setUserCustomerId(userId);
@@ -290,5 +290,17 @@ public class RekognitionService {
             s3Client.deleteObject(LIVENESS_BUCKET_NAME, auditImage.getS3Object().getName());
         });
         s3Client.deleteObject(LIVENESS_BUCKET_NAME, flsrr.getReferenceImage().getS3Object().getName());
+    }
+
+    public boolean existsUserInCollection(String rekognitionCollectionId, String userId) {
+        ListUsersResult listUsersResult = rekognitionClient.listUsers(new ListUsersRequest().withCollectionId(rekognitionCollectionId));
+        return listUsersResult.getUsers().stream().anyMatch(user -> Objects.equals(user.getUserId(), userId));
+    }
+
+    public void deleteFacesFromCollection(String rekognitionCollectionId, String userId) {
+        ListFacesResult listFacesResult = rekognitionClient.listFaces(new ListFacesRequest().withCollectionId(rekognitionCollectionId).withUserId(userId));
+        listFacesResult.getFaces().forEach(face -> {
+            rekognitionClient.deleteFaces(new DeleteFacesRequest().withCollectionId(rekognitionCollectionId).withFaceIds(face.getFaceId()));
+        });
     }
 }
