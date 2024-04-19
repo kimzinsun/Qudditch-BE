@@ -47,6 +47,12 @@ public class PaymentService {
     @Value("${kakao.pay.fail.url}")
     private String kakaoPayFailUrl;
 
+    @Value("${kakao.pay.redirect.url.type}")
+    private String kakaoPayRedirectUrlType;
+
+    @Value("${kakao.pay.redirect.approval.url}")
+    private String kakaoPayRedirectApprovalUrl;
+
     // 카카오페이 API 사용을 위한 인증 키
 //    @Value("${kakao.pay.secret.key.dev}")
 //    private String kakaoPaySecretKey;
@@ -74,7 +80,7 @@ public class PaymentService {
 
         try {
             ResponseEntity<PaymentResponse> responseEntity = restTemplate.exchange(
-                    kakaoPayReadyUrl, HttpMethod.POST, entity, PaymentResponse.class);
+                kakaoPayReadyUrl, HttpMethod.POST, entity, PaymentResponse.class);
 
             PaymentResponse response = responseEntity.getBody();
 
@@ -111,7 +117,7 @@ public class PaymentService {
                 }
 
                 System.out.println("initiatePayment 3");
-                return response.getNext_redirect_mobile_url();
+                return response.getRedirectOf(kakaoPayRedirectUrlType);
             }
         } catch (Exception e) {
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~paymentResopnse에서 Exception");
@@ -145,7 +151,7 @@ public class PaymentService {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
         ResponseEntity<PaymentResponse> responseEntity = restTemplate.exchange(
-                kakaoPayApproveUrl, HttpMethod.POST, entity, PaymentResponse.class);
+            kakaoPayApproveUrl, HttpMethod.POST, entity, PaymentResponse.class);
 
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~approvePayment 3");
         // 결제 승인이 성공한 후의 로직
@@ -173,7 +179,7 @@ public class PaymentService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         ResponseEntity<PaymentResponse> response = restTemplate.exchange(
-                kakaoPayCancelUrl, HttpMethod.POST, entity, PaymentResponse.class);
+            kakaoPayCancelUrl, HttpMethod.POST, entity, PaymentResponse.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
             // 결제 취소 성공 시, 재고 복구 로직 실행
@@ -202,10 +208,10 @@ public class PaymentService {
                 for (CustomerOrderProduct orderProduct : orderProducts) {
                     // 새로운 로그 라인에 취소된 수량(-qty) 기록
                     storeStockMapper.insertStoreStockReport(
-                            order.getUserStoreId(),
-                            orderProduct.getProductId(),
-                            Date.valueOf(ymd),
-                            -orderProduct.getQty() // 취소된 수량
+                        order.getUserStoreId(),
+                        orderProduct.getProductId(),
+                        Date.valueOf(ymd),
+                        -orderProduct.getQty() // 취소된 수량
                     );
                 }
             }
@@ -230,10 +236,10 @@ public class PaymentService {
 
         // 카카오페이 주문 조회 API에 요청을 보냅니다.
         ResponseEntity<PaymentResponse> responseEntity = restTemplate.exchange(
-                "https://open-api.kakaopay.com/online/v1/payment/order",
-                HttpMethod.POST,
-                entity,
-                PaymentResponse.class
+            "https://open-api.kakaopay.com/online/v1/payment/order",
+            HttpMethod.POST,
+            entity,
+            PaymentResponse.class
         );
 
         // 응답을 처리합니다.
@@ -246,8 +252,8 @@ public class PaymentService {
 
     private int calculateTotalAmount(List<CartItem> cartItems) {
         return cartItems.stream()
-                .mapToInt(item -> item.getPrice() * item.getQty())
-                .sum();
+            .mapToInt(item -> item.getPrice() * item.getQty())
+            .sum();
     }
 
     private PaymentRequest createPaymentRequest(List<CartItem> cartItems) {
@@ -281,7 +287,7 @@ public class PaymentService {
 //        paymentRequest.setApproval_url("http://localhost:3000/m/store-select/payResult");
 //        paymentRequest.setCancel_url("http://localhost:3000/m/store-select/payResult");
 //        paymentRequest.setFail_url("http://localhost:3000/m/store-select/payResult");
-        paymentRequest.setApproval_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
+        paymentRequest.setApproval_url(kakaoPayRedirectApprovalUrl);
         paymentRequest.setCancel_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
         paymentRequest.setFail_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
         paymentRequest.setUsedPoint(usedPoints);
@@ -338,7 +344,7 @@ public class PaymentService {
                 // 업데이트된 행이 없으면 새로운 레코드 추가
                 storeStockMapper.insertStoreStockReport(userStoreId, productId, Date.valueOf(ymd), outQty);
             }
-        } catch(Exception e){
+        } catch (Exception e) {
             // 에러 로깅
             System.out.println("Error during updateOrInsertStoreStockReport: " + e.getMessage());
             e.printStackTrace(); // 스택 트레이스를 콘솔에 출력

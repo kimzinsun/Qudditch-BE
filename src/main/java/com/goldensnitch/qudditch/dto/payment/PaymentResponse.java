@@ -3,6 +3,7 @@ package com.goldensnitch.qudditch.dto.payment;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Data
 public class PaymentResponse {
@@ -19,4 +20,11 @@ public class PaymentResponse {
     // 추가 03.20
     private String partner_order_id; // 가맹점 주문번호(최대 100자)
     private String partner_user_id; // 가맹점 회원 id(최대 100자)
+
+    public String getRedirectOf(String type) {
+        if (Objects.equals(type, "APP")) return this.next_redirect_app_url;
+        if (Objects.equals(type, "MOBILE")) return this.next_redirect_mobile_url;
+        if (Objects.equals(type, "PC")) return this.next_redirect_pc_url;
+        return null;
+    }
 }
