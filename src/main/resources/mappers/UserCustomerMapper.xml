@@ -117,5 +117,16 @@
         where id = #{id}
     </delete>
 
+    <select id="findUserEmailCnt">
+        SELECT COUNT(*)
+        FROM user_customer
+        WHERE email = #{email}
+    </select>
+
+    <insert id="insertUser">
+        INSERT INTO user_customer (email, password, name, state)
+        VALUES (#{email}, #{password}, #{name}, #{state})
+    </insert>
+
 
 </mapper>
