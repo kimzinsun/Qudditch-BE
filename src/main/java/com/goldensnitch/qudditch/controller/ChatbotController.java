@@ -1,5 +1,7 @@
 package com.goldensnitch.qudditch.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goldensnitch.qudditch.dto.Chatbot;
 import com.goldensnitch.qudditch.dto.ChatbotDto;
 import com.goldensnitch.qudditch.dto.Store;
@@ -36,7 +38,7 @@ public class ChatbotController {
     // 상품의 가격을 물어보면 그 상품의 리스트와 가격을 출력
     @PostMapping(path = "/price", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> price(@Nullable @RequestBody Map<String, Object> body){
+    public Map<String, Object> price(@Nullable @RequestBody Map<String, Object> body) throws JsonProcessingException {
         log.info("body {}", body);
 
         Map<String, Object> userinfoMap =  (Map<String, Object>)body.get("userInfo");
@@ -61,13 +63,16 @@ public class ChatbotController {
         Map<String, Object> list= new HashMap<>();
         list.put("variableName","list");
 
-        StringBuilder sb = new StringBuilder();
+        /*StringBuilder sb = new StringBuilder();
         for (Chatbot product : searchList) {
             sb.append(product.getName()).append(": ").append(product.getPrice()).append("원\n");
-        }
+        }*/
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonStr = objectMapper.writeValueAsString(Map.of("type","price","data",searchList));
 
         log.info("rs {}", rs);
-        list.put("value", sb.toString());
+        list.put("value", "'"+jsonStr+"'");
         ls.add(list);
         rs.put("data", ls);
         return rs;
@@ -97,7 +102,7 @@ public class ChatbotController {
 
     /*기본 챗봇연동 및 질문 분류*/
     @GetMapping("/chatbot")
-    public String chatbot(@AuthenticationPrincipal ExtendedUserDetails userDetails, ChatbotDto dto){
+    public String chatbot(@AuthenticationPrincipal ExtendedUserDetails userDetails, ChatbotDto dto) throws JsonProcessingException {
         String returnValue = "";
         String rtnStr = NaverCloud.ChatBot(dto.getMsg(), userDetails.getId());
         JSONObject jsonObject = new JSONObject(rtnStr);
@@ -105,7 +110,7 @@ public class ChatbotController {
                 .getJSONObject(0)
                 .getJSONObject("data")
                 .get("description");
-
+        ObjectMapper objectMapper = new ObjectMapper();
         // 커스텀 쿼리하는 부분, 액션메서드 결과값으로 DB에 select하는 경우
         if(rtnMsg.startsWith("msg:")){
             String pattern = "msg:(\\w+)/"; // 정규 표현식 패턴
@@ -125,44 +130,25 @@ public class ChatbotController {
                     Matcher productNameRex = p.matcher(rtnMsg);
 
                     if (productNameRex.find()) {
+                        List<Object> select001 = new ArrayList<>();
                         String productName = productNameRex.group(1); // 첫 번째 그룹을 가져와서 결과로 출력합니다.
                         log.info(productName);
 
                         List<String> similarProductNames = chatbotService.getSimilarProductNameList(productName);
 
-                        StringBuilder sb = new StringBuilder();
-
                         for(String pName : similarProductNames){
                             List<Store> stores = chatbotService.getNearProductStoreList(pName, dto.getCurrentWgs84X(), dto.getCurrentWgs84Y());
-
-                            if(stores.size() == 0){
-                                sb.append(pName + " 제품이 존재하는 가게를 찾을 수 없습니다.\n");
-                            }else{
-                                sb.append(pName + "제품이 있는 가게중 현재위치에서 가까운 가게는 아래와 같습니다.\n");
-
-                                for(Store store : stores){
-                                    sb.append("\t"+ store.getName() + "의 주소는 " + store.getAddress() + "\n");
-                                }
-                            }
+                            select001.add(Map.of("name",pName,"stores", stores));
                         }
 
-                        returnValue = sb.toString();
+                        returnValue = '"'+objectMapper.writeValueAsString(Map.of("type", "select001", "data", select001))+'"';
                     } else {
                         System.out.println("일치하는 패턴을 찾을 수 없습니다.");
                         returnValue = "Fail";
                     }
                 } else if(msgCode.equals("select_002")){
                     List<Store> nearStores = chatbotService.getNearStoreList(dto.getCurrentWgs84X(), dto.getCurrentWgs84Y());
-
-                    StringBuilder sb = new StringBuilder();
-
-                    sb.append("사용자 근처의 편의점 리스트" + "\n");
-
-                    for(Store store : nearStores){
-                        sb.append("가게이름: " + store.getName() + ", 주소: " + store.getAddress()).append("\n");
-                    }
-
-                    returnValue = sb.toString();
+                    returnValue = '"'+objectMapper.writeValueAsString(Map.of("type", "select002", "data", nearStores))+'"';
                 }
 
             } else {
@@ -180,7 +166,7 @@ public class ChatbotController {
     /*랜덤으로 상품추천해주는 액션메소드*/
     @PostMapping(path = "/random", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> random(@Nullable @RequestBody Map<String, Object> body) {
+    public Map<String, Object> random(@Nullable @RequestBody Map<String, Object> body) throws JsonProcessingException {
 
         log.info("body {}", body);
 
@@ -193,12 +179,15 @@ public class ChatbotController {
         Map<String, Object> recommend = new HashMap<>();
         recommend.put("variableName","recommend");
 
-        StringBuilder sb = new StringBuilder();
+        /*StringBuilder sb = new StringBuilder();
         for (Chatbot random : randomList) {
             sb.append(random.getName()).append(" : ").append(random.getPrice()).append("원\n");
         }
+*/
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonStr = objectMapper.writeValueAsString(Map.of("type","random","data",randomList));
 
-        recommend.put("value", sb.toString());
+        recommend.put("value", "'"+jsonStr+"'");
         rs.add(recommend);
         ra.put("data", rs);
         return ra;
@@ -206,7 +195,7 @@ public class ChatbotController {
 
     @PostMapping(path = "/best", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Map<String, Object> best(@Nullable @RequestBody Map<String, Object> body) {
+    public Map<String, Object> best(@Nullable @RequestBody Map<String, Object> body) throws JsonProcessingException {
         log.info("body {}", body);
 
         List<Chatbot> bestList = chatbotService.best();
@@ -218,12 +207,15 @@ public class ChatbotController {
         Map<String, Object> product = new HashMap<>();
         product.put("variableName","product");
 
-        StringBuilder sr = new StringBuilder();
+        /*StringBuilder sr = new StringBuilder();
         for (Chatbot best : bestList) {
             sr.append(best.getName()).append(" : ").append(best.getPrice()).append("원\n");
-        }
+        }*/
 
-        product.put("value", sr.toString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonStr = objectMapper.writeValueAsString(Map.of("type","best","data",bestList));
+        System.out.println(jsonStr);
+        product.put("value", "'"+jsonStr+"'");
         bs.add(product);
         ba.put("data", bs);
 
