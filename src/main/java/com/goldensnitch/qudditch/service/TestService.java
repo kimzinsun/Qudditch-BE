@@ -115,9 +115,10 @@ public class TestService {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> responseMap = objectMapper.readValue(responseSb.toString(), Map.class);
             Map<String, Object> kakaoAccount = objectMapper.convertValue(responseMap.get("kakao_account"), Map.class);
+            Map<String, Object> profile = objectMapper.convertValue(kakaoAccount.get("profile"), Map.class);
 
             userInfo.put("email", kakaoAccount.get("email"));
-            userInfo.put("name", kakaoAccount.get(kakaoName));
+            userInfo.put("name", profile.get("nickname"));
         } catch (Exception e) {
             log.error("Exception occurred while getting user info", e);
         }
