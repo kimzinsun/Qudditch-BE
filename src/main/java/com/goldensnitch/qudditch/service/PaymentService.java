@@ -7,6 +7,7 @@ import com.goldensnitch.qudditch.dto.payment.PaymentRequest;
 import com.goldensnitch.qudditch.dto.payment.PaymentResponse;
 import com.goldensnitch.qudditch.mapper.CustomerOrderProductMapper;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -23,6 +24,7 @@ import java.util.Random;
 
 // https://developers.kakao.com/console/app/1046778/config/appKey
 // https://jungkeung.tistory.com/149
+@Slf4j
 @Service
 public class PaymentService {
     private final RestTemplate restTemplate;
@@ -287,9 +289,9 @@ public class PaymentService {
 //        paymentRequest.setApproval_url("http://localhost:3000/m/store-select/payResult");
 //        paymentRequest.setCancel_url("http://localhost:3000/m/store-select/payResult");
 //        paymentRequest.setFail_url("http://localhost:3000/m/store-select/payResult");
-        paymentRequest.setApproval_url(kakaoPayRedirectApprovalUrl);
-        paymentRequest.setCancel_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
-        paymentRequest.setFail_url("https://pre.qudditch.dawoony.com/m/store-select/payResult");
+        paymentRequest.setApproval_url("https://qudditch.dawoony.com/m/store-select/payResult");
+        paymentRequest.setCancel_url("https://qudditch.dawoony.com/m/store-select/payResult");
+        paymentRequest.setFail_url("https://qudditch.dawoony.com/m/store-select/payResult");
         paymentRequest.setUsedPoint(usedPoints);
         paymentRequest.setTotalPay(totalPay);
         paymentRequest.setEarnPoint(earnPoints);
