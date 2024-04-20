@@ -14,4 +14,6 @@ public interface RecommendOrderMapper {
     int cntSelectProductByQty(int userStoreId);
 
     List<StoreStockRes> selectProductByUserStoreIdAndCategoryId(int storeId, int categoryId);
+
+    List<RecommendOrderReq> selectBestProduct(int storeId);
 }

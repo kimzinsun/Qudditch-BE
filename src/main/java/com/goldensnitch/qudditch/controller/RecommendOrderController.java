@@ -3,7 +3,6 @@ package com.goldensnitch.qudditch.controller;
 import com.goldensnitch.qudditch.dto.Pagination;
 import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.RecommendOrder.RecommendOrderReq;
-import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.service.ExtendedUserDetails;
 import com.goldensnitch.qudditch.service.RecommendOrderService;
 import com.goldensnitch.qudditch.service.RedisService;
@@ -24,16 +23,17 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/store/recommend")
 public class RecommendOrderController {
-
     private final RecommendOrderService recommendOrderService;
     private final RedisService redisService;
+
     @Autowired
     public RecommendOrderController(RecommendOrderService recommendOrderService, RedisService redisService, StoreStockService storeStockService) {
         this.recommendOrderService = recommendOrderService;
         this.redisService = redisService;
     }
+
     @GetMapping("")
-    public Map<String, Object> selectProductByQty(@AuthenticationPrincipal ExtendedUserDetails userDetails, PaginationParam paginationParam){
+    public Map<String, Object> selectProductByQty(@AuthenticationPrincipal ExtendedUserDetails userDetails, PaginationParam paginationParam) {
 
         int userStoreId = userDetails.getId();
 
@@ -49,26 +49,35 @@ public class RecommendOrderController {
         return map;
     }
 
+    @GetMapping("/best")
+    public ResponseEntity<Map<String, Object>> selectBestProduct(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
+
+        Map<String, Object> response = new HashMap<>();
+        List<RecommendOrderReq> data = recommendOrderService.selectBestProduct(userDetails.getId());
+        response.put("status", "success");
+        response.put("data", data);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/emotion")
     public ResponseEntity<Map<String, Object>> selectProductByEmotion(@AuthenticationPrincipal ExtendedUserDetails userDetails) {
         Map<String, Object> response = new HashMap<>();
         int userId = userDetails.getId();
-        if(redisService.checkExistsKey("emotion-"+userId)){
-            String emotion = (String) recommendOrderService.selectProductByEmotion(redisService.getHashOps("emotion-"+userId, "emotion")).get("emotion");
-            Map<String, Object> data = recommendOrderService.selectProductByEmotion(redisService.getHashOps("emotion-"+userId, "emotion"));
+        if (redisService.checkExistsKey("emotion-" + userId)) {
+            String emotion = (String) recommendOrderService.selectProductByEmotion(redisService.getHashOps("emotion-" + userId, "emotion")).get("emotion");
+            Map<String, Object> data = recommendOrderService.selectProductByEmotion(redisService.getHashOps("emotion-" + userId, "emotion"));
 
-            if(data.get("status") == "success"){
+            if (data.get("status") == "success") {
                 response.put("status", "success");
                 response.put("emotion", emotion);
                 response.put("data", data.get("data"));
-            }
-            else{
+            } else {
                 response.put("status", "fail");
                 response.put("message", "제품이 존재하지 않습니다");
             }
 
-        }
-        else{
+        } else {
             response.put("status", "fail");
             response.put("message", "오류가 발생했습니다");
         }

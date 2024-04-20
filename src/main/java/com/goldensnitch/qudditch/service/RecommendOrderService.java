@@ -2,7 +2,6 @@ package com.goldensnitch.qudditch.service;
 
 import com.goldensnitch.qudditch.dto.PaginationParam;
 import com.goldensnitch.qudditch.dto.RecommendOrder.RecommendOrderReq;
-import com.goldensnitch.qudditch.dto.StoreStock;
 import com.goldensnitch.qudditch.dto.StoreStockRes;
 import com.goldensnitch.qudditch.mapper.RecommendOrderMapper;
 import com.goldensnitch.qudditch.mapper.StoreStockMapper;
@@ -17,11 +16,9 @@ import static java.lang.Integer.parseInt;
 public class RecommendOrderService {
 
     private final RecommendOrderMapper recommendOrderMapper;
-    private final StoreStockMapper storeStockMapper;
 
     public RecommendOrderService(RecommendOrderMapper recommendOrderMapper, StoreStockMapper storeStockMapper) {
         this.recommendOrderMapper = recommendOrderMapper;
-        this.storeStockMapper = storeStockMapper;
     }
 
     public List<RecommendOrderReq> selectProductByQty(int userStoreId, PaginationParam paginationParam) {
@@ -48,9 +45,13 @@ public class RecommendOrderService {
             return Map.of("status", "fail");
         } else {
             int random = (int) (Math.random() * storeStocks.size());
-            return Map.of("status","success","emotion", emotions, "data", storeStocks.get(random));
+            return Map.of("status", "success", "emotion", emotions, "data", storeStocks.get(random));
         }
 
 
+    }
+
+    public List<RecommendOrderReq> selectBestProduct(int storeId) {
+        return recommendOrderMapper.selectBestProduct(storeId);
     }
 }
